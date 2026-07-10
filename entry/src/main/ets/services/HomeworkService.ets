@@ -6,6 +6,11 @@ import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
 
+interface GradeData {
+  score: number;
+  comment: string;
+}
+
 export class HomeworkService extends BaseService {
   static async getList(classId?: string, page: number = 1): Promise<ApiResponse<PageResult<Homework>>> {
     if (USE_MOCK) {
@@ -96,9 +101,10 @@ export class HomeworkService extends BaseService {
       }
       return BaseService.error(2001, '提交记录未找到');
     }
+    const gradeData: GradeData = { score: score, comment: comment };
     return HttpUtil.put<Submission | undefined>(
       `/api/submissions/${submissionId}/grade`,
-      { score, comment },
+      gradeData,
       UserStore.getInstance().authToken
     );
   }

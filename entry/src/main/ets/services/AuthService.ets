@@ -25,7 +25,8 @@ export class AuthService extends BaseService {
       }
       return BaseService.error<LoginResult>(1001, '手机号或密码错误');
     }
-    return HttpUtil.post<LoginResult>('/api/auth/login', { phone: params.phone, password: params.password });
+    const loginData: LoginParams = { phone: params.phone, password: params.password };
+    return HttpUtil.post<LoginResult>('/api/auth/login', loginData);
   }
 
   static async logout(): Promise<ApiResponse<null>> {
@@ -33,6 +34,6 @@ export class AuthService extends BaseService {
       await BaseService.simulateDelay();
       return BaseService.success(null);
     }
-    return HttpUtil.post<null>('/api/auth/logout', {});
+    return HttpUtil.post<null>('/api/auth/logout');
   }
 }

@@ -42,7 +42,7 @@ export class ActivityService extends BaseService {
       }
       return BaseService.success(null);
     }
-    return HttpUtil.post<null>(`/api/activities/${activityId}/join`, {}, UserStore.getInstance().authToken);
+    return HttpUtil.post<null>(`/api/activities/${activityId}/join`, undefined, UserStore.getInstance().authToken);
   }
 
   static async addComment(activityId: string, comment: ActivityComment): Promise<ApiResponse<ActivityComment>> {
