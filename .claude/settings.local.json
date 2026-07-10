@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(where hvigorw *)",
+      "Bash(which hvigorw *)",
+      "Bash(ls -la hvigor/)",
+      "Bash(cat local.properties)",
+      "Bash(\"D:\\\\harmonyos\\\\DevEco Studio\\\\tools\\\\hvigor\\\\bin\\\\hvigorw\" assembleHap --no-daemon)",
+      "Bash(tee /tmp/build_output.txt)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(git init *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)"
+    ]
+  }
+}

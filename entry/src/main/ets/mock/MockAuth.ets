@@ -1,0 +1,53 @@
+import { User, UserRole } from '../models/UserModel';
+
+export class MockAuth {
+  static accounts: User[] = [
+    {
+      id: 'p001',
+      name: '张伟',
+      role: UserRole.PARENT,
+      phone: '13800000001',
+      avatar: '',
+      schoolId: 's001',
+      schoolName: '华德小学',
+      childIds: ['s001'],
+      childNames: ['张小伟'],
+      classId: 'c001',
+      className: '三年级(2)班',
+    },
+    {
+      id: 's001',
+      name: '张小伟',
+      role: UserRole.STUDENT,
+      phone: '13800000002',
+      avatar: '',
+      schoolId: 's001',
+      schoolName: '华德小学',
+      classId: 'c001',
+      className: '三年级(2)班',
+      grade: 3,
+    },
+    {
+      id: 't001',
+      name: '李老师',
+      role: UserRole.TEACHER,
+      phone: '13800000003',
+      avatar: '',
+      schoolId: 's001',
+      schoolName: '华德小学',
+      classId: 'c001',
+      className: '三年级(2)班',
+      subject: '语文',
+    },
+    {
+      id: 'l001',
+      name: '王校长',
+      role: UserRole.LEADER,
+      phone: '13800000004',
+      avatar: '',
+      schoolId: 's001',
+      schoolName: '华德小学',
+      position: '校长',
+    },
+  ];
+}
