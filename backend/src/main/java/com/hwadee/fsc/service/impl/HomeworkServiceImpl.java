@@ -23,11 +23,8 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final SubmissionMapper submissionMapper;
 
     @Override
-    public PageResult<Homework> getList(Long classId, int page, int pageSize) {
+    public PageResult<Homework> getList(int page, int pageSize) {
         LambdaQueryWrapper<Homework> wrapper = new LambdaQueryWrapper<>();
-        if (classId != null) {
-            wrapper.eq(Homework::getClassId, classId);
-        }
         wrapper.orderByDesc(Homework::getAssignedAt);
 
         Page<Homework> p = new Page<>(page, pageSize);

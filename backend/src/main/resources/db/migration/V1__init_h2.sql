@@ -223,10 +223,10 @@ VALUES
 
 INSERT INTO user (id, name, phone, password, role, school_id, school_name, class_id, class_name, grade, child_ids, child_names, subject, position)
 VALUES
-(1, '张伟', '13800000001', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'PARENT', 1, '华德小学', 2, '三年级(2)班', 3, '[2]', '["张小伟"]', '', ''),
-(2, '张小伟', '13800000002', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'STUDENT', 1, '华德小学', 2, '三年级(2)班', 3, '[]', '[]', '', ''),
-(3, '李老师', '13800000003', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'TEACHER', 1, '华德小学', 2, '三年级(2)班', 3, '[]', '[]', '语文', ''),
-(4, '王校长', '13800000004', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'LEADER', 1, '华德小学', NULL, '', 0, '[]', '[]', '', '校长');
+(1, '张伟', '13800000001', '$2a$10$Kgu4/oUV4guAwgO2bKSxQOl8tw4lM53LN1XPc7rSEGknpjDTS7sFa', 'PARENT', 1, '华德小学', 2, '三年级(2)班', 3, '[2]', '["张小伟"]', '', ''),
+(2, '张小伟', '13800000002', '$2a$10$Kgu4/oUV4guAwgO2bKSxQOl8tw4lM53LN1XPc7rSEGknpjDTS7sFa', 'STUDENT', 1, '华德小学', 2, '三年级(2)班', 3, '[]', '[]', '', ''),
+(3, '李老师', '13800000003', '$2a$10$Kgu4/oUV4guAwgO2bKSxQOl8tw4lM53LN1XPc7rSEGknpjDTS7sFa', 'TEACHER', 1, '华德小学', 2, '三年级(2)班', 3, '[]', '[]', '语文', ''),
+(4, '王校长', '13800000004', '$2a$10$Kgu4/oUV4guAwgO2bKSxQOl8tw4lM53LN1XPc7rSEGknpjDTS7sFa', 'LEADER', 1, '华德小学', NULL, '', 0, '[]', '[]', '', '校长');
 
 INSERT INTO notice (id, title, summary, content, type, publisher_id, publisher_name, scope, is_top, view_count, created_at, updated_at)
 VALUES

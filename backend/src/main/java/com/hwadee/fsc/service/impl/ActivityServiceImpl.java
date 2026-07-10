@@ -17,13 +17,8 @@ public class ActivityServiceImpl implements ActivityService {
     private final ActivityMapper activityMapper;
 
     @Override
-    public PageResult<Activity> getList(String status, int page, int pageSize) {
+    public PageResult<Activity> getList(int page, int pageSize) {
         LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<>();
-
-        if (status != null && !status.isEmpty()) {
-            wrapper.eq(Activity::getStatus, status);
-        }
-
         wrapper.orderByDesc(Activity::getCreatedAt);
 
         Page<Activity> p = new Page<>(page, pageSize);
@@ -41,7 +36,7 @@ public class ActivityServiceImpl implements ActivityService {
     }
 
     @Override
-    public void join(Long activityId) {
+    public void join(Long activityId, Long userId) {
         Activity activity = activityMapper.selectById(activityId);
         if (activity == null) {
             throw new BusinessException("活动不存在");

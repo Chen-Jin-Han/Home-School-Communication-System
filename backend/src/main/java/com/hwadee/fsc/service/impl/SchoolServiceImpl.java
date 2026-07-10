@@ -30,7 +30,7 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     @Override
-    public Map<String, Object> getOrgTree(Long schoolId) {
+    public OrgNode getOrgTree(Long schoolId) {
         School school = schoolMapper.selectById(schoolId);
         if (school == null) {
             throw new BusinessException("学校不存在");
@@ -42,38 +42,40 @@ public class SchoolServiceImpl implements SchoolService {
         wrapper.orderByAsc(ClassInfo::getGrade).orderByAsc(ClassInfo::getName);
         List<ClassInfo> classes = classInfoMapper.selectList(wrapper);
 
-        // Build org tree structure: school -> grades -> classes
-        Map<String, Object> tree = new LinkedHashMap<>();
-        tree.put("schoolId", school.getId());
-        tree.put("schoolName", school.getName());
-        tree.put("schoolLogo", school.getLogo());
-        tree.put("description", school.getDescription());
-
         // Group classes by grade
         Map<Integer, List<ClassInfo>> gradeMap = classes.stream()
                 .collect(Collectors.groupingBy(ClassInfo::getGrade, LinkedHashMap::new, Collectors.toList()));
 
-        List<Map<String, Object>> gradeList = new ArrayList<>();
+        // Build org tree: school -> grades -> classes
+        List<OrgNode> gradeNodes = new ArrayList<>();
         for (Map.Entry<Integer, List<ClassInfo>> entry : gradeMap.entrySet()) {
-            Map<String, Object> gradeNode = new LinkedHashMap<>();
-            gradeNode.put("grade", entry.getKey());
-            gradeNode.put("gradeLabel", entry.getKey() + "年级");
-
-            List<Map<String, Object>> classList = new ArrayList<>();
+            List<OrgNode> classNodes = new ArrayList<>();
             for (ClassInfo clazz : entry.getValue()) {
-                Map<String, Object> classNode = new LinkedHashMap<>();
-                classNode.put("classId", clazz.getId());
-                classNode.put("className", clazz.getName());
-                classNode.put("studentCount", clazz.getStudentCount());
-                classNode.put("headTeacherId", clazz.getHeadTeacherId());
-                classNode.put("headTeacherName", clazz.getHeadTeacherName());
-                classList.add(classNode);
+                OrgNode classNode = new OrgNode(
+                        clazz.getId(),
+                        clazz.getName(),
+                        "class",
+                        Collections.emptyList(),
+                        clazz.getHeadTeacherId()
+                );
+                classNodes.add(classNode);
             }
-            gradeNode.put("classes", classList);
-            gradeList.add(gradeNode);
+            OrgNode gradeNode = new OrgNode(
+                    entry.getKey().longValue(),
+                    entry.getKey() + "年级",
+                    "grade",
+                    classNodes,
+                    null
+            );
+            gradeNodes.add(gradeNode);
         }
 
-        tree.put("grades", gradeList);
-        return tree;
+        return new OrgNode(
+                school.getId(),
+                school.getName(),
+                "school",
+                gradeNodes,
+                null
+        );
     }
 }
