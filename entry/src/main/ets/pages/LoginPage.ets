@@ -136,11 +136,16 @@ struct LoginPage {
       })
       .layoutWeight(1)
 
-      // Bottom hint
+      // Bottom: register link
       Row() {
-        Text('教育因沟通而更美好')
+        Text('还没有账号？')
           .fontSize(Constants.FONT_SM)
           .fontColor(Constants.COLOR_TEXT_HINT)
+        Text('立即注册')
+          .fontSize(Constants.FONT_SM)
+          .fontColor(Constants.COLOR_PRIMARY)
+          .fontWeight(FontWeight.Bold)
+          .onClick(() => { RouterUtil.toRegister(); })
       }
       .width('100%')
       .height(50)
