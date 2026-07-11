@@ -1,12 +1,10 @@
 # Home-School Communication System
 
-<p align="center">
-  <img src="AppScope/resources/base/media/app_logo.png" alt="家校通 华迪 HuaDee Logo" width="180" />
-</p>
-
-<p align="center">
+<div align="center">
+  <img src="./docs/assets/app_logo.png" alt="家校通 华迪 HuaDee Logo" width="180">
+  <br>
   <strong>家校通 · 华迪 HuaDee</strong>
-</p>
+</div>
 
 家校沟通系统，包含 HarmonyOS 客户端和 Spring Boot 后端。系统面向家长、学生、教师和学校领导，提供通知公告、作业、考勤、成绩、健康、评价、聊天和学校信息等功能。
 
