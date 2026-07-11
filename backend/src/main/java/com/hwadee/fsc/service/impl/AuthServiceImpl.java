@@ -5,9 +5,10 @@ import com.hwadee.fsc.common.exception.BusinessException;
 import com.hwadee.fsc.entity.User;
 import com.hwadee.fsc.mapper.UserMapper;
 import com.hwadee.fsc.dto.RegisterRequest;
+import com.hwadee.fsc.security.JwtTokenProvider;
 import com.hwadee.fsc.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,8 @@ import java.time.LocalDateTime;
 public class AuthServiceImpl implements AuthService {
 
     private final UserMapper userMapper;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     public AuthService.LoginResult login(String phone, String password) {
@@ -33,8 +35,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("手机号或密码错误");
         }
 
-        // TODO: integrate JwtTokenProvider later for token generation
-        String token = "mock_token_" + user.getId() + "_" + System.currentTimeMillis();
+        String token = jwtTokenProvider.generateToken(user.getId(), user.getRole());
 
         return new AuthService.LoginResult(user, token);
     }

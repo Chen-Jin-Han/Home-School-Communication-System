@@ -1,7 +1,7 @@
 import { http } from '@kit.NetworkKit';
 import { ApiResponse } from './BaseService';
 
-const BASE_URL = 'http://192.168.54.51:8080';
+const BASE_URL = 'http://192.168.54.60:8080';
 const TIMEOUT = 10000;
 
 export class HttpUtil {
