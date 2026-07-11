@@ -1,0 +1,12 @@
+.git
+.idea
+.vscode
+.hvigor
+**/build
+**/target
+oh_modules
+node_modules
+local.properties
+.claude
+.docx
+*.log

@@ -9,4 +9,6 @@
 /.clang-format
 /.clang-tidy
 **/.test
-/.appanalyzer
+/.appanalyzer.claude/
+/.claude/
+/.docx
