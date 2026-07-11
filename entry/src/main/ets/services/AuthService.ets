@@ -1,5 +1,5 @@
 import { BaseService, ApiResponse } from './BaseService';
-import { LoginParams, User } from '../models/UserModel';
+import { LoginParams, RegisterParams, User } from '../models/UserModel';
 import { MockAuth } from '../mock/MockAuth';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
@@ -27,6 +27,24 @@ export class AuthService extends BaseService {
     }
     const loginData: LoginParams = { phone: params.phone, password: params.password };
     return HttpUtil.post<LoginResult>('/api/auth/login', loginData);
+  }
+
+  static async register(params: RegisterParams): Promise<ApiResponse<User>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const newUser: User = {
+        id: `u${Date.now()}`,
+        name: params.name,
+        phone: params.phone,
+        avatar: '',
+        role: params.role,
+        schoolId: params.schoolId || '',
+        schoolName: '华德小学',
+      };
+      MockAuth.accounts.push(newUser);
+      return BaseService.success(newUser);
+    }
+    return HttpUtil.post<User>('/api/auth/register', params);
   }
 
   static async logout(): Promise<ApiResponse<null>> {

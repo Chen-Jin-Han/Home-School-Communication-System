@@ -1,7 +1,8 @@
 import { promptAction } from '@kit.ArkUI';
 import { Constants } from '../utils/Constants';
 import { RouterUtil } from '../utils/RouterUtil';
-import { UserRole } from '../models/UserModel';
+import { UserRole, RegisterParams } from '../models/UserModel';
+import { AuthService } from '../services/AuthService';
 import { AppNavBar } from '../components/common/AppNavBar';
 import { FormRow } from '../components/form/FormRow';
 import { FormTextInput } from '../components/form/FormTextInput';
@@ -101,7 +102,7 @@ struct RegisterPage {
     .backgroundColor(Constants.COLOR_BG)
   }
 
-  handleRegister(): void {
+  async handleRegister(): Promise<void> {
     if (!this.name) {
       promptAction.showToast({ message: '请输入姓名' });
       return;
@@ -118,7 +119,19 @@ struct RegisterPage {
       promptAction.showToast({ message: '两次密码不一致' });
       return;
     }
-    promptAction.showToast({ message: '注册提交成功，请等待审核' });
-    RouterUtil.toLogin();
+    const params: RegisterParams = {
+      phone: this.phone,
+      password: this.password,
+      name: this.name,
+      role: this.selectedRole as UserRole,
+      schoolId: '1',
+    };
+    const res = await AuthService.register(params);
+    if (res.code === 0) {
+      promptAction.showToast({ message: '注册成功，请登录' });
+      RouterUtil.toLogin();
+    } else {
+      promptAction.showToast({ message: res.message || '注册失败' });
+    }
   }
 }
