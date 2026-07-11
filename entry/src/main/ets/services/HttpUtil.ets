@@ -23,6 +23,8 @@ export class HttpUtil {
         readTimeout: TIMEOUT,
       });
       return JSON.parse(resp.result as string) as ApiResponse<T>;
+    } catch (e) {
+      return { code: -1, message: '网络连接失败: ' + JSON.stringify(e), data: null as T };
     } finally {
       req.destroy();
     }
@@ -42,6 +44,8 @@ export class HttpUtil {
       }
       const resp = await req.request(HttpUtil.getBaseUrl() + path, requestOpts);
       return JSON.parse(resp.result as string) as ApiResponse<T>;
+    } catch (e) {
+      return { code: -1, message: '网络连接失败: ' + JSON.stringify(e), data: null as T };
     } finally {
       req.destroy();
     }
@@ -61,6 +65,8 @@ export class HttpUtil {
       }
       const resp = await req.request(HttpUtil.getBaseUrl() + path, requestOpts);
       return JSON.parse(resp.result as string) as ApiResponse<T>;
+    } catch (e) {
+      return { code: -1, message: '网络连接失败: ' + JSON.stringify(e), data: null as T };
     } finally {
       req.destroy();
     }
@@ -76,6 +82,8 @@ export class HttpUtil {
         readTimeout: TIMEOUT,
       });
       return JSON.parse(resp.result as string) as ApiResponse<T>;
+    } catch (e) {
+      return { code: -1, message: '网络连接失败: ' + JSON.stringify(e), data: null as T };
     } finally {
       req.destroy();
     }
