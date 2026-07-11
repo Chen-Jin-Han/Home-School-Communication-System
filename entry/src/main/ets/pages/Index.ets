@@ -9,12 +9,19 @@ struct Index {
   @State loading: boolean = true;
 
   async aboutToAppear(): Promise<void> {
-    const store = UserStore.getInstance();
-    await store.init();
-    // Brief splash delay
-    await new Promise<void>(r => setTimeout(r, 1000));
+    try {
+      const store = UserStore.getInstance();
+      await store.init();
+    } catch (e) {
+      // ignore init errors, proceed to login
+    }
+    await new Promise<void>(r => setTimeout(r, 800));
     this.loading = false;
-    RouterUtil.toHomeFromSplash();
+    try {
+      RouterUtil.toHomeFromSplash();
+    } catch (e) {
+      RouterUtil.toLogin();
+    }
   }
 
   build() {
