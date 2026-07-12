@@ -1,12 +1,12 @@
 import { http } from '@kit.NetworkKit';
 import { ApiResponse } from './BaseService';
 
-const BASE_URL = 'http://8.218.156.55:8080';
+const BASE_URL = 'http://192.168.54.60:8080';
 const TIMEOUT = 10000;
 
 export class HttpUtil {
   static setBaseUrl(url: string): void {
-    // Reserved for runtime override in later settings pages.
+    // allow runtime override
   }
 
   private static getBaseUrl(): string {
