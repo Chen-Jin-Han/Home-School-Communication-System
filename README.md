@@ -167,7 +167,8 @@ const BASE_URL = 'http://你的服务器IP:8080';
 
 ### 2026-07-13
 
-- Summary: 新增 Codex Skill `project-main-push-workflow`，固化重大改动后的 README 日期记录、提交和推送主分支流程。
-- Changed: Skill 文件已写入 `C:\Users\18037\.codex\skills\project-main-push-workflow\SKILL.md`，默认推送目标为 `https://github.com/Chen-Jin-Han/Home-School-Communication-System.git`，SSH 备用目标为 `git@github.com:Chen-Jin-Han/Home-School-Communication-System.git`。
-- Validation: 已确认 Skill 文件创建成功，并在本次 README 更新中应用该流程。
-- Push: 本次 README 修改将推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+- Summary: 将后端从 Spring Boot 迁移为企业级 Flask + MySQL 架构，并完成 Docker Compose 验证。
+- Changed: 替换 `backend/` 为 Flask 应用工厂、SQLAlchemy ORM、JWT 鉴权、统一响应/异常处理、MySQL 初始化数据和 Gunicorn 部署入口；同步更新 `docker-compose.yml`、`backend/Dockerfile`、`README.md` 和 `backend/README.md`。
+- Validation: 已执行 Python 编译检查、Flask testing 模式接口冒烟、`docker compose config`、`docker build`、`docker compose up -d --build`，并验证容器环境下 `/`、`/api/notices`、`/api/auth/login`、`/api/users/profile` 返回成功。
+- Push: 已推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+
