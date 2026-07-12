@@ -5,3 +5,9 @@ target/
 *.log
 .idea/
 *.iml
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+instance/

@@ -1,14 +1,15 @@
-FROM maven:3.9.6-eclipse-temurin-17 AS build
+FROM python:3.10-slim
 
 WORKDIR /workspace
-COPY pom.xml .
-COPY src ./src
-RUN mvn -B -DskipTests package
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
 
-FROM eclipse-temurin:17-jre
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-WORKDIR /app
-ENV SPRING_PROFILES_ACTIVE=mysql
-COPY --from=build /workspace/target/*.jar app.jar
+COPY app ./app
+COPY wsgi.py .
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "wsgi:app"]

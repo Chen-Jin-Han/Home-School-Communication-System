@@ -27,10 +27,11 @@ services:
       mysql:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: mysql
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hwadee_fsc?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: root
+      FLASK_ENV: production
+      APP_SECRET_KEY: hwadee-fsc-change-me
+      JWT_SECRET_KEY: hwadee-fsc-jwt-change-me
+      DATABASE_URL: mysql+pymysql://root:root@mysql:3306/hwadee_fsc?charset=utf8mb4
+      AUTO_INIT_DB: "true"
     ports:
       - "8080:8080"
 

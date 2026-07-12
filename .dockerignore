@@ -4,9 +4,14 @@
 .hvigor
 **/build
 **/target
+**/__pycache__
+**/*.py[cod]
 oh_modules
 node_modules
 local.properties
 .claude
 .docx
+.env
+.venv
+venv
 *.log
