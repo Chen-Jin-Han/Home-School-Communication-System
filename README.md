@@ -160,15 +160,16 @@ const BASE_URL = 'http://你的服务器IP:8080';
 
 ### 2026-07-13
 
+- Summary: 将后端从 Spring Boot 迁移为企业级 Flask + MySQL 架构，并完成 Docker Compose 验证。
+- Changed: 替换 `backend/` 为 Flask 应用工厂、SQLAlchemy ORM、JWT 鉴权、统一响应/异常处理、MySQL 初始化数据和 Gunicorn 部署入口；同步更新 `docker-compose.yml`、`backend/Dockerfile`、`README.md` 和 `backend/README.md`。
+- Validation: 已执行 Python 编译检查、Flask testing 模式接口冒烟、`docker compose config`、`docker build`、`docker compose up -d --build`，并验证容器环境下 `/`、`/api/notices`、`/api/auth/login`、`/api/users/profile` 返回成功。
+- Push: 已推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+
+### 2026-07-13
+
 - Summary: 前后端新增零成本邮箱登录方案，并重构 HarmonyOS ArkTS 前端为移动端 App 工作台布局。
 - Changed: 后端 `User` 模型新增 `email` 字段，`/api/auth/login` 支持手机号/邮箱统一账号登录，注册接口支持手机号或邮箱至少填写一个；启动初始化加入旧 MySQL 表补列逻辑。前端更新 `UserModel`、`AuthService`、`MockAuth`、登录页、注册页和启动页，并新增 `MobileWorkbench` 共享组件，家长/学生/教师/领导首页统一复用移动端工作台，保留通知、作业、成绩、考勤、健康、评价、活动、发布、组织架构、聊天和个人中心等入口。
 - Validation: 已执行 `git diff --check`、`python -m compileall backend/app`，并用 Flask testing 模式验证邮箱登录、手机号登录、仅邮箱注册和注册后邮箱登录成功；当前本机 PATH 未提供 `hvigor` / `ohpm`，前端完整 DevEco 构建需在 DevEco Studio 中执行。
 - Push: 本次修改将推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
 
-### 2026-07-13
-
-- Summary: 将后端从 Spring Boot 迁移为企业级 Flask + MySQL 架构，并完成 Docker Compose 验证。
-- Changed: 替换 `backend/` 为 Flask 应用工厂、SQLAlchemy ORM、JWT 鉴权、统一响应/异常处理、MySQL 初始化数据和 Gunicorn 部署入口；同步更新 `docker-compose.yml`、`backend/Dockerfile`、`README.md` 和 `backend/README.md`。
-- Validation: 已执行 Python 编译检查、Flask testing 模式接口冒烟、`docker compose config`、`docker build`、`docker compose up -d --build`，并验证容器环境下 `/`、`/api/notices`、`/api/auth/login`、`/api/users/profile` 返回成功。
-- Push: 已推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
 
