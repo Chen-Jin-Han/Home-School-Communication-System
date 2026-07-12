@@ -12,4 +12,4 @@ COPY app ./app
 COPY wsgi.py .
 
 EXPOSE 8080
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "wsgi:app"]
+CMD ["gunicorn", "--preload", "-w", "4", "-b", "0.0.0.0:8080", "wsgi:app"]

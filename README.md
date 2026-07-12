@@ -160,10 +160,10 @@ const BASE_URL = 'http://你的服务器IP:8080';
 
 ### 2026-07-13
 
-- Summary: 将后端从 Spring Boot 迁移为企业级 Flask + MySQL 架构，并完成 Docker Compose 验证。
-- Changed: 替换 `backend/` 为 Flask 应用工厂、SQLAlchemy ORM、JWT 鉴权、统一响应/异常处理、MySQL 初始化数据和 Gunicorn 部署入口；同步更新 `docker-compose.yml`、`backend/Dockerfile`、`README.md` 和 `backend/README.md`。
-- Validation: 已执行 Python 编译检查、Flask testing 模式接口冒烟、`docker compose config`、`docker build`、`docker compose up -d --build`，并验证容器环境下 `/`、`/api/notices`、`/api/auth/login`、`/api/users/profile` 返回成功。
-- Push: 已推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+- Summary: 修复 Ubuntu 服务器首次 Docker 部署时 Gunicorn 多 worker 并发初始化数据库导致的 MySQL DDL 冲突。
+- Changed: `backend/Dockerfile` 中 Gunicorn 启动参数增加 `--preload`，让 Flask 应用和 `AUTO_INIT_DB` 初始化在 master 进程完成后再 fork worker，避免多个 worker 同时执行 `db.create_all()`。
+- Validation: 在 Ubuntu 服务器 `8.218.156.55` 上复现并定位后端日志中的 MySQL `concurrent DDL statement`，随后重新构建部署验证。
+- Push: 本次修复将推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
 
 ### 2026-07-13
 
@@ -172,4 +172,12 @@ const BASE_URL = 'http://你的服务器IP:8080';
 - Validation: 已执行 `git diff --check`、`python -m compileall backend/app`，并用 Flask testing 模式验证邮箱登录、手机号登录、仅邮箱注册和注册后邮箱登录成功；当前本机 PATH 未提供 `hvigor` / `ohpm`，前端完整 DevEco 构建需在 DevEco Studio 中执行。
 - Push: 本次修改将推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
 
+### 2026-07-13
+
+- Summary: 将后端从 Spring Boot 迁移为企业级 Flask + MySQL 架构，并完成 Docker Compose 验证。
+- Changed: 替换 `backend/` 为 Flask 应用工厂、SQLAlchemy ORM、JWT 鉴权、统一响应/异常处理、MySQL 初始化数据和 Gunicorn 部署入口；同步更新 `docker-compose.yml`、`backend/Dockerfile`、`README.md` 和 `backend/README.md`。
+- Validation: 已执行 Python 编译检查、Flask testing 模式接口冒烟、`docker compose config`、`docker build`、`docker compose up -d --build`，并验证容器环境下 `/`、`/api/notices`、`/api/auth/login`、`/api/users/profile` 返回成功。
+- Push: 已推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+
+### 2026-07-13
 
