@@ -11,11 +11,13 @@ export interface LoginResult {
 
 export class AuthService extends BaseService {
   static async login(params: LoginParams): Promise<ApiResponse<LoginResult>> {
+    const accountValue = params.account || params.phone || params.email || '';
+
     if (USE_MOCK) {
       await BaseService.simulateDelay();
-      const account = MockAuth.accounts.find(
-        a => a.phone === params.phone && params.password === '123456'
-      );
+      const account = MockAuth.accounts.find((item: User) => {
+        return (item.phone === accountValue || item.email === accountValue) && params.password === '123456';
+      });
       if (account) {
         const result: LoginResult = {
           user: account,
@@ -23,9 +25,15 @@ export class AuthService extends BaseService {
         };
         return BaseService.success(result);
       }
-      return BaseService.error<LoginResult>(1001, '手机号或密码错误');
+      return BaseService.error<LoginResult>(1001, '账号或密码错误');
     }
-    const loginData: LoginParams = { phone: params.phone, password: params.password };
+
+    const loginData: LoginParams = {
+      account: accountValue,
+      phone: accountValue.indexOf('@') >= 0 ? '' : accountValue,
+      email: accountValue.indexOf('@') >= 0 ? accountValue : '',
+      password: params.password,
+    };
     return HttpUtil.post<LoginResult>('/api/auth/login', loginData);
   }
 
@@ -35,11 +43,12 @@ export class AuthService extends BaseService {
       const newUser: User = {
         id: `u${Date.now()}`,
         name: params.name,
-        phone: params.phone,
+        phone: params.phone || '',
+        email: params.email,
         avatar: '',
         role: params.role,
         schoolId: params.schoolId || '',
-        schoolName: '华德小学',
+        schoolName: '华迪小学',
       };
       MockAuth.accounts.push(newUser);
       return BaseService.success(newUser);

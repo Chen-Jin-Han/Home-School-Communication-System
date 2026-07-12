@@ -11,6 +11,7 @@ export interface User {
   avatar: string;
   role: UserRole;
   phone: string;
+  email?: string;
   schoolId: string;
   schoolName: string;
   classId?: string;
@@ -30,12 +31,15 @@ export interface AuthInfo {
 }
 
 export interface LoginParams {
-  phone: string;
+  account: string;
   password: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface RegisterParams {
-  phone: string;
+  phone?: string;
+  email?: string;
   password: string;
   name: string;
   role: UserRole;

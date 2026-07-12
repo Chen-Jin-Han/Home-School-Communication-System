@@ -115,12 +115,12 @@ const BASE_URL = 'http://你的服务器IP:8080';
 
 初始化数据会写入以下账号，密码均为 `123456`：
 
-| 角色 | 手机号 | 说明 |
-| --- | --- | --- |
-| 家长 | `13800000001` | 家长端首页 |
-| 学生 | `13800000002` | 学生端首页 |
-| 教师 | `13800000003` | 教师端首页 |
-| 领导 | `13800000004` | 领导端首页 |
+| 角色 | 手机号 | 邮箱 | 说明 |
+| --- | --- | --- | --- |
+| 家长 | `13800000001` | `parent@huadee.test` | 家长端首页 |
+| 学生 | `13800000002` | `student@huadee.test` | 学生端首页 |
+| 教师 | `13800000003` | `teacher@huadee.test` | 教师端首页 |
+| 领导 | `13800000004` | `leader@huadee.test` | 领导端首页 |
 
 ## 主要接口
 
@@ -157,6 +157,13 @@ const BASE_URL = 'http://你的服务器IP:8080';
 - Docker Compose 已切换为 Flask + MySQL 部署方式。
 
 ## 修改记录
+
+### 2026-07-13
+
+- Summary: 前后端新增零成本邮箱登录方案，并重构 HarmonyOS ArkTS 前端为移动端 App 工作台布局。
+- Changed: 后端 `User` 模型新增 `email` 字段，`/api/auth/login` 支持手机号/邮箱统一账号登录，注册接口支持手机号或邮箱至少填写一个；启动初始化加入旧 MySQL 表补列逻辑。前端更新 `UserModel`、`AuthService`、`MockAuth`、登录页、注册页和启动页，并新增 `MobileWorkbench` 共享组件，家长/学生/教师/领导首页统一复用移动端工作台，保留通知、作业、成绩、考勤、健康、评价、活动、发布、组织架构、聊天和个人中心等入口。
+- Validation: 已执行 `git diff --check`、`python -m compileall backend/app`，并用 Flask testing 模式验证邮箱登录、手机号登录、仅邮箱注册和注册后邮箱登录成功；当前本机 PATH 未提供 `hvigor` / `ohpm`，前端完整 DevEco 构建需在 DevEco Studio 中执行。
+- Push: 本次修改将推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
 
 ### 2026-07-13
 

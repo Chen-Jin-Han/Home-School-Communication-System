@@ -26,6 +26,7 @@ export class UserStore {
     const userName = await StorageUtil.get<string>('userName', '');
     const userRole = await StorageUtil.get<string>('userRole', '');
     const userPhone = await StorageUtil.get<string>('userPhone', '');
+    const userEmail = await StorageUtil.get<string>('userEmail', '');
     const schoolId = await StorageUtil.get<string>('schoolId', '');
     const schoolName = await StorageUtil.get<string>('schoolName', '');
     const className = await StorageUtil.get<string>('className', '');
@@ -40,6 +41,7 @@ export class UserStore {
         avatar: '',
         role: userRole as UserRole,
         phone: userPhone,
+        email: userEmail || undefined,
         schoolId: schoolId,
         schoolName: schoolName,
         classId: classId || undefined,
@@ -57,6 +59,7 @@ export class UserStore {
     await StorageUtil.put('userName', user.name);
     await StorageUtil.put('userRole', user.role);
     await StorageUtil.put('userPhone', user.phone);
+    await StorageUtil.put('userEmail', user.email || '');
     await StorageUtil.put('schoolId', user.schoolId);
     await StorageUtil.put('schoolName', user.schoolName);
     if (user.classId) {
@@ -76,6 +79,7 @@ export class UserStore {
     await StorageUtil.remove('userName');
     await StorageUtil.remove('userRole');
     await StorageUtil.remove('userPhone');
+    await StorageUtil.remove('userEmail');
     await StorageUtil.remove('schoolId');
     await StorageUtil.remove('schoolName');
     await StorageUtil.remove('classId');

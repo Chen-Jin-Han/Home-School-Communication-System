@@ -1,5 +1,7 @@
 from datetime import date, datetime, timedelta, time
 
+from sqlalchemy import inspect, text
+
 from .extensions import db
 from .models import (
     Attendance,
@@ -13,6 +15,28 @@ from .models import (
     User,
 )
 from .security import hash_password
+
+
+def ensure_schema() -> None:
+    """Apply tiny startup-safe additions for local Docker databases."""
+    inspector = inspect(db.engine)
+    if "user" not in inspector.get_table_names():
+        return
+
+    columns = {column["name"] for column in inspector.get_columns("user")}
+    if db.engine.dialect.name == "mysql":
+        db.session.execute(text("ALTER TABLE `user` MODIFY phone VARCHAR(20) NULL"))
+    if "email" in columns:
+        db.session.commit()
+        return
+
+    if db.engine.dialect.name == "mysql":
+        db.session.execute(text("ALTER TABLE `user` ADD COLUMN email VARCHAR(120) NULL"))
+        db.session.execute(text("CREATE UNIQUE INDEX ix_user_email ON `user` (email)"))
+    else:
+        db.session.execute(text("ALTER TABLE user ADD COLUMN email VARCHAR(120)"))
+        db.session.execute(text("CREATE UNIQUE INDEX ix_user_email ON user (email)"))
+    db.session.commit()
 
 
 def seed_data() -> None:
@@ -42,10 +66,10 @@ def seed_data() -> None:
     )
     db.session.add_all(
         [
-            User(id=1, name="张伟", phone="13800000001", password=password, role="PARENT", school_id=1, school_name="华迪小学", class_id=2, class_name="三年级(2)班", grade=3, child_ids="[2]", child_names='["张小伟"]'),
-            User(id=2, name="张小伟", phone="13800000002", password=password, role="STUDENT", school_id=1, school_name="华迪小学", class_id=2, class_name="三年级(2)班", grade=3),
-            User(id=3, name="李老师", phone="13800000003", password=password, role="TEACHER", school_id=1, school_name="华迪小学", class_id=2, class_name="三年级(2)班", grade=3, subject="语文"),
-            User(id=4, name="王校长", phone="13800000004", password=password, role="LEADER", school_id=1, school_name="华迪小学", position="校长"),
+            User(id=1, name="张伟", phone="13800000001", email="parent@huadee.test", password=password, role="parent", school_id=1, school_name="华迪小学", class_id=2, class_name="三年级(2)班", grade=3, child_ids="[2]", child_names='["张小伟"]'),
+            User(id=2, name="张小伟", phone="13800000002", email="student@huadee.test", password=password, role="student", school_id=1, school_name="华迪小学", class_id=2, class_name="三年级(2)班", grade=3),
+            User(id=3, name="李老师", phone="13800000003", email="teacher@huadee.test", password=password, role="teacher", school_id=1, school_name="华迪小学", class_id=2, class_name="三年级(2)班", grade=3, subject="语文"),
+            User(id=4, name="王校长", phone="13800000004", email="leader@huadee.test", password=password, role="leader", school_id=1, school_name="华迪小学", position="校长"),
         ]
     )
     db.session.add_all(

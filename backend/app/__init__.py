@@ -13,7 +13,7 @@ class BusinessError(Exception):
 from .config import get_config
 from .extensions import cors, db, migrate
 from .routes import api_bp
-from .seed import seed_data
+from .seed import ensure_schema, seed_data
 
 
 def create_app(config_name: str | None = None) -> Flask:
@@ -31,6 +31,7 @@ def create_app(config_name: str | None = None) -> Flask:
     if app.config["AUTO_INIT_DB"]:
         with app.app_context():
             db.create_all()
+            ensure_schema()
             seed_data()
 
     return app

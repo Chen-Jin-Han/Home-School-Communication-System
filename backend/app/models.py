@@ -68,7 +68,8 @@ class User(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), nullable=False)
-    phone = db.Column(db.String(20), nullable=False, unique=True, index=True)
+    phone = db.Column(db.String(20), unique=True, index=True)
+    email = db.Column(db.String(120), unique=True, index=True)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="PARENT")
     avatar = db.Column(db.String(500), default="")
@@ -83,6 +84,12 @@ class User(db.Model, SerializerMixin):
     position = db.Column(db.String(50), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self) -> dict:
+        data = super().to_dict()
+        if data.get("role"):
+            data["role"] = str(data["role"]).lower()
+        return data
 
 
 class Notice(db.Model, SerializerMixin):

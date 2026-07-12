@@ -3,178 +3,248 @@ import { UserStore } from '../store/UserStore';
 import { AuthService } from '../services/AuthService';
 import { RouterUtil } from '../utils/RouterUtil';
 import { Constants } from '../utils/Constants';
-import { UserRole } from '../models/UserModel';
 
 interface QuickAccount {
   label: string;
-  phone: string;
+  account: string;
   password: string;
 }
 
 @Entry
 @Component
 struct LoginPage {
-  @State phone: string = '13800000001';
+  @State account: string = 'parent@huadee.test';
   @State password: string = '123456';
   @State loading: boolean = false;
   @State showPassword: boolean = false;
 
+  private quickAccounts: QuickAccount[] = [
+    { label: '家长', account: 'parent@huadee.test', password: '123456' },
+    { label: '学生', account: 'student@huadee.test', password: '123456' },
+    { label: '教师', account: 'teacher@huadee.test', password: '123456' },
+    { label: '领导', account: 'leader@huadee.test', password: '123456' },
+  ];
+
   build() {
     Column() {
-      // Header
-      Column() {
-        Text('家校通')
-          .fontSize(Constants.FONT_TITLE)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(Constants.COLOR_WHITE)
-        Text('欢迎登录')
-          .fontSize(Constants.FONT_LG)
-          .fontColor('#FFFFFFAA')
-          .margin({ top: Constants.SPACE_SM })
-      }
-      .width('100%')
-      .height(180)
-      .backgroundColor(Constants.COLOR_PRIMARY)
-      .justifyContent(FlexAlign.Center)
-
-      // Form
-      Column() {
-        // Phone
-        Row() {
-          Image($r('sys.symbol.phone'))
-            .width(20)
-            .height(20)
-            .fillColor(Constants.COLOR_TEXT_HINT)
-          TextInput({ placeholder: '请输入手机号', text: this.phone })
-            .layoutWeight(1)
-            .height(48)
-            .fontSize(Constants.FONT_LG)
-            .maxLength(11)
-            .type(InputType.Number)
-            .backgroundColor(Color.Transparent)
-            .padding({ left: Constants.SPACE_MD })
-            .onChange((v: string) => { this.phone = v; })
+      Scroll() {
+        Column() {
+          this.BrandHeader()
+          this.LoginCard()
+          this.RegisterLink()
         }
         .width('100%')
-        .height(48)
-        .border({ width: { bottom: 0.5 }, color: Constants.COLOR_BORDER })
-
-        // Password
-        Row() {
-          Image($r('sys.symbol.lock'))
-            .width(20)
-            .height(20)
-            .fillColor(Constants.COLOR_TEXT_HINT)
-          TextInput({ placeholder: '请输入密码', text: this.password })
-            .layoutWeight(1)
-            .height(48)
-            .fontSize(Constants.FONT_LG)
-            .maxLength(20)
-            .type(this.showPassword ? InputType.Normal : InputType.Password)
-            .backgroundColor(Color.Transparent)
-            .padding({ left: Constants.SPACE_MD })
-            .onChange((v: string) => { this.password = v; })
-          Image(this.showPassword ? $r('sys.symbol.eye') : $r('sys.symbol.eye_slash'))
-            .width(20)
-            .height(20)
-            .fillColor(Constants.COLOR_TEXT_HINT)
-            .onClick(() => { this.showPassword = !this.showPassword; })
-        }
-        .width('100%')
-        .height(48)
-        .border({ width: { bottom: 0.5 }, color: Constants.COLOR_BORDER })
-        .margin({ top: Constants.SPACE_MD })
-
-        // Login button
-        Button(this.loading ? '登录中...' : '登录')
-          .width('100%')
-          .height(48)
-          .fontSize(Constants.FONT_LG)
-          .fontColor(Constants.COLOR_WHITE)
-          .backgroundColor(Constants.COLOR_PRIMARY)
-          .borderRadius(Constants.BUTTON_RADIUS)
-          .margin({ top: Constants.SPACE_XXL })
-          .enabled(!this.loading)
-          .onClick(() => { this.handleLogin(); })
-
-        // Quick login hints
-        Text('测试账号')
-          .fontSize(Constants.FONT_SM)
-          .fontColor(Constants.COLOR_TEXT_HINT)
-          .margin({ top: Constants.SPACE_XL })
-
-        Row() {
-          ForEach(
-            [
-              { label: '家长', phone: '13800000001', password: '123456' },
-              { label: '学生', phone: '13800000002', password: '123456' },
-              { label: '教师', phone: '13800000003', password: '123456' },
-              { label: '领导', phone: '13800000004', password: '123456' },
-            ],
-            (item: QuickAccount) => {
-              Button(item.label)
-                .fontSize(Constants.FONT_SM)
-                .fontColor(Constants.COLOR_PRIMARY)
-                .backgroundColor('#E6F7FF')
-                .borderRadius(14)
-                .height(28)
-                .margin({ left: Constants.SPACE_XS, right: Constants.SPACE_XS })
-                .onClick(() => {
-                  this.phone = item.phone;
-                  this.password = item.password;
-                })
-            }
-          )
-        }
-        .justifyContent(FlexAlign.Center)
-        .margin({ top: Constants.SPACE_SM })
+        .padding({ left: 20, right: 20, bottom: 24 })
       }
-      .padding({
-        left: Constants.SPACE_XXL,
-        right: Constants.SPACE_XXL,
-        top: Constants.SPACE_XXL,
-      })
       .layoutWeight(1)
-
-      // Bottom: register link
-      Row() {
-        Text('还没有账号？')
-          .fontSize(Constants.FONT_SM)
-          .fontColor(Constants.COLOR_TEXT_HINT)
-        Text('立即注册')
-          .fontSize(Constants.FONT_SM)
-          .fontColor(Constants.COLOR_PRIMARY)
-          .fontWeight(FontWeight.Bold)
-          .onClick(() => { RouterUtil.toRegister(); })
-      }
-      .width('100%')
-      .height(50)
-      .justifyContent(FlexAlign.Center)
+      .scrollBar(BarState.Off)
     }
     .width('100%')
     .height('100%')
+    .backgroundColor('#F4F8FC')
+  }
+
+  @Builder
+  BrandHeader() {
+    Column() {
+      Image($r('app.media.app_logo'))
+        .width(92)
+        .height(92)
+        .borderRadius(24)
+        .margin({ top: 36 })
+
+      Text('家校通')
+        .fontSize(30)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#174A7C')
+        .margin({ top: 16 })
+
+      Text('华迪 HuaDee')
+        .fontSize(16)
+        .fontColor('#4A90D9')
+        .margin({ top: 6 })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Center)
+  }
+
+  @Builder
+  LoginCard() {
+    Column() {
+      Text('登录')
+        .fontSize(22)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
+        .width('100%')
+
+      Text('使用手机号或邮箱进入家校协同空间')
+        .fontSize(Constants.FONT_MD)
+        .fontColor(Constants.COLOR_TEXT_HINT)
+        .width('100%')
+        .margin({ top: 6, bottom: 22 })
+
+      this.InputRow('账号', '手机号 / 邮箱', this.account, false, (value: string) => {
+        this.account = value;
+      })
+
+      this.PasswordRow()
+
+      Button(this.loading ? '登录中...' : '登录')
+        .width('100%')
+        .height(48)
+        .fontSize(Constants.FONT_LG)
+        .fontColor(Constants.COLOR_WHITE)
+        .fontWeight(FontWeight.Medium)
+        .backgroundColor('#4A90D9')
+        .borderRadius(12)
+        .margin({ top: 24 })
+        .enabled(!this.loading)
+        .onClick(() => {
+          this.handleLogin();
+        })
+
+      Text('测试账号')
+        .fontSize(Constants.FONT_SM)
+        .fontColor(Constants.COLOR_TEXT_HINT)
+        .width('100%')
+        .margin({ top: 22, bottom: 10 })
+
+      Grid() {
+        ForEach(this.quickAccounts, (item: QuickAccount) => {
+          GridItem() {
+            Button(item.label)
+              .width('100%')
+              .height(36)
+              .fontSize(Constants.FONT_MD)
+              .fontColor(this.account === item.account ? Constants.COLOR_WHITE : '#2469A8')
+              .backgroundColor(this.account === item.account ? '#4A90D9' : '#E7F2FD')
+              .borderRadius(18)
+              .onClick(() => {
+                this.account = item.account;
+                this.password = item.password;
+              })
+          }
+        })
+      }
+      .columnsTemplate('1fr 1fr 1fr 1fr')
+      .columnsGap(8)
+      .rowsGap(8)
+      .height(40)
+    }
+    .width('100%')
+    .padding(20)
     .backgroundColor(Constants.COLOR_WHITE)
+    .borderRadius(18)
+    .shadow({ radius: 18, color: '#1F4A7C18', offsetY: 8 })
+    .margin({ top: 28 })
+  }
+
+  @Builder
+  InputRow(label: string, placeholder: string, value: string, numberOnly: boolean, onValueChange: (value: string) => void) {
+    Column() {
+      Text(label)
+        .fontSize(Constants.FONT_SM)
+        .fontColor(Constants.COLOR_TEXT_HINT)
+        .width('100%')
+        .margin({ bottom: 8 })
+
+      TextInput({ placeholder: placeholder, text: value })
+        .width('100%')
+        .height(48)
+        .fontSize(Constants.FONT_LG)
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
+        .placeholderColor('#A8B3BF')
+        .backgroundColor('#F6F9FC')
+        .borderRadius(12)
+        .padding({ left: 14, right: 14 })
+        .type(numberOnly ? InputType.Number : InputType.Normal)
+        .onChange((text: string) => {
+          onValueChange(text);
+        })
+    }
+    .width('100%')
+  }
+
+  @Builder
+  PasswordRow() {
+    Column() {
+      Text('密码')
+        .fontSize(Constants.FONT_SM)
+        .fontColor(Constants.COLOR_TEXT_HINT)
+        .width('100%')
+        .margin({ top: 16, bottom: 8 })
+
+      Row() {
+        TextInput({ placeholder: '请输入密码', text: this.password })
+          .layoutWeight(1)
+          .height(48)
+          .fontSize(Constants.FONT_LG)
+          .fontColor(Constants.COLOR_TEXT_PRIMARY)
+          .placeholderColor('#A8B3BF')
+          .backgroundColor(Color.Transparent)
+          .type(this.showPassword ? InputType.Normal : InputType.Password)
+          .onChange((text: string) => {
+            this.password = text;
+          })
+
+        Text(this.showPassword ? '隐藏' : '显示')
+          .fontSize(Constants.FONT_SM)
+          .fontColor('#4A90D9')
+          .padding({ left: 12 })
+          .onClick(() => {
+            this.showPassword = !this.showPassword;
+          })
+      }
+      .width('100%')
+      .height(48)
+      .padding({ left: 14, right: 14 })
+      .backgroundColor('#F6F9FC')
+      .borderRadius(12)
+    }
+    .width('100%')
+  }
+
+  @Builder
+  RegisterLink() {
+    Row() {
+      Text('还没有账号？')
+        .fontSize(Constants.FONT_MD)
+        .fontColor(Constants.COLOR_TEXT_HINT)
+      Text('立即注册')
+        .fontSize(Constants.FONT_MD)
+        .fontColor('#4A90D9')
+        .fontWeight(FontWeight.Bold)
+        .onClick(() => {
+          RouterUtil.toRegister();
+        })
+    }
+    .width('100%')
+    .justifyContent(FlexAlign.Center)
+    .margin({ top: 20 })
   }
 
   async handleLogin(): Promise<void> {
-    if (!this.phone) {
-      promptAction.showToast({ message: '请输入手机号' });
+    const account = this.account.trim();
+    if (!account) {
+      promptAction.showToast({ message: '请输入手机号或邮箱' });
       return;
     }
     if (!this.password) {
       promptAction.showToast({ message: '请输入密码' });
       return;
     }
+
     this.loading = true;
-    const res = await AuthService.login({ phone: this.phone, password: this.password });
+    const res = await AuthService.login({ account: account, password: this.password });
     this.loading = false;
+
     if (res.code === 0) {
       const store = UserStore.getInstance();
       await store.login(res.data.user, res.data.token);
-      promptAction.showToast({ message: `欢迎, ${res.data.user.name}!` });
+      promptAction.showToast({ message: `欢迎，${res.data.user.name}` });
       RouterUtil.toHome(res.data.user.role);
     } else {
-      promptAction.showToast({ message: res.message });
+      promptAction.showToast({ message: res.message || '登录失败' });
     }
   }
 }

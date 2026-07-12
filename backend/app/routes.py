@@ -4,6 +4,7 @@ import json
 from datetime import date, datetime
 
 from flask import Blueprint, g, jsonify, request
+from sqlalchemy import or_
 
 from . import BusinessError
 from .extensions import db
@@ -88,23 +89,33 @@ def docs():
 @api_bp.post("/api/auth/login")
 def login():
     payload = body()
-    user = User.query.filter_by(phone=payload.get("phone")).first()
+    account = (payload.get("account") or payload.get("email") or payload.get("phone") or "").strip()
+    if not account:
+        raise BusinessError("Phone or email is required", code=1001)
+    user = User.query.filter(or_(User.phone == account, User.email == account)).first()
     if not user or not verify_password(payload.get("password", ""), user.password):
-        raise BusinessError("手机号或密码错误", code=1001)
+        raise BusinessError("Invalid account or password", code=1001)
     return ok({"user": user.to_dict(), "token": generate_token(user.id, user.role)})
 
 
 @api_bp.post("/api/auth/register")
 def register():
     payload = body()
-    required = ["name", "phone", "password", "role"]
+    required = ["name", "password", "role"]
     if any(not payload.get(field) for field in required):
-        raise BusinessError("姓名、手机号、密码和角色不能为空")
-    if User.query.filter_by(phone=payload["phone"]).first():
-        raise BusinessError("该手机号已被注册")
+        raise BusinessError("Name, password and role are required")
+    phone = (payload.get("phone") or "").strip()
+    email = (payload.get("email") or "").strip()
+    if not phone and not email:
+        raise BusinessError("Phone or email is required")
+    if phone and User.query.filter_by(phone=phone).first():
+        raise BusinessError("Phone is already registered")
+    if email and User.query.filter_by(email=email).first():
+        raise BusinessError("Email is already registered")
     user = User(
         name=payload["name"],
-        phone=payload["phone"],
+        phone=phone or None,
+        email=email or None,
         password=hash_password(payload["password"]),
         role=payload["role"],
         school_id=payload.get("schoolId"),
@@ -113,7 +124,6 @@ def register():
     db.session.add(user)
     db.session.commit()
     return ok(user.to_dict())
-
 
 @api_bp.post("/api/auth/logout")
 def logout():
@@ -313,7 +323,7 @@ def profile():
 def profile_update():
     user = get_or_404(User, g.user_id, "用户不存在")
     payload = body()
-    for api_key, attr in {"name": "name", "avatar": "avatar", "phone": "phone", "subject": "subject", "position": "position"}.items():
+    for api_key, attr in {"name": "name", "avatar": "avatar", "phone": "phone", "email": "email", "subject": "subject", "position": "position"}.items():
         if api_key in payload:
             setattr(user, attr, payload[api_key])
     user.updated_at = datetime.utcnow()

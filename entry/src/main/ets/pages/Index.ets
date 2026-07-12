@@ -1,6 +1,5 @@
 import { UserStore } from '../store/UserStore';
 import { RouterUtil } from '../utils/RouterUtil';
-import { StorageUtil } from '../utils/StorageUtil';
 import { Constants } from '../utils/Constants';
 
 @Entry
@@ -13,9 +12,9 @@ struct Index {
       const store = UserStore.getInstance();
       await store.init();
     } catch (e) {
-      // ignore init errors, proceed to login
+      // Continue to login when local auth cache cannot be restored.
     }
-    await new Promise<void>(r => setTimeout(r, 800));
+    await new Promise<void>(resolve => setTimeout(resolve, 800));
     this.loading = false;
     try {
       RouterUtil.toHomeFromSplash();
@@ -25,31 +24,40 @@ struct Index {
   }
 
   build() {
-    Column() {
+    Stack() {
       Column() {
+        Image($r('app.media.app_logo'))
+          .width(112)
+          .height(112)
+          .borderRadius(28)
+          .shadow({ radius: 18, color: '#1F4A7C22', offsetY: 8 })
+
         Text('家校通')
           .fontSize(36)
           .fontWeight(FontWeight.Bold)
-          .fontColor(Constants.COLOR_PRIMARY)
-        Text('Hwadee-FSC')
+          .fontColor('#174A7C')
+          .margin({ top: 22 })
+
+        Text('华迪 HuaDee')
           .fontSize(Constants.FONT_LG)
-          .fontColor(Constants.COLOR_TEXT_HINT)
-          .margin({ top: Constants.SPACE_SM })
+          .fontColor('#4A90D9')
+          .margin({ top: 8 })
+
+        if (this.loading) {
+          LoadingProgress()
+            .width(32)
+            .height(32)
+            .color('#4A90D9')
+            .margin({ top: 42 })
+        }
       }
       .width('100%')
       .height('100%')
       .justifyContent(FlexAlign.Center)
-
-      if (this.loading) {
-        LoadingProgress()
-          .width(30)
-          .height(30)
-          .color(Constants.COLOR_PRIMARY)
-          .position({ x: '50%', y: '65%' })
-      }
+      .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(Constants.COLOR_WHITE)
+    .backgroundColor('#F4F8FC')
   }
 }
