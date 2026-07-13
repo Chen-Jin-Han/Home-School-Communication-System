@@ -355,7 +355,7 @@ export struct MobileWorkbench {
     Row() {
       ForEach(this.tabs(), (item: TabAction, index: number) => {
         Column() {
-          this.TabIcon(item.icon, this.currentTab === index)
+          this.TabIcon(item.icon, index)
 
           Text(item.title)
             .fontSize(11)
@@ -395,19 +395,19 @@ export struct MobileWorkbench {
   }
 
   @Builder
-  TabIcon(icon: string, active: boolean) {
+  TabIcon(icon: string, tabIndex: number) {
     Row() {
       ElementIcon({
         name: this.elementIconName(icon),
         iconSize: 20,
-        color: active ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT,
+        color: this.currentTab === tabIndex ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT,
       })
     }
     .width(36)
     .height(28)
     .justifyContent(FlexAlign.Center)
     .alignItems(VerticalAlign.Center)
-    .backgroundColor(active ? Constants.COLOR_PRIMARY_SOFT : Constants.COLOR_WHITE)
+    .backgroundColor(this.currentTab === tabIndex ? Constants.COLOR_PRIMARY_SOFT : Constants.COLOR_WHITE)
     .borderRadius(14)
   }
 
