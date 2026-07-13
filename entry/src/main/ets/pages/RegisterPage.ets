@@ -134,9 +134,10 @@ struct RegisterPage {
               .fontColor('#4A90D9')
               .fontWeight(FontWeight.Bold)
               .onClick(() => {
-                RouterUtil.toLogin();
+                RouterUtil.back();
               })
           }
+          .width('100%')
           .justifyContent(FlexAlign.Center)
           .margin({ top: 20, bottom: 24 })
         }
@@ -217,7 +218,7 @@ struct RegisterPage {
 
     if (res.code === 0) {
       promptAction.showToast({ message: '注册成功，请登录' });
-      RouterUtil.toLogin();
+      RouterUtil.back();
     } else {
       promptAction.showToast({ message: res.message || '注册失败' });
     }

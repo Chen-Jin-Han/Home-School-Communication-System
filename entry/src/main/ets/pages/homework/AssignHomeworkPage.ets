@@ -16,7 +16,7 @@ struct AssignHomeworkPage {
   @State subject: string = '';
   @State title: string = '';
   @State content: string = '';
-  @State dueDate: number = Date.now() + 86400000 * 2;
+  @State dueDate: number = Date.now();
   @State loading: boolean = false;
 
   build() {
