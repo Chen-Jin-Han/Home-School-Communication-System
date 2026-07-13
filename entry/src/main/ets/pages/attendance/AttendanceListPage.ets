@@ -46,11 +46,11 @@ struct AttendanceListPage {
 
       if (this.loading) {
         LoadingView()
-      } else if (this.records.length === 0) {
+      } else if ((this.records || []).length === 0) {
         EmptyView({ message: '暂无考勤记录' })
       } else {
         List() {
-          ForEach(this.records, (record: AttendanceRecord) => {
+          ForEach(this.records || [], (record: AttendanceRecord) => {
             ListItem() {
               Row() {
                 Column() {

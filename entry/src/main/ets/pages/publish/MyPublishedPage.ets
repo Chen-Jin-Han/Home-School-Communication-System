@@ -24,11 +24,11 @@ struct MyPublishedPage {
       AppNavBar({ title: '我的发布' })
       if (this.loading) {
         LoadingView()
-      } else if (this.notices.length === 0) {
+      } else if ((this.notices || []).length === 0) {
         EmptyView({ message: '暂无发布记录' })
       } else {
         List() {
-          ForEach(this.notices, (notice: Notice) => {
+          ForEach(this.notices || [], (notice: Notice) => {
             ListItem() {
               NoticeCard({ notice: notice, onTap: () => { RouterUtil.toNotificationDetail(notice.id); } })
             }

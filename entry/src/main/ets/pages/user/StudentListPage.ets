@@ -34,7 +34,7 @@ struct StudentListPage {
       return;
     }
     const res = await UserService.getClassStudents(this.classId);
-    this.students = res.code === 0 ? res.data.filter((item: User) => item.role === 'student') : [];
+    this.students = res.code === 0 ? (res.data || []).filter((item: User) => item.role === 'student') : [];
     this.loading = false;
   }
 
@@ -44,11 +44,11 @@ struct StudentListPage {
 
       if (this.loading) {
         LoadingView()
-      } else if (this.students.length === 0) {
+      } else if ((this.students || []).length === 0) {
         EmptyView({ message: '暂无学生' })
       } else {
         List() {
-          ForEach(this.students, (student: User) => {
+          ForEach(this.students || [], (student: User) => {
             ListItem() {
               this.StudentRow(student)
             }

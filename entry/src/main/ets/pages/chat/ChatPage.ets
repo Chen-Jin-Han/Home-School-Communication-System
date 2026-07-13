@@ -40,7 +40,7 @@ struct ChatPage {
         LoadingView()
       } else {
         List() {
-          ForEach(this.messages, (msg: Message) => {
+          ForEach(this.messages || [], (msg: Message) => {
             ListItem() {
               this.MessageBubble(msg)
             }
@@ -128,7 +128,7 @@ struct ChatPage {
       createdAt: Date.now(),
       status: 'sent',
     };
-    this.messages = [...this.messages, msg];
+    this.messages = [...(this.messages || []), msg];
     this.inputText = '';
     await ChatService.sendMessage(msg);
   }

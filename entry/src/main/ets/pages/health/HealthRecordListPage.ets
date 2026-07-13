@@ -29,11 +29,11 @@ struct HealthRecordListPage {
       AppNavBar({ title: '健康档案' })
       if (this.loading) {
         LoadingView()
-      } else if (this.records.length === 0) {
+      } else if ((this.records || []).length === 0) {
         EmptyView({ message: '暂无健康记录' })
       } else {
         List() {
-          ForEach(this.records, (record: HealthRecord) => {
+          ForEach(this.records || [], (record: HealthRecord) => {
             ListItem() {
               HealthCard({ record: record, onTap: () => { RouterUtil.toHealthDetail(record.id); } })
             }

@@ -24,11 +24,11 @@ struct ConversationListPage {
       AppNavBar({ title: '消息' })
       if (this.loading) {
         LoadingView()
-      } else if (this.conversations.length === 0) {
+      } else if ((this.conversations || []).length === 0) {
         EmptyView({ message: '暂无消息' })
       } else {
         List() {
-          ForEach(this.conversations, (conv: Conversation) => {
+          ForEach(this.conversations || [], (conv: Conversation) => {
             ListItem() {
               ConversationItem({ conversation: conv, onTap: () => { RouterUtil.toChat(conv.id, conv.name); } })
             }

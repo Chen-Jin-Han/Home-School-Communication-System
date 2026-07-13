@@ -143,6 +143,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 继续修复 DevEco 模拟器功能页闪退，补齐列表渲染层对 `null` 状态的兜底。
+- Changed: 根据新崩溃日志 `GradeListPage.ets:32 Cannot read property length of null`，将成绩、活动、通知、我的发布、作业、聊天、会话、联系人、学生名单、考勤、健康、评价等列表页的 `.length`、`ForEach`、`.filter` 统一改为安全数组表达式；即使后端成功返回但 `data` 为 `null`，页面也展示空状态或空列表，不再触发 TypeError 闪退。
+- Validation: 已执行 `git diff --check`；当前日志显示服务器 HTTP 访问成功，问题属于 ArkTS 运行时空数据防护，不是 `hvigor` 构建工具本身导致。当前环境仍无 `hvigor` 命令，需在 DevEco Studio 中 Clean/Rebuild 后重新安装验证。
+
+### 2026-07-13
+
 - Summary: 完善移动端页面返回导航，解决个人信息页和主页子栏目返回入口不明显的问题。
 - Changed: 将公共 `AppNavBar` 的左上角返回控件改为明确的 `< 返回` 触控区，并扩大到 44px 高度；所有使用公共导航栏的通知、作业、活动、成绩、考勤、健康、评价、聊天、组织架构、个人信息等二级页面统一获得清晰返回入口；主页工作台的消息、我的、班级、发布等子栏目顶部增加返回首页按钮。
 - Validation: 已执行 `git diff --check`，静态差异检查通过；当前环境无 `hvigor` 命令，需在 DevEco Studio 中重新构建并安装到模拟器验证实际触控体验。

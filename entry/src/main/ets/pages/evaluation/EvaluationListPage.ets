@@ -29,11 +29,11 @@ struct EvaluationListPage {
       AppNavBar({ title: '学生评价' })
       if (this.loading) {
         LoadingView()
-      } else if (this.evaluations.length === 0) {
+      } else if ((this.evaluations || []).length === 0) {
         EmptyView({ message: '暂无评价记录' })
       } else {
         List() {
-          ForEach(this.evaluations, (evaluation: Evaluation) => {
+          ForEach(this.evaluations || [], (evaluation: Evaluation) => {
             ListItem() {
               EvaluationCard({ evaluation: evaluation })
             }

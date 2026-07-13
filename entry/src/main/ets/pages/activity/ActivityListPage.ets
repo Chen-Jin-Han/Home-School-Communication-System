@@ -39,11 +39,11 @@ struct ActivityListPage {
 
       if (this.loading) {
         LoadingView()
-      } else if (this.activities.length === 0) {
+      } else if ((this.activities || []).length === 0) {
         EmptyView({ message: '暂无可显示的活动' })
       } else {
         List() {
-          ForEach(this.activities, (act: Activity) => {
+          ForEach(this.activities || [], (act: Activity) => {
             ListItem() {
               ActivityCard({ activity: act, onTap: () => { RouterUtil.toActivityDetail(act.id); } })
             }

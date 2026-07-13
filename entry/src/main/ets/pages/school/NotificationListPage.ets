@@ -33,11 +33,11 @@ struct NotificationListPage {
 
       if (this.loading) {
         LoadingView()
-      } else if (this.notices.length === 0) {
+      } else if ((this.notices || []).length === 0) {
         EmptyView({ message: '暂无通知' })
       } else {
         List() {
-          ForEach(this.notices, (notice: Notice) => {
+          ForEach(this.notices || [], (notice: Notice) => {
             ListItem() {
               NotificationItem({ notice: notice, onTap: () => { RouterUtil.toNotificationDetail(notice.id); } })
             }

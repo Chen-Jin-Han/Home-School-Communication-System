@@ -55,7 +55,7 @@ struct HomeworkListPage {
       } else {
         List() {
           ForEach(
-            this.homeworkList.filter(h => this.activeTab === 'all' || h.status === this.activeTab),
+            (this.homeworkList || []).filter(h => this.activeTab === 'all' || h.status === this.activeTab),
             (hw: Homework) => {
               ListItem() {
                 HomeworkCard({ homework: hw, onTap: () => { RouterUtil.toHomeworkDetail(hw.id); } })

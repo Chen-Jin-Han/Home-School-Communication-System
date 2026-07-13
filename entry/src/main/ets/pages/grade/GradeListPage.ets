@@ -29,11 +29,11 @@ struct GradeListPage {
       AppNavBar({ title: '学生成绩' })
       if (this.loading) {
         LoadingView()
-      } else if (this.reports.length === 0) {
+      } else if ((this.reports || []).length === 0) {
         EmptyView({ message: '暂无成绩记录' })
       } else {
         List() {
-          ForEach(this.reports, (report: GradeReport) => {
+          ForEach(this.reports || [], (report: GradeReport) => {
             ListItem() {
               GradeCard({ report: report, onTap: () => { RouterUtil.toGradeDetail(report.id); } })
             }

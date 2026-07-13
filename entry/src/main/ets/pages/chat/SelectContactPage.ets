@@ -26,7 +26,7 @@ struct SelectContactPage {
   async loadContacts(): Promise<void> {
     this.loading = true;
     const res = await UserService.getContacts();
-    this.contacts = res.code === 0 ? res.data : [];
+    this.contacts = res.code === 0 && res.data ? res.data : [];
     this.loading = false;
   }
 
@@ -103,9 +103,9 @@ struct SelectContactPage {
   private filteredContacts(): User[] {
     const keyword = this.searchKeyword.trim();
     if (!keyword) {
-      return this.contacts;
+      return this.contacts || [];
     }
-    return this.contacts.filter((item: User) =>
+    return (this.contacts || []).filter((item: User) =>
       item.name.includes(keyword) ||
       (item.phone || '').includes(keyword) ||
       (item.className || '').includes(keyword)
@@ -132,7 +132,7 @@ struct SelectContactPage {
     this.creating = true;
     const res = await ChatService.createPrivateConversation(contact.id);
     this.creating = false;
-    if (res.code === 0) {
+    if (res.code === 0 && res.data) {
       RouterUtil.toChat(res.data.id, res.data.name || contact.name);
     } else {
       promptAction.showToast({ message: res.message || '无法发起会话' });
