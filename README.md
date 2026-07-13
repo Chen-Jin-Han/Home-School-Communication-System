@@ -143,6 +143,14 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 复核后端数据库功能完备性，补齐作业评分 JSON 写入兼容，并完成数据库读写验收。
+- Changed: `/api/submissions/<id>/grade` 现在同时支持 JSON body 与 URL 参数，确保前端提交的 `score/comment` 能正确写入 `submission` 表；确认 MySQL Docker Compose 使用 `mysql_data` 持久化卷、后端等待 MySQL 健康检查、启动时自动建表和初始化数据。
+- Database Review: 当前数据库模型覆盖学校、班级、用户、通知、作业、作业提交、会话、参与人、消息、活动、考勤、成绩、健康档案和学生评价；关键字段配置了主键、唯一约束或查询索引，JSON 字段通过序列化统一返回给前端。
+- Validation: 已执行 `python -m compileall -f backend/app`、`docker compose config`，并使用 Flask testing 数据库完成初始化数据计数、登录、通知发布/详情、作业创建/提交/评分、个人资料更新、联系人列表、创建/复用会话、发送消息、评价创建、活动报名、学校信息、组织架构、班级学生、考勤、成绩和健康档案接口验收。
+- Push: 本次修改推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+
+### 2026-07-13
+
 - Summary: 进行完整功能复查，修复真实后端模式下的列表分页、联系人、会话、学生名单、学校组织架构和初始化数据问题。
 - Changed: 后端分页响应同时返回 `list` 与 `records`，兼容前端 `PageResult`；作业列表支持 `classId` 过滤，活动列表支持 `status` 过滤；新增 `/api/users/contacts` 和 `POST /api/conversations`，选择联系人可发起或复用私聊会话；重写初始化 seed 数据为可读中文，并补充会话、消息和活动样例；前端学生名单改为调用班级学生接口，联系人选择页改为真实联系人接口并接入聊天；学校信息与组织架构改为使用当前用户 `schoolId`，不再使用旧的 `s001`；`DateUtil` 兼容后端 ISO 时间字符串并修复中文时间文案。
 - Validation: 已执行 `git diff --check`、`python -m compileall -f backend/app`，并使用 Flask testing 模式验证登录、通知分页、作业班级过滤、活动状态过滤、消息分页、学校信息、组织架构、班级学生、联系人列表和创建/复用私聊会话均返回成功。

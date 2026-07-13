@@ -284,8 +284,10 @@ def homework_submit(homework_id: int):
 @login_required
 def submission_grade(submission_id: int):
     submission = get_or_404(Submission, submission_id, "提交记录不存在")
-    submission.score = request.args.get("score", type=int)
-    submission.teacher_comment = request.args.get("comment", "")
+    payload = body()
+    score = payload.get("score", request.args.get("score", type=int))
+    submission.score = int(score) if score is not None else None
+    submission.teacher_comment = payload.get("comment", request.args.get("comment", ""))
     submission.status = "graded"
     db.session.commit()
     return ok(submission.to_dict())
