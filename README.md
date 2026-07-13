@@ -143,6 +143,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 优化 App 主界面模块图标规范，去除蓝色单字作为图标的展示方式。
+- Changed: 将 `MobileWorkbench` 中的功能模块和底部导航从 `首/讯/我/通/作/绩` 等单字标记改为语义化图标类型，并通过统一的 `WorkbenchIcon` 与 `TabIcon` 组件渲染；主界面功能卡片、消息/我的列表入口、底部导航栏统一使用图标容器、选中态色彩和固定尺寸，提升企业级移动端视觉一致性。
+- Validation: 已执行静态搜索确认 `FeatureAction` / `TabAction` 不再使用 `mark` 字段；需在 DevEco Studio 中重新构建后查看模拟器实际视觉效果。
+
+### 2026-07-13
+
 - Summary: 修正 HarmonyOS 手机桌面显示名称。
 - Changed: 将 `entry/src/main/resources/base/element/string.json` 中的 `EntryAbility_label` 从默认 `label` 改为 `家校通`，使安装到模拟器或真机后的桌面 App 名称显示为“家校通”。
 - Validation: 已确认 `entry/src/main/module.json5` 的入口 Ability 仍引用 `$string:EntryAbility_label`，重新构建安装后桌面名称将使用新资源值。

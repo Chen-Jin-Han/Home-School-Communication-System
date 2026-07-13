@@ -6,13 +6,13 @@ import { RouterUtil } from '../../utils/RouterUtil';
 interface FeatureAction {
   title: string;
   desc: string;
-  mark: string;
+  icon: string;
   type: string;
 }
 
 interface TabAction {
   title: string;
-  mark: string;
+  icon: string;
 }
 
 @Component
@@ -156,15 +156,7 @@ export struct MobileWorkbench {
   @Builder
   FeatureCard(item: FeatureAction) {
     Row() {
-      Text(item.mark)
-        .fontSize(18)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(Constants.COLOR_PRIMARY)
-        .width(38)
-        .height(38)
-        .textAlign(TextAlign.Center)
-        .backgroundColor('#EFF6FF')
-        .borderRadius(10)
+      this.WorkbenchIcon(item.icon, false, 42)
 
       Column() {
         Text(item.title)
@@ -333,6 +325,8 @@ export struct MobileWorkbench {
   @Builder
   ListEntry(title: string, desc: string, type: string) {
     Row() {
+      this.WorkbenchIcon(this.iconForType(type), false, 42)
+
       Column() {
         Text(title)
           .fontSize(Constants.FONT_LG)
@@ -344,6 +338,7 @@ export struct MobileWorkbench {
           .margin({ top: 4 })
       }
       .alignItems(HorizontalAlign.Start)
+      .margin({ left: 12 })
       .layoutWeight(1)
 
       Text('>')
@@ -366,14 +361,12 @@ export struct MobileWorkbench {
     Row() {
       ForEach(this.tabs(), (item: TabAction, index: number) => {
         Column() {
-          Text(item.mark)
-            .fontSize(18)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.currentTab === index ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT)
+          this.TabIcon(item.icon, this.currentTab === index)
+
           Text(item.title)
             .fontSize(11)
             .fontColor(this.currentTab === index ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT)
-            .margin({ top: 2 })
+            .margin({ top: 3 })
         }
         .layoutWeight(1)
         .height('100%')
@@ -387,6 +380,41 @@ export struct MobileWorkbench {
     .height(Constants.TAB_BAR_HEIGHT)
     .backgroundColor(Constants.COLOR_WHITE)
     .border({ width: { top: 0.5 }, color: Constants.COLOR_BORDER })
+  }
+
+  @Builder
+  WorkbenchIcon(icon: string, active: boolean = false, size: number = 38) {
+    Row() {
+      Text(this.iconGlyph(icon))
+        .fontSize(20)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(active ? Constants.COLOR_WHITE : Constants.COLOR_PRIMARY)
+        .textAlign(TextAlign.Center)
+    }
+    .width(size)
+    .height(size)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(VerticalAlign.Center)
+    .backgroundColor(active ? Constants.COLOR_PRIMARY : Constants.COLOR_PRIMARY_SOFT)
+    .borderRadius(12)
+    .border({ width: 1, color: active ? Constants.COLOR_PRIMARY : '#D8E6FF' })
+  }
+
+  @Builder
+  TabIcon(icon: string, active: boolean) {
+    Row() {
+      Text(this.iconGlyph(icon))
+        .fontSize(20)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(active ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT)
+        .textAlign(TextAlign.Center)
+    }
+    .width(36)
+    .height(28)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(VerticalAlign.Center)
+    .backgroundColor(active ? Constants.COLOR_PRIMARY_SOFT : Constants.COLOR_WHITE)
+    .borderRadius(14)
   }
 
   private greetingTitle(): string {
@@ -428,58 +456,58 @@ export struct MobileWorkbench {
 
   private tabs(): TabAction[] {
     if (this.role === UserRole.PARENT) {
-      return [{ title: '首页', mark: '首' }, { title: '消息', mark: '讯' }, { title: '我的', mark: '我' }];
+      return [{ title: '首页', icon: 'home' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
     }
     if (this.role === UserRole.STUDENT) {
-      return [{ title: '首页', mark: '首' }, { title: '作业', mark: '作' }, { title: '消息', mark: '讯' }, { title: '我的', mark: '我' }];
+      return [{ title: '首页', icon: 'home' }, { title: '作业', icon: 'homework' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
     }
     if (this.role === UserRole.TEACHER) {
-      return [{ title: '首页', mark: '首' }, { title: '班级', mark: '班' }, { title: '消息', mark: '讯' }, { title: '我的', mark: '我' }];
+      return [{ title: '首页', icon: 'home' }, { title: '班级', icon: 'class' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
     }
-    return [{ title: '首页', mark: '首' }, { title: '发布', mark: '发' }, { title: '消息', mark: '讯' }, { title: '我的', mark: '我' }];
+    return [{ title: '首页', icon: 'home' }, { title: '发布', icon: 'publish' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
   }
 
   private primaryActions(): FeatureAction[] {
     if (this.role === UserRole.TEACHER) {
       return [
-        { title: '发布通知', desc: '班级通知公告', mark: '通', type: 'publish' },
-        { title: '布置作业', desc: '创建课后任务', mark: '作', type: 'assignHomework' },
-        { title: '学生名单', desc: '班级成员管理', mark: '名', type: 'students' },
-        { title: '学生评价', desc: '记录成长表现', mark: '评', type: 'evaluation' },
+        { title: '发布通知', desc: '班级通知公告', icon: 'publish', type: 'publish' },
+        { title: '布置作业', desc: '创建课后任务', icon: 'homework', type: 'assignHomework' },
+        { title: '学生名单', desc: '班级成员管理', icon: 'students', type: 'students' },
+        { title: '学生评价', desc: '记录成长表现', icon: 'evaluation', type: 'evaluation' },
       ];
     }
     if (this.role === UserRole.LEADER) {
       return [
-        { title: '发布通知', desc: '全校通知公告', mark: '通', type: 'publish' },
-        { title: '组织架构', desc: '查看校园结构', mark: '组', type: 'org' },
-        { title: '学生名单', desc: '学生信息总览', mark: '名', type: 'students' },
-        { title: '我的发布', desc: '发布记录管理', mark: '发', type: 'published' },
+        { title: '发布通知', desc: '全校通知公告', icon: 'publish', type: 'publish' },
+        { title: '组织架构', desc: '查看校园结构', icon: 'org', type: 'org' },
+        { title: '学生名单', desc: '学生信息总览', icon: 'students', type: 'students' },
+        { title: '我的发布', desc: '发布记录管理', icon: 'published', type: 'published' },
       ];
     }
     return [
-      { title: '通知公告', desc: '校园通知速览', mark: '通', type: 'notice' },
-      { title: '课后作业', desc: '查看学习任务', mark: '作', type: 'homework' },
-      { title: '成绩报告', desc: '掌握学习表现', mark: '绩', type: 'grade' },
-      { title: '考勤记录', desc: '到校离校状态', mark: '勤', type: 'attendance' },
+      { title: '通知公告', desc: '校园通知速览', icon: 'notice', type: 'notice' },
+      { title: '课后作业', desc: '查看学习任务', icon: 'homework', type: 'homework' },
+      { title: '成绩报告', desc: '掌握学习表现', icon: 'grade', type: 'grade' },
+      { title: '考勤记录', desc: '到校离校状态', icon: 'attendance', type: 'attendance' },
     ];
   }
 
   private secondaryActions(): FeatureAction[] {
     if (this.role === UserRole.TEACHER || this.role === UserRole.LEADER) {
       return [
-        { title: '作业列表', desc: '查看作业进度', mark: '作', type: 'homework' },
-        { title: '考勤管理', desc: '学生出勤记录', mark: '勤', type: 'attendance' },
-        { title: '成绩管理', desc: '成绩报告查询', mark: '绩', type: 'grade' },
-        { title: '校园活动', desc: '活动安排查看', mark: '活', type: 'activity' },
-        { title: '学校信息', desc: '校园基础资料', mark: '校', type: 'school' },
-        { title: '消息沟通', desc: '进入会话列表', mark: '讯', type: 'chat' },
+        { title: '作业列表', desc: '查看作业进度', icon: 'homework', type: 'homework' },
+        { title: '考勤管理', desc: '学生出勤记录', icon: 'attendance', type: 'attendance' },
+        { title: '成绩管理', desc: '成绩报告查询', icon: 'grade', type: 'grade' },
+        { title: '校园活动', desc: '活动安排查看', icon: 'activity', type: 'activity' },
+        { title: '学校信息', desc: '校园基础资料', icon: 'school', type: 'school' },
+        { title: '消息沟通', desc: '进入会话列表', icon: 'message', type: 'chat' },
       ];
     }
     return [
-      { title: '健康档案', desc: '体检健康记录', mark: '健', type: 'health' },
-      { title: '学生评价', desc: '成长表现反馈', mark: '评', type: 'evaluation' },
-      { title: '校园活动', desc: '报名与详情', mark: '活', type: 'activity' },
-      { title: '学校信息', desc: '学校介绍', mark: '校', type: 'school' },
+      { title: '健康档案', desc: '体检健康记录', icon: 'health', type: 'health' },
+      { title: '学生评价', desc: '成长表现反馈', icon: 'evaluation', type: 'evaluation' },
+      { title: '校园活动', desc: '报名与详情', icon: 'activity', type: 'activity' },
+      { title: '学校信息', desc: '学校介绍', icon: 'school', type: 'school' },
     ];
   }
 
@@ -499,26 +527,91 @@ export struct MobileWorkbench {
   private secondTabActions(): FeatureAction[] {
     if (this.role === UserRole.STUDENT) {
       return [
-        { title: '作业列表', desc: '查看全部作业', mark: '作', type: 'homework' },
-        { title: '成绩报告', desc: '查看考试成绩', mark: '绩', type: 'grade' },
+        { title: '作业列表', desc: '查看全部作业', icon: 'homework', type: 'homework' },
+        { title: '成绩报告', desc: '查看考试成绩', icon: 'grade', type: 'grade' },
       ];
     }
     if (this.role === UserRole.TEACHER) {
       return [
-        { title: '学生名单', desc: '班级成员', mark: '名', type: 'students' },
-        { title: '考勤管理', desc: '学生出勤', mark: '勤', type: 'attendance' },
-        { title: '成绩管理', desc: '成绩报告', mark: '绩', type: 'grade' },
-        { title: '写评价', desc: '选择学生评价', mark: '评', type: 'students' },
+        { title: '学生名单', desc: '班级成员', icon: 'students', type: 'students' },
+        { title: '考勤管理', desc: '学生出勤', icon: 'attendance', type: 'attendance' },
+        { title: '成绩管理', desc: '成绩报告', icon: 'grade', type: 'grade' },
+        { title: '写评价', desc: '选择学生评价', icon: 'evaluation', type: 'students' },
       ];
     }
     if (this.role === UserRole.LEADER) {
       return [
-        { title: '发布通知', desc: '创建通知公告', mark: '通', type: 'publish' },
-        { title: '我的发布', desc: '查看发布记录', mark: '发', type: 'published' },
-        { title: '组织架构', desc: '校园结构', mark: '组', type: 'org' },
+        { title: '发布通知', desc: '创建通知公告', icon: 'publish', type: 'publish' },
+        { title: '我的发布', desc: '查看发布记录', icon: 'published', type: 'published' },
+        { title: '组织架构', desc: '校园结构', icon: 'org', type: 'org' },
       ];
     }
-    return [{ title: '消息列表', desc: '进入会话', mark: '讯', type: 'chat' }];
+    return [{ title: '消息列表', desc: '进入会话', icon: 'message', type: 'chat' }];
+  }
+
+  private iconForType(type: string): string {
+    if (type === 'chat' || type === 'contact') {
+      return 'message';
+    }
+    if (type === 'assignHomework') {
+      return 'homework';
+    }
+    if (type === 'students') {
+      return 'students';
+    }
+    if (type === 'published') {
+      return 'published';
+    }
+    if (type === 'profile') {
+      return 'profile';
+    }
+    return type;
+  }
+
+  private iconGlyph(icon: string): string {
+    if (icon === 'home') {
+      return '⌂';
+    }
+    if (icon === 'message') {
+      return '✉';
+    }
+    if (icon === 'profile') {
+      return '◉';
+    }
+    if (icon === 'notice') {
+      return '!';
+    }
+    if (icon === 'publish') {
+      return '+';
+    }
+    if (icon === 'published') {
+      return '▤';
+    }
+    if (icon === 'homework') {
+      return '□';
+    }
+    if (icon === 'grade') {
+      return '↗';
+    }
+    if (icon === 'attendance') {
+      return '✓';
+    }
+    if (icon === 'health') {
+      return '♡';
+    }
+    if (icon === 'evaluation') {
+      return '★';
+    }
+    if (icon === 'activity') {
+      return '◇';
+    }
+    if (icon === 'school') {
+      return '⌂';
+    }
+    if (icon === 'org' || icon === 'class' || icon === 'students') {
+      return '▦';
+    }
+    return '•';
   }
 
   private go(type: string): void {
