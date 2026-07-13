@@ -232,6 +232,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 修复 DevEco/Hvigor ArkTS 编译报错，确认 `assembleHap` 构建通过。
+- Changed: 将 `ElementIcon` 的 `size` 属性重命名为 `iconSize`，避免与 ArkUI 组件内置 `size()` 属性冲突；图标字符改为 ASCII 安全字符，规避特殊符号在 Windows/DevEco 编译链中的编码风险；为添加联系人请求体补充显式接口类型；个人信息保存 payload 改为逐字段构造，移除 ArkTS 不允许的对象展开。
+- Validation: 已使用 DevEco Studio 自带 Node/Hvigor 执行 `assembleHap`，`CompileArkTS` 与 `PackageHap` 均通过，最终输出 `BUILD SUCCESSFUL`。
+
+### 2026-07-13
+
 - Summary: 全面复查功能页布局规范，并重构 App 图标体系为统一的 Element/Ant Design 风格语义图标层。
 - Changed: 重写 `ElementIcon` 为 ArkTS 原生统一图标组件，采用 `Home`、`Message`、`User`、`Bell`、`Document`、`Chart`、`Calendar`、`School`、`Team`、`ChevronRight` 等常见 TypeScript 组件库语义命名；替换工作台、底部导航、公共返回栏、搜索框、表单选择器、日期选择器、图片选择器、通知/学生列表、活动卡片、组织架构和健康详情中的 `sys.symbol`、emoji、文本箭头和单字符占位图标；统一活动、成绩、作业、通知、健康等详情页为灰底页面 + 白色内容卡片布局，和列表页、表单页保持一致。
 - Validation: 已执行 `git diff --check`，并确认 `entry/src/main/ets` 中不再存在 `sys.symbol`、emoji 图标和 `<` / `>` 文本箭头图标；当前命令行环境仍无 `hvigor`，最终 ArkTS 构建需在 DevEco Studio 中 Clean/Rebuild 验证。

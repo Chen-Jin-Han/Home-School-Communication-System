@@ -15,7 +15,7 @@ export struct FormDatePicker {
         .fontColor(this.timestamp > 0 ? Constants.COLOR_TEXT_PRIMARY : Constants.COLOR_TEXT_HINT)
         .layoutWeight(1)
 
-      ElementIcon({ name: 'Calendar', size: 18, color: Constants.COLOR_TEXT_HINT })
+      ElementIcon({ name: 'Calendar', iconSize: 18, color: Constants.COLOR_TEXT_HINT })
     }
     .width('100%')
     .height(44)

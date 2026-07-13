@@ -5,6 +5,10 @@ import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
 
+interface AddContactRequest {
+  identifier: string;
+}
+
 export class UserService extends BaseService {
   static async getProfile(userId: string): Promise<ApiResponse<User | undefined>> {
     if (USE_MOCK) {
@@ -62,6 +66,9 @@ export class UserService extends BaseService {
       }
       return BaseService.success(user);
     }
-    return HttpUtil.post<User>('/api/users/contacts', { identifier }, UserStore.getInstance().authToken);
+    const payload: AddContactRequest = {
+      identifier: identifier,
+    };
+    return HttpUtil.post<User>('/api/users/contacts', payload, UserStore.getInstance().authToken);
   }
 }

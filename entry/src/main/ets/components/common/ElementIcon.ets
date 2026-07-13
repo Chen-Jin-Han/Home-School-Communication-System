@@ -3,14 +3,14 @@ import { Constants } from '../../utils/Constants';
 @Component
 export struct ElementIcon {
   @Prop name: string = 'Grid';
-  @Prop size: number = 22;
+  @Prop iconSize: number = 22;
   @Prop color: string = Constants.COLOR_PRIMARY;
 
   build() {
     Text(this.glyph())
-      .width(this.size)
-      .height(this.size)
-      .fontSize(Math.max(12, this.size - 4))
+      .width(this.iconSize)
+      .height(this.iconSize)
+      .fontSize(Math.max(12, this.iconSize - 4))
       .fontWeight(FontWeight.Medium)
       .fontColor(this.color)
       .textAlign(TextAlign.Center)
@@ -19,71 +19,71 @@ export struct ElementIcon {
 
   private glyph(): string {
     if (this.name === 'Home' || this.name === 'House') {
-      return '⌂';
+      return 'H';
     }
     if (this.name === 'Message' || this.name === 'ChatDotRound') {
-      return '✉';
+      return 'M';
     }
     if (this.name === 'User' || this.name === 'UserFilled') {
-      return '◉';
+      return 'U';
     }
     if (this.name === 'Bell' || this.name === 'Notification') {
-      return '!';
+      return 'N';
     }
     if (this.name === 'Edit' || this.name === 'EditPen') {
-      return '✎';
+      return 'E';
     }
     if (this.name === 'Document' || this.name === 'Tickets') {
-      return '▤';
+      return 'D';
     }
     if (this.name === 'Chart' || this.name === 'TrendCharts') {
-      return '▥';
+      return 'C';
     }
     if (this.name === 'Check' || this.name === 'CircleCheck') {
-      return '✓';
+      return 'V';
     }
     if (this.name === 'Health' || this.name === 'FirstAidKit') {
       return '+';
     }
     if (this.name === 'Star' || this.name === 'StarFilled') {
-      return '☆';
+      return '*';
     }
     if (this.name === 'Calendar') {
-      return '□';
+      return 'T';
     }
     if (this.name === 'School' || this.name === 'OfficeBuilding') {
-      return '▦';
+      return 'S';
     }
     if (this.name === 'Team' || this.name === 'UserGroup') {
-      return '◎';
+      return 'G';
     }
     if (this.name === 'Archive' || this.name === 'Box') {
-      return '▣';
+      return 'B';
     }
     if (this.name === 'AddUser' || this.name === 'UserPlus') {
       return '+';
     }
     if (this.name === 'Search') {
-      return '⌕';
+      return '?';
     }
     if (this.name === 'Close') {
-      return '×';
+      return 'x';
     }
     if (this.name === 'ChevronRight') {
-      return '›';
+      return '>';
     }
     if (this.name === 'ChevronDown') {
-      return '⌄';
+      return 'v';
     }
     if (this.name === 'Back') {
-      return '‹';
+      return '<';
     }
     if (this.name === 'Location') {
-      return '⌖';
+      return 'P';
     }
     if (this.name === 'Image') {
-      return '▧';
+      return 'I';
     }
-    return '▦';
+    return 'A';
   }
 }

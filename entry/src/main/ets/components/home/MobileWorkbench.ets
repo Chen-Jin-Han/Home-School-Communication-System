@@ -287,7 +287,7 @@ export struct MobileWorkbench {
     Row() {
       if (showBack) {
         Row() {
-          ElementIcon({ name: 'Back', size: 18, color: Constants.COLOR_TEXT_PRIMARY })
+          ElementIcon({ name: 'Back', iconSize: 18, color: Constants.COLOR_TEXT_PRIMARY })
 
           Text('返回')
             .fontSize(Constants.FONT_MD)
@@ -337,7 +337,7 @@ export struct MobileWorkbench {
       .margin({ left: 12 })
       .layoutWeight(1)
 
-      ElementIcon({ name: 'ChevronRight', size: 18, color: Constants.COLOR_TEXT_HINT })
+      ElementIcon({ name: 'ChevronRight', iconSize: 18, color: Constants.COLOR_TEXT_HINT })
     }
     .width('100%')
     .padding(16)
@@ -381,7 +381,7 @@ export struct MobileWorkbench {
     Row() {
       ElementIcon({
         name: this.elementIconName(icon),
-        size: 21,
+        iconSize: 21,
         color: active ? Constants.COLOR_WHITE : Constants.COLOR_PRIMARY,
       })
     }
@@ -399,7 +399,7 @@ export struct MobileWorkbench {
     Row() {
       ElementIcon({
         name: this.elementIconName(icon),
-        size: 20,
+        iconSize: 20,
         color: active ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT,
       })
     }

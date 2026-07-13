@@ -12,7 +12,7 @@ export struct AppNavBar {
     Row() {
       if (this.showBack) {
         Row() {
-          ElementIcon({ name: 'Back', size: 18, color: Constants.COLOR_TEXT_PRIMARY })
+          ElementIcon({ name: 'Back', iconSize: 18, color: Constants.COLOR_TEXT_PRIMARY })
 
           Text('返回')
             .fontSize(Constants.FONT_MD)

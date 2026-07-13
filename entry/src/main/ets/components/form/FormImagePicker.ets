@@ -18,7 +18,7 @@ export struct FormImagePicker {
             .borderRadius(6)
             .objectFit(ImageFit.Cover)
 
-          ElementIcon({ name: 'Close', size: 20, color: Constants.COLOR_DANGER })
+          ElementIcon({ name: 'Close', iconSize: 20, color: Constants.COLOR_DANGER })
             .position({ x: 66, y: -6 })
             .onClick(() => {
               if (this.onRemove) {
@@ -31,7 +31,7 @@ export struct FormImagePicker {
 
       if (this.images.length < this.maxCount) {
         Column() {
-          ElementIcon({ name: 'Image', size: 28, color: Constants.COLOR_TEXT_HINT })
+          ElementIcon({ name: 'Image', iconSize: 28, color: Constants.COLOR_TEXT_HINT })
           Text('添加图片')
             .fontSize(Constants.FONT_SM)
             .fontColor(Constants.COLOR_TEXT_HINT)

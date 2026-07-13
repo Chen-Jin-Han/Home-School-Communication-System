@@ -34,7 +34,7 @@ export struct ActivityCard {
         .width('100%')
 
       Row() {
-        ElementIcon({ name: 'Location', size: 14, color: Constants.COLOR_TEXT_HINT })
+        ElementIcon({ name: 'Location', iconSize: 14, color: Constants.COLOR_TEXT_HINT })
         Text(this.activity.location)
           .fontSize(Constants.FONT_SM)
           .fontColor(Constants.COLOR_TEXT_HINT)
@@ -43,7 +43,7 @@ export struct ActivityCard {
       .margin({ top: Constants.SPACE_XS })
 
       Row() {
-        ElementIcon({ name: 'Calendar', size: 14, color: Constants.COLOR_TEXT_HINT })
+        ElementIcon({ name: 'Calendar', iconSize: 14, color: Constants.COLOR_TEXT_HINT })
         Text(`${DateUtil.formatDate(this.activity.startTime)} - ${DateUtil.formatDate(this.activity.endTime)}`)
           .fontSize(Constants.FONT_SM)
           .fontColor(Constants.COLOR_TEXT_HINT)

@@ -20,7 +20,7 @@ export struct FormSelector {
         .fontColor(this.selectedValue ? Constants.COLOR_TEXT_PRIMARY : Constants.COLOR_TEXT_HINT)
         .layoutWeight(1)
 
-      ElementIcon({ name: 'ChevronDown', size: 16, color: Constants.COLOR_TEXT_HINT })
+      ElementIcon({ name: 'ChevronDown', iconSize: 16, color: Constants.COLOR_TEXT_HINT })
     }
     .width('100%')
     .height(46)

@@ -72,7 +72,7 @@ struct HealthDetailPage {
               Text('疫苗接种').fontSize(Constants.FONT_LG).fontWeight(FontWeight.Bold).width('100%').margin({ top: Constants.SPACE_XL, bottom: Constants.SPACE_SM })
               ForEach(this.record.vaccinations || [], (v: Vaccination) => {
                 Row() {
-                  ElementIcon({ name: 'Health', size: 16, color: Constants.COLOR_SUCCESS })
+                  ElementIcon({ name: 'Health', iconSize: 16, color: Constants.COLOR_SUCCESS })
                   Column() {
                     Text(v.name || '疫苗记录').fontSize(Constants.FONT_MD).fontColor(Constants.COLOR_TEXT_PRIMARY)
                     Text(`${v.date ? DateUtil.formatDate(v.date) : '--'} · ${v.location || '未记录地点'}`).fontSize(Constants.FONT_SM).fontColor(Constants.COLOR_TEXT_HINT).margin({ top: 2 })

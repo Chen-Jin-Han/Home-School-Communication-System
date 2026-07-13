@@ -50,7 +50,7 @@ export struct NotificationItem {
       }
       .layoutWeight(1)
 
-      ElementIcon({ name: 'ChevronRight', size: 16, color: Constants.COLOR_TEXT_HINT })
+      ElementIcon({ name: 'ChevronRight', iconSize: 16, color: Constants.COLOR_TEXT_HINT })
         .margin({ left: Constants.SPACE_SM })
     }
     .width('100%')

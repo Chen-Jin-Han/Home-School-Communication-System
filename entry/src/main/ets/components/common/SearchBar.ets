@@ -9,7 +9,7 @@ export struct SearchBar {
 
   build() {
     Row() {
-      ElementIcon({ name: 'Search', size: 18, color: Constants.COLOR_TEXT_HINT })
+      ElementIcon({ name: 'Search', iconSize: 18, color: Constants.COLOR_TEXT_HINT })
         .margin({ left: Constants.SPACE_MD, right: Constants.SPACE_SM })
 
       TextInput({ placeholder: this.placeholder, text: this.value })
@@ -30,7 +30,7 @@ export struct SearchBar {
         })
 
       if (this.value) {
-        ElementIcon({ name: 'Close', size: 18, color: Constants.COLOR_TEXT_HINT })
+        ElementIcon({ name: 'Close', iconSize: 18, color: Constants.COLOR_TEXT_HINT })
           .margin({ right: Constants.SPACE_MD })
           .onClick(() => {
             this.value = '';

@@ -30,7 +30,7 @@ struct RegisterPage {
   build() {
     Column() {
       Row() {
-        ElementIcon({ name: 'Back', size: 24, color: '#174A7C' })
+        ElementIcon({ name: 'Back', iconSize: 24, color: '#174A7C' })
           .width(44)
           .height(44)
           .onClick(() => {

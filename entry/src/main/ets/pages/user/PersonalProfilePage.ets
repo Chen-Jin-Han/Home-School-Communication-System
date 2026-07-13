@@ -165,7 +165,7 @@ struct PersonalProfilePage {
   @Builder
   SectionTitle(title: string, icon: string) {
     Row() {
-      ElementIcon({ name: icon, size: 18, color: Constants.COLOR_PRIMARY })
+      ElementIcon({ name: icon, iconSize: 18, color: Constants.COLOR_PRIMARY })
       Text(title)
         .fontSize(Constants.FONT_LG)
         .fontWeight(FontWeight.Bold)
@@ -289,10 +289,19 @@ struct PersonalProfilePage {
     }
 
     const payload: User = {
-      ...current,
+      id: current.id,
       name: name,
+      avatar: current.avatar,
+      role: current.role,
       phone: phone,
       email: email || undefined,
+      schoolId: current.schoolId,
+      schoolName: current.schoolName,
+      classId: current.classId,
+      className: current.className,
+      grade: current.grade,
+      childIds: current.childIds,
+      childNames: current.childNames,
       subject: this.formSubject.trim() || undefined,
       position: this.formPosition.trim() || undefined,
     };

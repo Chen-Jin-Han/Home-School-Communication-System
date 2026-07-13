@@ -101,7 +101,7 @@ struct OrgStructurePage {
   @Builder
   NodeIcon(name: string, color: string) {
     Row() {
-      ElementIcon({ name: name, size: 18, color: color })
+      ElementIcon({ name: name, iconSize: 18, color: color })
     }
     .width(34)
     .height(34)
