@@ -143,6 +143,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 完善移动端页面返回导航，解决个人信息页和主页子栏目返回入口不明显的问题。
+- Changed: 将公共 `AppNavBar` 的左上角返回控件改为明确的 `< 返回` 触控区，并扩大到 44px 高度；所有使用公共导航栏的通知、作业、活动、成绩、考勤、健康、评价、聊天、组织架构、个人信息等二级页面统一获得清晰返回入口；主页工作台的消息、我的、班级、发布等子栏目顶部增加返回首页按钮。
+- Validation: 已执行 `git diff --check`，静态差异检查通过；当前环境无 `hvigor` 命令，需在 DevEco Studio 中重新构建并安装到模拟器验证实际触控体验。
+
+### 2026-07-13
+
 - Summary: 修复 DevEco 模拟器中进入功能页闪退的问题。
 - Changed: 根据崩溃日志 `ActivityListPage.ets:42 Cannot read property length of undefined`，为活动、通知、我的发布、作业、消息、考勤、成绩、健康、评价、组织架构等页面增加接口返回兜底；当后端不可达或 `data/list` 为空时统一使用空数组或空状态展示，不再对 `undefined` 调用 `.length`、`.find`、`ForEach`；同时为成绩科目、评价标签、健康疫苗等数组字段增加兜底。
 - Validation: 已执行 `git diff --check`；当前环境无 `hvigor` 命令，DevEco 模拟器需重新安装运行验证。

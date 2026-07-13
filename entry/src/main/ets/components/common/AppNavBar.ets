@@ -11,20 +11,28 @@ export struct AppNavBar {
     Row() {
       if (this.showBack) {
         Row() {
-          Image($r('sys.symbol.chevron_left'))
-            .width(22)
-            .height(22)
-            .fillColor(Constants.COLOR_TEXT_PRIMARY)
+          Text('<')
+            .fontSize(24)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(Constants.COLOR_TEXT_PRIMARY)
+            .width(18)
+            .textAlign(TextAlign.Center)
+
+          Text('返回')
+            .fontSize(Constants.FONT_MD)
+            .fontColor(Constants.COLOR_TEXT_PRIMARY)
+            .margin({ left: 2 })
         }
-        .width(40)
-        .height(40)
-        .justifyContent(FlexAlign.Center)
-        .borderRadius(20)
+        .width(72)
+        .height(44)
+        .justifyContent(FlexAlign.Start)
+        .alignItems(VerticalAlign.Center)
+        .borderRadius(22)
         .onClick(() => {
           router.back();
         })
       } else {
-        Blank().width(40)
+        Blank().width(72)
       }
 
       Text(this.title)
@@ -41,8 +49,8 @@ export struct AppNavBar {
           this.rightContent();
         }
       }
-      .width(40)
-      .height(40)
+      .width(72)
+      .height(44)
       .justifyContent(FlexAlign.Center)
     }
     .width('100%')

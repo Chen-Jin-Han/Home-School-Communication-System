@@ -196,7 +196,7 @@ export struct MobileWorkbench {
   @Builder
   SecondTab() {
     Column() {
-      this.SimpleTopBar(this.secondTabTitle())
+      this.SimpleTopBar(this.secondTabTitle(), true)
       Scroll() {
         Column() {
           this.FeatureGrid(this.secondTabActions())
@@ -213,7 +213,7 @@ export struct MobileWorkbench {
   @Builder
   MessageTab() {
     Column() {
-      this.SimpleTopBar('消息')
+      this.SimpleTopBar('消息', true)
       Column() {
         this.ListEntry('班级沟通', '家长、老师和学生的会话列表', 'chat')
         this.ListEntry('选择联系人', '发起新的家校沟通', 'contact')
@@ -228,7 +228,7 @@ export struct MobileWorkbench {
   @Builder
   ProfileTab() {
     Column() {
-      this.SimpleTopBar('我的')
+      this.SimpleTopBar('我的', true)
       Scroll() {
         Column() {
           Row() {
@@ -290,12 +290,38 @@ export struct MobileWorkbench {
   }
 
   @Builder
-  SimpleTopBar(title: string) {
+  SimpleTopBar(title: string, showBack: boolean = false) {
     Row() {
+      if (showBack) {
+        Row() {
+          Text('<')
+            .fontSize(24)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(Constants.COLOR_TEXT_PRIMARY)
+            .width(18)
+            .textAlign(TextAlign.Center)
+
+          Text('返回')
+            .fontSize(Constants.FONT_MD)
+            .fontColor(Constants.COLOR_TEXT_PRIMARY)
+            .margin({ left: 2 })
+        }
+        .width(72)
+        .height(44)
+        .justifyContent(FlexAlign.Start)
+        .alignItems(VerticalAlign.Center)
+        .borderRadius(22)
+        .onClick(() => {
+          this.currentTab = 0;
+        })
+      }
+
       Text(title)
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .fontColor(Constants.COLOR_TEXT_PRIMARY)
+        .layoutWeight(1)
+
       Blank()
     }
     .width('100%')
