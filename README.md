@@ -232,6 +232,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 将图标系统从 ASCII 字符升级为 HarmonyOS SymbolGlyph 原生矢量图标。
+- Changed: 重写 `ElementIcon` 组件，移除 `Text + glyph()` 的 ASCII 单字母渲染方式，改为 `SymbolGlyph($r('sys.symbol.xxx'))` 系统矢量图标组件；22 个语义图标名全部映射到 HarmonyOS 原生 Symbol 资源（`house_fill`、`message_fill`、`person_fill`、`bell_fill`、`square_and_pencil`、`doc_plaintext_fill_1`、`histogram`、`checkmark_circle_fill`、`heart_fill`、`star_fill`、`calendar`、`building_fill`、`person_2_fill`、`archivebox_fill`、`person_badge_plus`、`magnifyingglass`、`xmark`、`chevron_right`、`chevron_down`、`chevron_left`、`pin_fill`、`ohos_photo`）；使用 `SymbolRenderingStrategy.SINGLE` 单色渲染，保持蓝白简洁风格；API（`name`/`iconSize`/`color`）完全不变，29 处调用方零修改。
+- Validation: DevEco Studio `assembleHap` 已通过（仅 1 WARN，无 ERROR）；`git diff --check` 通过。
+
+### 2026-07-13
+
 - Summary: 修复 DevEco/Hvigor ArkTS 编译报错，确认 `assembleHap` 构建通过。
 - Changed: 将 `ElementIcon` 的 `size` 属性重命名为 `iconSize`，避免与 ArkUI 组件内置 `size()` 属性冲突；图标字符改为 ASCII 安全字符，规避特殊符号在 Windows/DevEco 编译链中的编码风险；为添加联系人请求体补充显式接口类型；个人信息保存 payload 改为逐字段构造，移除 ArkTS 不允许的对象展开。
 - Validation: 已使用 DevEco Studio 自带 Node/Hvigor 执行 `assembleHap`，`CompileArkTS` 与 `PackageHap` 均通过，最终输出 `BUILD SUCCESSFUL`。
