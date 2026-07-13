@@ -7,83 +7,80 @@ export struct ElementIcon {
   @Prop color: string = Constants.COLOR_PRIMARY;
 
   build() {
-    Text(this.glyph())
-      .width(this.iconSize)
-      .height(this.iconSize)
-      .fontSize(Math.max(12, this.iconSize - 4))
-      .fontWeight(FontWeight.Medium)
-      .fontColor(this.color)
-      .textAlign(TextAlign.Center)
-      .maxLines(1)
+    SymbolGlyph(this.resolveSymbol())
+      .fontSize(this.iconSize)
+      .fontColor([this.color])
+      .renderingStrategy(SymbolRenderingStrategy.SINGLE)
   }
 
-  private glyph(): string {
-    if (this.name === 'Home' || this.name === 'House') {
-      return 'H';
+  private resolveSymbol(): Resource {
+    const n = this.name;
+    if (n === 'Home' || n === 'House') {
+      return $r('sys.symbol.house_fill');
     }
-    if (this.name === 'Message' || this.name === 'ChatDotRound') {
-      return 'M';
+    if (n === 'Message' || n === 'ChatDotRound') {
+      return $r('sys.symbol.message_fill');
     }
-    if (this.name === 'User' || this.name === 'UserFilled') {
-      return 'U';
+    if (n === 'User' || n === 'UserFilled') {
+      return $r('sys.symbol.person_fill');
     }
-    if (this.name === 'Bell' || this.name === 'Notification') {
-      return 'N';
+    if (n === 'Bell' || n === 'Notification') {
+      return $r('sys.symbol.bell_fill');
     }
-    if (this.name === 'Edit' || this.name === 'EditPen') {
-      return 'E';
+    if (n === 'Edit' || n === 'EditPen') {
+      return $r('sys.symbol.square_and_pencil');
     }
-    if (this.name === 'Document' || this.name === 'Tickets') {
-      return 'D';
+    if (n === 'Document' || n === 'Tickets') {
+      return $r('sys.symbol.doc_plaintext_fill_1');
     }
-    if (this.name === 'Chart' || this.name === 'TrendCharts') {
-      return 'C';
+    if (n === 'Chart' || n === 'TrendCharts') {
+      return $r('sys.symbol.histogram');
     }
-    if (this.name === 'Check' || this.name === 'CircleCheck') {
-      return 'V';
+    if (n === 'Check' || n === 'CircleCheck') {
+      return $r('sys.symbol.checkmark_circle_fill');
     }
-    if (this.name === 'Health' || this.name === 'FirstAidKit') {
-      return '+';
+    if (n === 'Health' || n === 'FirstAidKit') {
+      return $r('sys.symbol.heart_fill');
     }
-    if (this.name === 'Star' || this.name === 'StarFilled') {
-      return '*';
+    if (n === 'Star' || n === 'StarFilled') {
+      return $r('sys.symbol.star_fill');
     }
-    if (this.name === 'Calendar') {
-      return 'T';
+    if (n === 'Calendar') {
+      return $r('sys.symbol.calendar');
     }
-    if (this.name === 'School' || this.name === 'OfficeBuilding') {
-      return 'S';
+    if (n === 'School' || n === 'OfficeBuilding') {
+      return $r('sys.symbol.building_fill');
     }
-    if (this.name === 'Team' || this.name === 'UserGroup') {
-      return 'G';
+    if (n === 'Team' || n === 'UserGroup') {
+      return $r('sys.symbol.person_2_fill');
     }
-    if (this.name === 'Archive' || this.name === 'Box') {
-      return 'B';
+    if (n === 'Archive' || n === 'Box') {
+      return $r('sys.symbol.archivebox_fill');
     }
-    if (this.name === 'AddUser' || this.name === 'UserPlus') {
-      return '+';
+    if (n === 'AddUser' || n === 'UserPlus') {
+      return $r('sys.symbol.person_badge_plus');
     }
-    if (this.name === 'Search') {
-      return '?';
+    if (n === 'Search') {
+      return $r('sys.symbol.magnifyingglass');
     }
-    if (this.name === 'Close') {
-      return 'x';
+    if (n === 'Close') {
+      return $r('sys.symbol.xmark');
     }
-    if (this.name === 'ChevronRight') {
-      return '>';
+    if (n === 'ChevronRight') {
+      return $r('sys.symbol.chevron_right');
     }
-    if (this.name === 'ChevronDown') {
-      return 'v';
+    if (n === 'ChevronDown') {
+      return $r('sys.symbol.chevron_down');
     }
-    if (this.name === 'Back') {
-      return '<';
+    if (n === 'Back') {
+      return $r('sys.symbol.chevron_left');
     }
-    if (this.name === 'Location') {
-      return 'P';
+    if (n === 'Location') {
+      return $r('sys.symbol.pin_fill');
     }
-    if (this.name === 'Image') {
-      return 'I';
+    if (n === 'Image') {
+      return $r('sys.symbol.ohos_photo');
     }
-    return 'A';
+    return $r('sys.symbol.square_grid_2x2');
   }
 }
