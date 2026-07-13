@@ -143,6 +143,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 修正 HarmonyOS 手机桌面显示名称。
+- Changed: 将 `entry/src/main/resources/base/element/string.json` 中的 `EntryAbility_label` 从默认 `label` 改为 `家校通`，使安装到模拟器或真机后的桌面 App 名称显示为“家校通”。
+- Validation: 已确认 `entry/src/main/module.json5` 的入口 Ability 仍引用 `$string:EntryAbility_label`，重新构建安装后桌面名称将使用新资源值。
+
+### 2026-07-13
+
 - Summary: 继续修复 DevEco 模拟器功能页闪退，补齐列表渲染层对 `null` 状态的兜底。
 - Changed: 根据新崩溃日志 `GradeListPage.ets:32 Cannot read property length of null`，将成绩、活动、通知、我的发布、作业、聊天、会话、联系人、学生名单、考勤、健康、评价等列表页的 `.length`、`ForEach`、`.filter` 统一改为安全数组表达式；即使后端成功返回但 `data` 为 `null`，页面也展示空状态或空列表，不再触发 TypeError 闪退。
 - Validation: 已执行 `git diff --check`；当前日志显示服务器 HTTP 访问成功，问题属于 ArkTS 运行时空数据防护，不是 `hvigor` 构建工具本身导致。当前环境仍无 `hvigor` 命令，需在 DevEco Studio 中 Clean/Rebuild 后重新安装验证。
