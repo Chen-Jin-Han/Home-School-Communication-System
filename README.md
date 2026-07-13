@@ -232,6 +232,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 在 `feature` 分支优化主界面图标体系，重构个人信息页并补充功能测试用例。
+- Changed: 新增 Element 风格语义图标组件 `ElementIcon`，主工作台模块和底部导航改为统一系统符号图标；个人信息页重构为资料概览、可编辑表单、组织信息和保存操作区，支持修改姓名、手机号、邮箱、任教学科、职务并调用 `/api/users/profile` 同步数据库；`UserStore` 新增当前用户资料同步方法；新增 `docs/TEST_CASES.md`，覆盖移动端冒烟、个人信息、主要功能页和后端接口测试用例。
+- Validation: 已执行静态差异检查；当前命令行环境无 `hvigor`，需要在 DevEco Studio 中 Clean/Rebuild 后验证 ArkTS 构建、图标显示和个人资料保存流程。
+
+### 2026-07-13
+
 - Summary: 优化 App 主界面模块图标规范，去除蓝色单字作为图标的展示方式。
 - Changed: 将 `MobileWorkbench` 中的功能模块和底部导航从 `首/讯/我/通/作/绩` 等单字标记改为语义化图标类型，并通过统一的 `WorkbenchIcon` 与 `TabIcon` 组件渲染；主界面功能卡片、消息/我的列表入口、底部导航栏统一使用图标容器、选中态色彩和固定尺寸，提升企业级移动端视觉一致性。
 - Validation: 已执行静态搜索确认 `FeatureAction` / `TabAction` 不再使用 `mark` 字段；需在 DevEco Studio 中重新构建后查看模拟器实际视觉效果。
