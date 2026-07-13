@@ -21,7 +21,7 @@ struct ActivityListPage {
   async loadData(): Promise<void> {
     this.loading = true;
     const res = await ActivityService.getList(this.statusFilter);
-    this.activities = res.data.list;
+    this.activities = res.code === 0 && res.data ? (res.data.list || []) : [];
     this.loading = false;
   }
 

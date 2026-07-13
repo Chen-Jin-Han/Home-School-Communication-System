@@ -19,7 +19,7 @@ struct EvaluationListPage {
     const studentId = this.userStore.getStudentId() || this.userStore.currentUser?.id;
     if (studentId) {
       const res = await EvaluationService.getList(studentId);
-      this.evaluations = res.data;
+      this.evaluations = res.code === 0 && res.data ? res.data : [];
     }
     this.loading = false;
   }

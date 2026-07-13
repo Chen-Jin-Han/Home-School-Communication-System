@@ -24,7 +24,7 @@ struct AttendanceDetailPage {
     this.date = params.date;
     this.studentId = params.studentId;
     const res = await AttendanceService.getRecords(this.studentId);
-    const records = res.data;
+    const records = res.code === 0 && res.data ? res.data : [];
     this.record = records.find(r => r.date === this.date) || null;
     this.loading = false;
   }

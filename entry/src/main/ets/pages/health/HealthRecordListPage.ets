@@ -19,7 +19,7 @@ struct HealthRecordListPage {
     const studentId = this.userStore.getStudentId() || this.userStore.currentUser?.id;
     if (studentId) {
       const res = await HealthService.getRecords(studentId);
-      this.records = res.data;
+      this.records = res.code === 0 && res.data ? res.data : [];
     }
     this.loading = false;
   }

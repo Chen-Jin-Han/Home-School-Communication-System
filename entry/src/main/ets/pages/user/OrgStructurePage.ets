@@ -16,7 +16,7 @@ struct OrgStructurePage {
 
   async aboutToAppear(): Promise<void> {
     const res = await SchoolService.getOrgTree(this.userStore.currentUser?.schoolId || '1');
-    this.orgTree = res.data;
+    this.orgTree = res.code === 0 && res.data ? res.data : null;
     if (this.orgTree?.children && this.orgTree.children.length > 0) {
       this.expandedGrades = new Set([String(this.orgTree.children[0].id)]);
     }

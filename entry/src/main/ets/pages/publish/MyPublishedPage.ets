@@ -15,7 +15,7 @@ struct MyPublishedPage {
 
   async aboutToAppear(): Promise<void> {
     const res = await NoticeService.getList({ page: 1, pageSize: 50 });
-    this.notices = res.data.list;
+    this.notices = res.code === 0 && res.data ? (res.data.list || []) : [];
     this.loading = false;
   }
 

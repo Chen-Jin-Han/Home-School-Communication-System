@@ -28,7 +28,7 @@ struct ChatPage {
     this.conversationId = params.conversationId;
     this.conversationName = params.name;
     const res = await ChatService.getMessages(this.conversationId, 1);
-    this.messages = res.data.list;
+    this.messages = res.code === 0 && res.data ? (res.data.list || []) : [];
     this.loading = false;
   }
 

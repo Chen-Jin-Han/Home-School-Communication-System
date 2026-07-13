@@ -38,9 +38,9 @@ export struct EvaluationCard {
         .margin({ top: Constants.SPACE_SM })
         .width('100%')
 
-      if (this.evaluation.tags.length > 0) {
+      if ((this.evaluation.tags || []).length > 0) {
         Row() {
-          ForEach(this.evaluation.tags, (tag: string) => {
+          ForEach(this.evaluation.tags || [], (tag: string) => {
             Text(tag)
               .fontSize(Constants.FONT_SM)
               .fontColor(Constants.COLOR_PRIMARY)

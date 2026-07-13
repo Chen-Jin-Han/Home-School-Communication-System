@@ -15,7 +15,7 @@ struct ConversationListPage {
 
   async aboutToAppear(): Promise<void> {
     const res = await ChatService.getConversations();
-    this.conversations = res.data;
+    this.conversations = res.code === 0 && res.data ? res.data : [];
     this.loading = false;
   }
 

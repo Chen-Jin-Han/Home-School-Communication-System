@@ -24,7 +24,7 @@ struct HomeworkListPage {
   async loadData(): Promise<void> {
     this.loading = true;
     const res = await HomeworkService.getList(this.userStore.currentUser?.classId);
-    this.homeworkList = res.data.list;
+    this.homeworkList = res.code === 0 && res.data ? (res.data.list || []) : [];
     this.loading = false;
   }
 

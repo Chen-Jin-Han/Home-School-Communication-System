@@ -18,7 +18,7 @@ struct AttendanceListPage {
     const studentId = this.userStore.getStudentId();
     if (studentId) {
       const res = await AttendanceService.getRecords(studentId);
-      this.records = res.data;
+      this.records = res.code === 0 && res.data ? res.data : [];
     }
     this.loading = false;
   }

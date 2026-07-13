@@ -143,6 +143,13 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 修复 DevEco 模拟器中进入功能页闪退的问题。
+- Changed: 根据崩溃日志 `ActivityListPage.ets:42 Cannot read property length of undefined`，为活动、通知、我的发布、作业、消息、考勤、成绩、健康、评价、组织架构等页面增加接口返回兜底；当后端不可达或 `data/list` 为空时统一使用空数组或空状态展示，不再对 `undefined` 调用 `.length`、`.find`、`ForEach`；同时为成绩科目、评价标签、健康疫苗等数组字段增加兜底。
+- Validation: 已执行 `git diff --check`；当前环境无 `hvigor` 命令，DevEco 模拟器需重新安装运行验证。
+- Push: 本次修改推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+
+### 2026-07-13
+
 - Summary: 复核后端数据库功能完备性，补齐作业评分 JSON 写入兼容，并完成数据库读写验收。
 - Changed: `/api/submissions/<id>/grade` 现在同时支持 JSON body 与 URL 参数，确保前端提交的 `score/comment` 能正确写入 `submission` 表；确认 MySQL Docker Compose 使用 `mysql_data` 持久化卷、后端等待 MySQL 健康检查、启动时自动建表和初始化数据。
 - Database Review: 当前数据库模型覆盖学校、班级、用户、通知、作业、作业提交、会话、参与人、消息、活动、考勤、成绩、健康档案和学生评价；关键字段配置了主键、唯一约束或查询索引，JSON 字段通过序列化统一返回给前端。

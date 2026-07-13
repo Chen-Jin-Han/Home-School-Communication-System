@@ -19,7 +19,7 @@ struct GradeListPage {
     const studentId = this.userStore.getStudentId() || this.userStore.currentUser?.id;
     if (studentId) {
       const res = await GradeService.getReports(studentId);
-      this.reports = res.data;
+      this.reports = res.code === 0 && res.data ? res.data : [];
     }
     this.loading = false;
   }

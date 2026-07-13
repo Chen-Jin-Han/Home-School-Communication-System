@@ -69,7 +69,7 @@ struct GradeDetailPage {
             // Subject breakdown
             Text('各科成绩').fontSize(Constants.FONT_LG).fontWeight(FontWeight.Bold).width('100%').margin({ bottom: Constants.SPACE_MD })
 
-            ForEach(this.report.subjects, (sg: SubjectGrade) => {
+            ForEach(this.report.subjects || [], (sg: SubjectGrade) => {
               this.SubjectRow(sg)
             })
 

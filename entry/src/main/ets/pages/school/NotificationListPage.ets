@@ -22,7 +22,7 @@ struct NotificationListPage {
   async loadData(): Promise<void> {
     this.loading = true;
     const res = await NoticeService.getList({ page: 1, pageSize: 20, keyword: this.keyword });
-    this.notices = res.data.list;
+    this.notices = res.code === 0 && res.data ? (res.data.list || []) : [];
     this.loading = false;
   }
 

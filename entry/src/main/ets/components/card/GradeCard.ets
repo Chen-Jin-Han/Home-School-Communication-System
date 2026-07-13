@@ -38,7 +38,7 @@ export struct GradeCard {
         .margin({ top: Constants.SPACE_MD, bottom: Constants.SPACE_SM })
 
       Row() {
-        ForEach(this.report.subjects.slice(0, 4), (sg: SubjectGrade) => {
+        ForEach((this.report.subjects || []).slice(0, 4), (sg: SubjectGrade) => {
           Column() {
             Text(sg.subject)
               .fontSize(Constants.FONT_SM)
