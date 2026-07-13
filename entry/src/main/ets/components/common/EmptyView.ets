@@ -1,9 +1,8 @@
 import { Constants } from '../../utils/Constants';
-import { ElementIcon } from './ElementIcon';
 
 @Component
 export struct EmptyView {
-  @Prop icon: string = 'Empty';
+  @Prop icon: string = '空';
   @Prop message: string = '暂无数据';
   @Prop showAction: boolean = false;
   actionLabel: string = '刷新';
@@ -11,13 +10,13 @@ export struct EmptyView {
 
   build() {
     Column() {
-      Row() {
-        ElementIcon({ name: this.icon, iconSize: 28, color: Constants.COLOR_TEXT_HINT })
-      }
+      Text(this.icon)
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Constants.COLOR_TEXT_HINT)
         .width(56)
         .height(56)
-        .justifyContent(FlexAlign.Center)
-        .alignItems(VerticalAlign.Center)
+        .textAlign(TextAlign.Center)
         .backgroundColor(Constants.COLOR_DIVIDER)
         .borderRadius(18)
         .margin({ bottom: Constants.SPACE_LG })

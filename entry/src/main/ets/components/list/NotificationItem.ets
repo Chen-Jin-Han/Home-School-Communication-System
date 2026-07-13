@@ -17,7 +17,7 @@ export struct NotificationItem {
               .fontSize(10)
               .fontColor(Constants.COLOR_DANGER)
               .padding({ left: 4, right: 4, top: 1, bottom: 1 })
-              .backgroundColor(Constants.COLOR_TAG_DANGER_BG)
+              .backgroundColor('#FFF1F0')
               .borderRadius(3)
               .margin({ right: Constants.SPACE_SM })
           }
@@ -38,7 +38,7 @@ export struct NotificationItem {
             .fontSize(10)
             .fontColor(Constants.COLOR_PRIMARY)
             .padding({ left: 4, right: 4, top: 1, bottom: 1 })
-            .backgroundColor(Constants.COLOR_TAG_INFO_BG)
+            .backgroundColor('#E6F7FF')
             .borderRadius(3)
           Text(this.notice.publisherName)
             .fontSize(Constants.FONT_SM)
@@ -72,7 +72,6 @@ export struct NotificationItem {
       case 'notification': return '通知';
       case 'announcement': return '公告';
       case 'news': return '新闻';
-      default: return '';
     }
   }
 }

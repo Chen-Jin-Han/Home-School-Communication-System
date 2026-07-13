@@ -67,7 +67,6 @@ export struct ActivityCard {
       case 'upcoming': return '即将开始';
       case 'ongoing': return '进行中';
       case 'ended': return '已结束';
-      default: return '';
     }
   }
 
@@ -76,16 +75,14 @@ export struct ActivityCard {
       case 'upcoming': return Constants.COLOR_PRIMARY;
       case 'ongoing': return Constants.COLOR_SUCCESS;
       case 'ended': return Constants.COLOR_TEXT_HINT;
-      default: return Constants.COLOR_TEXT_HINT;
     }
   }
 
   getStatusBgColor(): string {
     switch (this.activity.status) {
-      case 'upcoming': return Constants.COLOR_TAG_INFO_BG;
-      case 'ongoing': return Constants.COLOR_TAG_SUCCESS_BG;
+      case 'upcoming': return '#E6F7FF';
+      case 'ongoing': return '#F6FFED';
       case 'ended': return Constants.COLOR_DIVIDER;
-      default: return Constants.COLOR_TAG_PRIMARY_BG;
     }
   }
 }

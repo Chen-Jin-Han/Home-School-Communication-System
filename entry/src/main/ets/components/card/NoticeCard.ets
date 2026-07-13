@@ -14,7 +14,7 @@ export struct NoticeCard {
           .fontSize(Constants.FONT_SM)
           .fontColor(this.notice.isTop ? Constants.COLOR_DANGER : Constants.COLOR_PRIMARY)
           .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-          .backgroundColor(this.notice.isTop ? Constants.COLOR_TAG_DANGER_BG : Constants.COLOR_TAG_INFO_BG)
+          .backgroundColor(this.notice.isTop ? '#FFF1F0' : '#E6F7FF')
           .borderRadius(4)
         Blank()
         Text(DateUtil.timeAgo(this.notice.createdAt))
@@ -68,7 +68,6 @@ export struct NoticeCard {
       case 'notification': return '通知';
       case 'announcement': return '公告';
       case 'news': return '新闻';
-      default: return '';
     }
   }
 }

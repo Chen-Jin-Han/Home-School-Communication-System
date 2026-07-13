@@ -43,7 +43,7 @@ export struct ConversationItem {
         }
         .width('100%')
 
-        if (this.conversation.lastMessage && this.conversation.lastMessage.content) {
+        if (this.conversation.lastMessage) {
           Text(this.conversation.lastMessage.content)
             .fontSize(Constants.FONT_MD)
             .fontColor(Constants.COLOR_TEXT_HINT)
