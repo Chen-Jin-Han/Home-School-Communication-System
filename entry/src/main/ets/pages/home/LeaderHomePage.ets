@@ -5,6 +5,10 @@ import { MobileWorkbench } from '../../components/home/MobileWorkbench';
 @Component
 struct LeaderHomePage {
   build() {
-    MobileWorkbench({ role: UserRole.LEADER })
+    Column() {
+      MobileWorkbench({ role: UserRole.LEADER })
+    }
+    .width('100%')
+    .height('100%')
   }
 }

@@ -24,7 +24,7 @@ struct SelectContactPage {
   build() {
     Column() {
       AppNavBar({ title: '选择联系人' })
-      SearchBar({ value: this.searchKeyword, placeholder: '搜索联系人...' })
+      SearchBar({ value: $searchKeyword, placeholder: '搜索联系人...' })
       Scroll() {
         Column() {
           ForEach(

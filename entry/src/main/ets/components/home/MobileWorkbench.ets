@@ -41,7 +41,7 @@ export struct MobileWorkbench {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F4F8FC')
+    .backgroundColor(Constants.COLOR_BG)
   }
 
   @Builder
@@ -49,7 +49,7 @@ export struct MobileWorkbench {
     Scroll() {
       Column() {
         this.Header()
-        this.TodayStrip()
+        this.KpiStrip()
         this.SectionTitle('常用功能')
         this.FeatureGrid(this.primaryActions())
         this.SectionTitle(this.role === UserRole.LEADER ? '校园管理' : '校园服务')
@@ -74,8 +74,9 @@ export struct MobileWorkbench {
             .fontColor(Constants.COLOR_WHITE)
           Text(this.greetingSubTitle())
             .fontSize(Constants.FONT_MD)
-            .fontColor('#EAF4FF')
+            .fontColor('#DCEBFF')
             .margin({ top: 6 })
+            .maxLines(1)
         }
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1)
@@ -83,17 +84,17 @@ export struct MobileWorkbench {
         Image($r('app.media.app_logo'))
           .width(56)
           .height(56)
-          .borderRadius(16)
+          .borderRadius(14)
       }
       .width('100%')
     }
     .width('100%')
-    .padding({ left: 20, right: 20, top: 28, bottom: 34 })
-    .backgroundColor('#4A90D9')
+    .padding({ left: 20, right: 20, top: 30, bottom: 34 })
+    .backgroundColor(Constants.COLOR_PRIMARY)
   }
 
   @Builder
-  TodayStrip() {
+  KpiStrip() {
     Row() {
       this.KpiItem('待办', this.role === UserRole.TEACHER ? '3' : '2')
       this.KpiItem('通知', '7')
@@ -102,8 +103,8 @@ export struct MobileWorkbench {
     .width('90%')
     .padding({ top: 16, bottom: 16 })
     .backgroundColor(Constants.COLOR_WHITE)
-    .borderRadius(18)
-    .shadow({ radius: 14, color: '#1F4A7C14', offsetY: 6 })
+    .borderRadius(Constants.CARD_RADIUS)
+    .shadow({ radius: 14, color: '#1E3A8A14', offsetY: 6 })
     .margin({ left: 20, right: 20, top: -22 })
   }
 
@@ -113,7 +114,7 @@ export struct MobileWorkbench {
       Text(value)
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#174A7C')
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
       Text(label)
         .fontSize(Constants.FONT_SM)
         .fontColor(Constants.COLOR_TEXT_HINT)
@@ -124,12 +125,15 @@ export struct MobileWorkbench {
 
   @Builder
   SectionTitle(title: string) {
-    Text(title)
-      .fontSize(Constants.FONT_LG)
-      .fontWeight(FontWeight.Bold)
-      .fontColor(Constants.COLOR_TEXT_PRIMARY)
-      .width('100%')
-      .padding({ left: 20, right: 20, top: 24, bottom: 12 })
+    Row() {
+      Text(title)
+        .fontSize(Constants.FONT_LG)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
+      Blank()
+    }
+    .width('100%')
+    .padding({ left: 20, right: 20, top: 24, bottom: 12 })
   }
 
   @Builder
@@ -145,7 +149,7 @@ export struct MobileWorkbench {
     .columnsGap(12)
     .rowsGap(12)
     .width('100%')
-    .height(items.length > 4 ? 252 : 164)
+    .height(items.length > 4 ? 260 : 170)
     .padding({ left: 20, right: 20 })
   }
 
@@ -153,14 +157,14 @@ export struct MobileWorkbench {
   FeatureCard(item: FeatureAction) {
     Row() {
       Text(item.mark)
-        .fontSize(20)
+        .fontSize(18)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#4A90D9')
+        .fontColor(Constants.COLOR_PRIMARY)
         .width(38)
         .height(38)
         .textAlign(TextAlign.Center)
-        .backgroundColor('#E7F2FD')
-        .borderRadius(12)
+        .backgroundColor('#EFF6FF')
+        .borderRadius(10)
 
       Column() {
         Text(item.title)
@@ -179,10 +183,11 @@ export struct MobileWorkbench {
       .layoutWeight(1)
     }
     .width('100%')
-    .height(76)
+    .height(78)
     .padding({ left: 12, right: 10 })
     .backgroundColor(Constants.COLOR_WHITE)
-    .borderRadius(14)
+    .borderRadius(Constants.CARD_RADIUS)
+    .border({ width: 1, color: Constants.COLOR_BORDER })
     .onClick(() => {
       this.go(item.type);
     })
@@ -234,8 +239,8 @@ export struct MobileWorkbench {
               .fontWeight(FontWeight.Bold)
               .fontColor(Constants.COLOR_WHITE)
               .textAlign(TextAlign.Center)
-              .backgroundColor('#4A90D9')
-              .borderRadius(18)
+              .backgroundColor(Constants.COLOR_PRIMARY)
+              .borderRadius(14)
 
             Column() {
               Text(this.userStore.currentUser?.name || '未登录')
@@ -254,7 +259,8 @@ export struct MobileWorkbench {
           .width('100%')
           .padding(18)
           .backgroundColor(Constants.COLOR_WHITE)
-          .borderRadius(18)
+          .borderRadius(Constants.CARD_RADIUS)
+          .border({ width: 1, color: Constants.COLOR_BORDER })
           .margin({ bottom: 14 })
 
           this.ListEntry('个人信息', '查看并维护基础资料', 'profile')
@@ -267,7 +273,8 @@ export struct MobileWorkbench {
             .fontSize(Constants.FONT_LG)
             .fontColor(Constants.COLOR_DANGER)
             .backgroundColor(Constants.COLOR_WHITE)
-            .borderRadius(14)
+            .borderRadius(Constants.CARD_RADIUS)
+            .border({ width: 1, color: Constants.COLOR_BORDER })
             .margin({ top: 18 })
             .onClick(async () => {
               await this.userStore.logout();
@@ -294,7 +301,7 @@ export struct MobileWorkbench {
     .width('100%')
     .height(56)
     .padding({ left: 20, right: 20 })
-    .backgroundColor('#F4F8FC')
+    .backgroundColor(Constants.COLOR_BG)
   }
 
   @Builder
@@ -313,14 +320,15 @@ export struct MobileWorkbench {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Text('›')
-        .fontSize(26)
+      Text('>')
+        .fontSize(22)
         .fontColor(Constants.COLOR_TEXT_HINT)
     }
     .width('100%')
     .padding(16)
     .backgroundColor(Constants.COLOR_WHITE)
-    .borderRadius(14)
+    .borderRadius(Constants.CARD_RADIUS)
+    .border({ width: 1, color: Constants.COLOR_BORDER })
     .margin({ bottom: 10 })
     .onClick(() => {
       this.go(type);
@@ -335,10 +343,10 @@ export struct MobileWorkbench {
           Text(item.mark)
             .fontSize(18)
             .fontWeight(FontWeight.Bold)
-            .fontColor(this.currentTab === index ? '#4A90D9' : Constants.COLOR_TEXT_HINT)
+            .fontColor(this.currentTab === index ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT)
           Text(item.title)
             .fontSize(11)
-            .fontColor(this.currentTab === index ? '#4A90D9' : Constants.COLOR_TEXT_HINT)
+            .fontColor(this.currentTab === index ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT)
             .margin({ top: 2 })
         }
         .layoutWeight(1)

@@ -6,7 +6,7 @@
   <strong>家校通 · 华迪 HuaDee</strong>
 </div>
 
-家校沟通系统，包含 HarmonyOS 客户端和 Flask 企业级后端。系统面向家长、学生、教师和学校领导，提供通知公告、作业、考勤、成绩、健康、评价、聊天和学校信息等功能。
+家校通是一套面向家长、学生、教师和学校领导的家校沟通系统，包含 HarmonyOS ArkTS 移动端和 Flask 企业级后端。系统提供通知公告、作业、考勤、成绩、健康档案、学生评价、即时沟通、校园活动、组织架构和学校信息等能力。
 
 ## 技术栈
 
@@ -16,7 +16,7 @@
 | 后端 | Flask 3 / SQLAlchemy / Gunicorn |
 | 数据库 | MySQL 8.x |
 | 鉴权 | JWT |
-| 运维 | Docker / Docker Compose |
+| 部署 | Docker / Docker Compose |
 
 ## 项目结构
 
@@ -36,12 +36,12 @@
 │   ├── requirements.txt
 │   └── wsgi.py
 ├── docs/assets/app_logo.png       # README 展示 Logo
-└── docker-compose.yml             # MySQL + Flask 后端一键启动
+└── docker-compose.yml             # MySQL + Flask 一键启动
 ```
 
-## 快速启动
+## 快速部署
 
-推荐使用 Docker Compose，本地和服务器部署配置一致：
+推荐使用 Docker Compose，本地和 Ubuntu 服务器部署方式一致：
 
 ```bash
 docker compose up -d --build
@@ -51,31 +51,21 @@ docker compose up -d --build
 
 | 地址 | 说明 |
 | --- | --- |
-| http://localhost:8080 | 后端健康入口 |
-| http://localhost:8080/doc.html | 后端接口说明入口 |
-| localhost:3306 | MySQL，账号 `root`，密码 `root`，库名 `hwadee_fsc` |
+| `http://localhost:8080` | 后端健康入口 |
+| `http://localhost:8080/api/notices` | 通知接口示例 |
+| `localhost:3306` | MySQL，默认库名 `hwadee_fsc` |
 
-查看日志：
+常用运维命令：
 
 ```bash
 docker compose logs -f backend
-```
-
-停止服务：
-
-```bash
 docker compose down
-```
-
-同时删除数据库卷：
-
-```bash
 docker compose down -v
 ```
 
 ## 后端配置
 
-后端通过环境变量配置，生产环境必须修改密钥。
+生产环境务必修改默认密钥和数据库密码。
 
 | 环境变量 | 说明 |
 | --- | --- |
@@ -94,22 +84,24 @@ set DATABASE_URL=mysql+pymysql://root:root@127.0.0.1:3306/hwadee_fsc?charset=utf
 python wsgi.py
 ```
 
-## HarmonyOS 客户端联调
+## DevEco 运行
 
 1. 使用 DevEco Studio 打开仓库根目录。
-2. 在 `entry/src/main/ets/services/MockConfig.ets` 中关闭 Mock：
+2. 确认 `entry/src/main/ets/services/MockConfig.ets` 为：
 
 ```ts
 export const USE_MOCK = false;
 ```
 
-3. 在 `entry/src/main/ets/services/HttpUtil.ets` 中配置后端地址：
+3. 确认 `entry/src/main/ets/services/HttpUtil.ets` 后端地址为：
 
 ```ts
-const BASE_URL = 'http://你的服务器IP:8080';
+const BASE_URL = 'http://8.218.156.55:8080';
 ```
 
-如果后端部署在公网服务器，DevEco 模拟器和真机都可以直接访问该公网地址。生产环境建议使用 HTTPS 域名。
+4. 在 DevEco 中选择 `entry` 模块，启动预览器、模拟器或真机调试。
+
+如果后端部署在公网服务器，DevEco 模拟器和真机可以直接访问公网 IP。生产环境建议使用 HTTPS 域名。
 
 ## 测试账号
 
@@ -137,7 +129,7 @@ const BASE_URL = 'http://你的服务器IP:8080';
 | `/api/evaluations` | GET | 学生评价 |
 | `/api/activities` | GET | 活动列表 |
 
-响应格式统一为：
+统一响应格式：
 
 ```json
 {
@@ -147,37 +139,30 @@ const BASE_URL = 'http://你的服务器IP:8080';
 }
 ```
 
-## 本次后端迁移说明
-
-- 后端已从 Spring Boot 迁移为 Flask。
-- 删除旧 Maven / Java 后端构建文件，避免两套后端并存。
-- 使用 SQLAlchemy ORM 管理 MySQL 数据模型。
-- 使用 JWT 做登录态，保留前端现有 `Authorization: Bearer <token>` 调用方式。
-- 保留原 `/api/...` 路由，尽量兼容现有 HarmonyOS 客户端。
-- Docker Compose 已切换为 Flask + MySQL 部署方式。
-
 ## 修改记录
 
 ### 2026-07-13
 
+- Summary: 重构 HarmonyOS ArkTS 前端为企业级移动端工作台规范，并复查主要功能入口、返回导航和表单状态逻辑。
+- Changed: 统一 `Constants` 设计令牌，重构 `AppNavBar`、搜索、加载、空状态、错误态、表单输入、文本域、日期、选择器和评分组件；重写 `MobileWorkbench`，让家长、学生、教师、领导首页共享统一工作台；修复通知发布、布置作业、提交作业、写评价、搜索列表等页面的 `@Link` 双向绑定；恢复乱码中文文案；保留公网后端地址 `http://8.218.156.55:8080`。
+- Function Review: 工作台入口覆盖通知、作业、成绩、考勤、健康、评价、活动、学校信息、组织架构、消息、发布通知、我的发布和个人信息；二级页面统一使用公共导航栏返回；后端补充会话详情、考勤详情、成绩详情、健康详情兼容接口。
+- Validation: 已执行 `git diff --check`；当前环境未提供完整 DevEco Studio 图形构建链，最终 ArkTS 真机/模拟器构建请在 DevEco Studio 中运行。
+- Push: 本次修改推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+
+### 2026-07-13
+
 - Summary: 修复 Ubuntu 服务器首次 Docker 部署时 Gunicorn 多 worker 并发初始化数据库导致的 MySQL DDL 冲突。
-- Changed: `backend/Dockerfile` 中 Gunicorn 启动参数增加 `--preload`，让 Flask 应用和 `AUTO_INIT_DB` 初始化在 master 进程完成后再 fork worker，避免多个 worker 同时执行 `db.create_all()`。
-- Validation: 在 Ubuntu 服务器 `8.218.156.55` 上复现并定位后端日志中的 MySQL `concurrent DDL statement`，随后重新构建部署验证。
-- Push: 本次修复将推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+- Changed: `backend/Dockerfile` 中 Gunicorn 启动参数增加 `--preload`，让 Flask 应用和 `AUTO_INIT_DB` 初始化在 master 进程完成后再 fork worker。
+- Push: 已推送到 `main` 分支。
 
 ### 2026-07-13
 
-- Summary: 前后端新增零成本邮箱登录方案，并重构 HarmonyOS ArkTS 前端为移动端 App 工作台布局。
-- Changed: 后端 `User` 模型新增 `email` 字段，`/api/auth/login` 支持手机号/邮箱统一账号登录，注册接口支持手机号或邮箱至少填写一个；启动初始化加入旧 MySQL 表补列逻辑。前端更新 `UserModel`、`AuthService`、`MockAuth`、登录页、注册页和启动页，并新增 `MobileWorkbench` 共享组件，家长/学生/教师/领导首页统一复用移动端工作台，保留通知、作业、成绩、考勤、健康、评价、活动、发布、组织架构、聊天和个人中心等入口。
-- Validation: 已执行 `git diff --check`、`python -m compileall backend/app`，并用 Flask testing 模式验证邮箱登录、手机号登录、仅邮箱注册和注册后邮箱登录成功；当前本机 PATH 未提供 `hvigor` / `ohpm`，前端完整 DevEco 构建需在 DevEco Studio 中执行。
-- Push: 本次修改将推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+- Summary: 新增零成本邮箱登录方案，并重构 HarmonyOS ArkTS 首页为移动端 App 工作台布局。
+- Changed: 后端 `User` 模型新增 `email` 字段，`/api/auth/login` 支持手机号/邮箱统一账号登录；前端更新登录页、注册页、用户模型和首页工作台。
+- Push: 已推送到 `main` 分支。
 
 ### 2026-07-13
 
-- Summary: 将后端从 Spring Boot 迁移为企业级 Flask + MySQL 架构，并完成 Docker Compose 验证。
-- Changed: 替换 `backend/` 为 Flask 应用工厂、SQLAlchemy ORM、JWT 鉴权、统一响应/异常处理、MySQL 初始化数据和 Gunicorn 部署入口；同步更新 `docker-compose.yml`、`backend/Dockerfile`、`README.md` 和 `backend/README.md`。
-- Validation: 已执行 Python 编译检查、Flask testing 模式接口冒烟、`docker compose config`、`docker build`、`docker compose up -d --build`，并验证容器环境下 `/`、`/api/notices`、`/api/auth/login`、`/api/users/profile` 返回成功。
-- Push: 已推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
-
-### 2026-07-13
-
+- Summary: 将后端从 Spring Boot 迁移为 Flask + MySQL 架构，并完成 Docker Compose 部署封装。
+- Changed: 新增 Flask 应用工厂、SQLAlchemy ORM、JWT 鉴权、统一响应和异常处理、MySQL 初始化数据、Gunicorn 部署入口。
+- Push: 已推送到 `main` 分支。

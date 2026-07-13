@@ -11,13 +11,14 @@ export struct FormTextArea {
     Column() {
       TextArea({ placeholder: this.placeholder, text: this.value })
         .width('100%')
-        .height(120)
+        .height(128)
         .fontSize(Constants.FONT_MD)
         .fontColor(Constants.COLOR_TEXT_PRIMARY)
         .placeholderColor(Constants.COLOR_TEXT_HINT)
         .maxLength(this.maxLength)
-        .backgroundColor(Constants.COLOR_BG)
+        .backgroundColor(Constants.COLOR_SURFACE)
         .borderRadius(Constants.BUTTON_RADIUS)
+        .border({ width: 0.5, color: Constants.COLOR_BORDER })
         .padding(Constants.SPACE_MD)
         .onChange((value: string) => {
           this.value = value;
@@ -25,6 +26,7 @@ export struct FormTextArea {
             this.onChange(value);
           }
         })
+
       Row() {
         Blank()
         Text(`${this.value.length}/${this.maxLength}`)

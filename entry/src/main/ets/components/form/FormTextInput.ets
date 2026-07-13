@@ -11,14 +11,15 @@ export struct FormTextInput {
   build() {
     TextInput({ placeholder: this.placeholder, text: this.value })
       .width('100%')
-      .height(44)
+      .height(46)
       .fontSize(Constants.FONT_MD)
       .fontColor(Constants.COLOR_TEXT_PRIMARY)
       .placeholderColor(Constants.COLOR_TEXT_HINT)
       .maxLength(this.maxLength)
       .type(this.inputType)
-      .backgroundColor(Constants.COLOR_BG)
+      .backgroundColor(Constants.COLOR_SURFACE)
       .borderRadius(Constants.BUTTON_RADIUS)
+      .border({ width: 0.5, color: Constants.COLOR_BORDER })
       .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
       .onChange((value: string) => {
         this.value = value;

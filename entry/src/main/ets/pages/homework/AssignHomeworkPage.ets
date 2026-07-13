@@ -25,16 +25,16 @@ struct AssignHomeworkPage {
       Scroll() {
         Column() {
           FormRow({ label: '科目', required: true }) {
-            FormTextInput({ value: this.subject, placeholder: '例如：语文、数学、英语' })
+            FormTextInput({ value: $subject, placeholder: '例如：语文、数学、英语' })
           }
           FormRow({ label: '作业标题', required: true }) {
-            FormTextInput({ value: this.title, placeholder: '请输入作业标题', maxLength: 50 })
+            FormTextInput({ value: $title, placeholder: '请输入作业标题', maxLength: 50 })
           }
           FormRow({ label: '作业内容', required: true }) {
-            FormTextArea({ value: this.content, placeholder: '请输入作业内容和要求', maxLength: 1000 })
+            FormTextArea({ value: $content, placeholder: '请输入作业内容和要求', maxLength: 1000 })
           }
           FormRow({ label: '截止日期' }) {
-            FormDatePicker({ timestamp: this.dueDate, placeholder: '请选择截止日期' })
+            FormDatePicker({ timestamp: $dueDate, placeholder: '请选择截止日期' })
           }
 
           Button(this.loading ? '发布中...' : '发布作业')
@@ -46,7 +46,9 @@ struct AssignHomeworkPage {
             .borderRadius(Constants.BUTTON_RADIUS)
             .margin({ top: Constants.SPACE_XXL })
             .enabled(!this.loading)
-            .onClick(() => { this.handleAssign(); })
+            .onClick(() => {
+              this.handleAssign();
+            })
         }
         .width('100%')
         .padding({ top: Constants.SPACE_LG })
@@ -59,9 +61,19 @@ struct AssignHomeworkPage {
   }
 
   async handleAssign(): Promise<void> {
-    if (!this.subject) { promptAction.showToast({ message: '请输入科目' }); return; }
-    if (!this.title) { promptAction.showToast({ message: '请输入标题' }); return; }
-    if (!this.content) { promptAction.showToast({ message: '请输入内容' }); return; }
+    if (!this.subject) {
+      promptAction.showToast({ message: '请输入科目' });
+      return;
+    }
+    if (!this.title) {
+      promptAction.showToast({ message: '请输入标题' });
+      return;
+    }
+    if (!this.content) {
+      promptAction.showToast({ message: '请输入内容' });
+      return;
+    }
+
     this.loading = true;
     const store = UserStore.getInstance();
     const hw: Homework = {
@@ -85,6 +97,8 @@ struct AssignHomeworkPage {
     if (res.code === 0) {
       promptAction.showToast({ message: '作业发布成功' });
       RouterUtil.back();
+    } else {
+      promptAction.showToast({ message: res.message || '发布失败' });
     }
   }
 }

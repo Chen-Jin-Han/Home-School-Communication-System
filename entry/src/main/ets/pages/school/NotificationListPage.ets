@@ -29,7 +29,7 @@ struct NotificationListPage {
   build() {
     Column() {
       AppNavBar({ title: '通知公告' })
-      SearchBar({ value: this.keyword, placeholder: '搜索通知...', onSearch: () => { this.loadData(); } })
+      SearchBar({ value: $keyword, placeholder: '搜索通知...', onSearch: () => { this.loadData(); } })
 
       if (this.loading) {
         LoadingView()

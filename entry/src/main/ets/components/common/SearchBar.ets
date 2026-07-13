@@ -2,22 +2,25 @@ import { Constants } from '../../utils/Constants';
 
 @Component
 export struct SearchBar {
-  @Prop placeholder: string = '搜索...';
+  @Prop placeholder: string = '搜索';
   @Link value: string;
   onSearch?: (keyword: string) => void;
 
   build() {
     Row() {
       Image($r('sys.symbol.magnifyingglass'))
-        .width(20)
-        .height(20)
+        .width(18)
+        .height(18)
         .fillColor(Constants.COLOR_TEXT_HINT)
         .margin({ left: Constants.SPACE_MD, right: Constants.SPACE_SM })
+
       TextInput({ placeholder: this.placeholder, text: this.value })
         .layoutWeight(1)
-        .height(36)
+        .height(40)
         .backgroundColor(Color.Transparent)
         .fontSize(Constants.FONT_MD)
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
+        .placeholderColor(Constants.COLOR_TEXT_HINT)
         .borderRadius(0)
         .onChange((value: string) => {
           this.value = value;
@@ -27,6 +30,7 @@ export struct SearchBar {
             this.onSearch(this.value);
           }
         })
+
       if (this.value) {
         Image($r('sys.symbol.xmark_circle_fill'))
           .width(18)
@@ -35,13 +39,17 @@ export struct SearchBar {
           .margin({ right: Constants.SPACE_MD })
           .onClick(() => {
             this.value = '';
+            if (this.onSearch) {
+              this.onSearch('');
+            }
           })
       }
     }
     .width('100%')
-    .height(40)
-    .backgroundColor(Constants.COLOR_DIVIDER)
-    .borderRadius(20)
+    .height(44)
+    .backgroundColor(Constants.COLOR_SURFACE)
+    .borderRadius(Constants.CARD_RADIUS)
+    .border({ width: 0.5, color: Constants.COLOR_BORDER })
     .margin({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_SM, bottom: Constants.SPACE_SM })
   }
 }

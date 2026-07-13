@@ -6,7 +6,7 @@ const TIMEOUT = 10000;
 
 export class HttpUtil {
   static setBaseUrl(url: string): void {
-    // allow runtime override
+    // Reserved for future runtime configuration.
   }
 
   private static getBaseUrl(): string {

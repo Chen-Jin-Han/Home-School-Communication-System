@@ -12,7 +12,7 @@ export struct FormStarRating {
       ForEach(Array.from({ length: this.maxRating }), (_: undefined, i: number) => {
         Text(i < this.rating ? '★' : '☆')
           .fontSize(this.starSize)
-          .fontColor(i < this.rating ? '#FAAD14' : Constants.COLOR_BORDER)
+          .fontColor(i < this.rating ? Constants.COLOR_WARNING : Constants.COLOR_BORDER)
           .margin({ right: Constants.SPACE_XS })
           .onClick(() => {
             this.rating = i + 1;

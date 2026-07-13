@@ -18,23 +18,32 @@ export struct FormSelector {
         .fontSize(Constants.FONT_MD)
         .fontColor(this.selectedValue ? Constants.COLOR_TEXT_PRIMARY : Constants.COLOR_TEXT_HINT)
         .layoutWeight(1)
+
       Image($r('sys.symbol.chevron_down'))
         .width(16)
         .height(16)
         .fillColor(Constants.COLOR_TEXT_HINT)
     }
     .width('100%')
-    .height(44)
-    .backgroundColor(Constants.COLOR_BG)
+    .height(46)
+    .backgroundColor(Constants.COLOR_SURFACE)
     .borderRadius(Constants.BUTTON_RADIUS)
+    .border({ width: 0.5, color: Constants.COLOR_BORDER })
     .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
     .onClick(() => {
-      // In a real implementation, use TextPickerDialog
+      if (this.options.length > 0) {
+        const index = this.options.findIndex((item: SelectOption) => item.value === this.selectedValue);
+        const next = this.options[(index + 1) % this.options.length].value;
+        this.selectedValue = next;
+        if (this.onChange) {
+          this.onChange(next);
+        }
+      }
     })
   }
 
   getSelectedLabel(): string {
-    const opt = this.options.find(o => o.value === this.selectedValue);
+    const opt = this.options.find((item: SelectOption) => item.value === this.selectedValue);
     return opt ? opt.label : '';
   }
 }

@@ -28,7 +28,7 @@ struct PublishNoticePage {
       Scroll() {
         Column() {
           FormRow({ label: '标题', required: true }) {
-            FormTextInput({ value: this.title, placeholder: '请输入通知标题', maxLength: 50 })
+            FormTextInput({ value: $title, placeholder: '请输入通知标题', maxLength: 50 })
           }
           FormRow({ label: '类型' }) {
             Row() {
@@ -42,22 +42,29 @@ struct PublishNoticePage {
                   Column() {
                     Text(item.label)
                       .fontSize(Constants.FONT_MD)
+                      .fontWeight(FontWeight.Medium)
                       .fontColor(this.noticeType === item.type ? Constants.COLOR_WHITE : Constants.COLOR_TEXT_PRIMARY)
                   }
                   .layoutWeight(1)
-                  .height(36)
-                  .backgroundColor(this.noticeType === item.type ? Constants.COLOR_PRIMARY : Constants.COLOR_BG)
+                  .height(38)
+                  .backgroundColor(this.noticeType === item.type ? Constants.COLOR_PRIMARY : Constants.COLOR_SURFACE)
+                  .border({
+                    width: 1,
+                    color: this.noticeType === item.type ? Constants.COLOR_PRIMARY : Constants.COLOR_BORDER,
+                  })
                   .borderRadius(Constants.BUTTON_RADIUS)
                   .justifyContent(FlexAlign.Center)
                   .margin({ right: Constants.SPACE_SM })
-                  .onClick(() => { this.noticeType = item.type; })
+                  .onClick(() => {
+                    this.noticeType = item.type;
+                  })
                 }
               )
             }
             .width('100%')
           }
           FormRow({ label: '内容', required: true }) {
-            FormTextArea({ value: this.content, placeholder: '请输入通知内容', maxLength: 2000 })
+            FormTextArea({ value: $content, placeholder: '请输入通知内容', maxLength: 2000 })
           }
 
           Button(this.loading ? '发布中...' : '发布')
@@ -69,7 +76,9 @@ struct PublishNoticePage {
             .borderRadius(Constants.BUTTON_RADIUS)
             .margin({ top: Constants.SPACE_XXL })
             .enabled(!this.loading)
-            .onClick(() => { this.handlePublish(); })
+            .onClick(() => {
+              this.handlePublish();
+            })
         }
         .width('100%')
         .padding({ top: Constants.SPACE_LG })
@@ -82,8 +91,15 @@ struct PublishNoticePage {
   }
 
   async handlePublish(): Promise<void> {
-    if (!this.title) { promptAction.showToast({ message: '请输入标题' }); return; }
-    if (!this.content) { promptAction.showToast({ message: '请输入内容' }); return; }
+    if (!this.title) {
+      promptAction.showToast({ message: '请输入标题' });
+      return;
+    }
+    if (!this.content) {
+      promptAction.showToast({ message: '请输入内容' });
+      return;
+    }
+
     this.loading = true;
     const store = UserStore.getInstance();
     const notice: Notice = {
@@ -107,6 +123,8 @@ struct PublishNoticePage {
     if (res.code === 0) {
       promptAction.showToast({ message: '发布成功' });
       RouterUtil.back();
+    } else {
+      promptAction.showToast({ message: res.message || '发布失败' });
     }
   }
 }

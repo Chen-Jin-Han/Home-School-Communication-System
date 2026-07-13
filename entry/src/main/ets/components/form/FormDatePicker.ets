@@ -13,6 +13,7 @@ export struct FormDatePicker {
         .fontSize(Constants.FONT_MD)
         .fontColor(this.timestamp > 0 ? Constants.COLOR_TEXT_PRIMARY : Constants.COLOR_TEXT_HINT)
         .layoutWeight(1)
+
       Image($r('sys.symbol.calendar'))
         .width(18)
         .height(18)
@@ -20,11 +21,15 @@ export struct FormDatePicker {
     }
     .width('100%')
     .height(44)
-    .backgroundColor(Constants.COLOR_BG)
+    .backgroundColor(Constants.COLOR_SURFACE)
     .borderRadius(Constants.BUTTON_RADIUS)
+    .border({ width: 1, color: Constants.COLOR_BORDER })
     .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
     .onClick(() => {
-      // Integrated DatePickerDialog would go here in a full implementation
+      this.timestamp = Date.now();
+      if (this.onChange) {
+        this.onChange(this.timestamp);
+      }
     })
   }
 }

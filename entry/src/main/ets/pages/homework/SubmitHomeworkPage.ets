@@ -31,7 +31,7 @@ struct SubmitHomeworkPage {
       Scroll() {
         Column() {
           FormRow({ label: '提交内容', required: true }) {
-            FormTextArea({ value: this.content, placeholder: '请输入你的作业内容或说明', maxLength: 1000 })
+            FormTextArea({ value: $content, placeholder: '请输入你的作业内容或说明', maxLength: 1000 })
           }
 
           Button(this.loading ? '提交中...' : '提交')
@@ -43,7 +43,9 @@ struct SubmitHomeworkPage {
             .borderRadius(Constants.BUTTON_RADIUS)
             .margin({ top: Constants.SPACE_XXL })
             .enabled(!this.loading)
-            .onClick(() => { this.handleSubmit(); })
+            .onClick(() => {
+              this.handleSubmit();
+            })
         }
         .width('100%')
         .padding({ top: Constants.SPACE_LG })
@@ -56,7 +58,11 @@ struct SubmitHomeworkPage {
   }
 
   async handleSubmit(): Promise<void> {
-    if (!this.content) { promptAction.showToast({ message: '请输入提交内容' }); return; }
+    if (!this.content) {
+      promptAction.showToast({ message: '请输入提交内容' });
+      return;
+    }
+
     this.loading = true;
     const store = UserStore.getInstance();
     const sub: Submission = {
@@ -75,6 +81,8 @@ struct SubmitHomeworkPage {
     if (res.code === 0) {
       promptAction.showToast({ message: '提交成功' });
       RouterUtil.back();
+    } else {
+      promptAction.showToast({ message: res.message || '提交失败' });
     }
   }
 }

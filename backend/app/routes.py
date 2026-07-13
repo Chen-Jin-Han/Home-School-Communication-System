@@ -291,6 +291,18 @@ def messages(conversation_id: int):
     return ok(page_result(query, int(request.args.get("page", 1)), int(request.args.get("pageSize", 20))))
 
 
+@api_bp.get("/api/conversations/<int:conversation_id>")
+@login_required
+def conversation_detail(conversation_id: int):
+    participant = Participant.query.filter_by(
+        conversation_id=conversation_id,
+        user_id=g.user_id,
+    ).first()
+    if not participant:
+        raise BusinessError("Conversation not found", http_status=404)
+    return ok(get_or_404(Conversation, conversation_id, "Conversation not found").to_dict())
+
+
 @api_bp.post("/api/conversations/<int:conversation_id>/messages")
 @login_required
 def message_send(conversation_id: int):
@@ -396,6 +408,7 @@ def attendance_summary():
 
 
 @api_bp.get("/api/attendance/<int:attendance_id>")
+@api_bp.get("/api/attendance/records/<int:attendance_id>")
 @login_required
 def attendance_detail(attendance_id: int):
     return ok(get_or_404(Attendance, attendance_id, "考勤记录不存在").to_dict())
@@ -410,6 +423,7 @@ def grade_reports():
 
 
 @api_bp.get("/api/grades/<int:grade_id>")
+@api_bp.get("/api/grades/reports/<int:grade_id>")
 @login_required
 def grade_detail(grade_id: int):
     return ok(get_or_404(GradeReport, grade_id, "成绩报告不存在").to_dict())
@@ -424,6 +438,7 @@ def health_records():
 
 
 @api_bp.get("/api/health/<int:record_id>")
+@api_bp.get("/api/health/records/<int:record_id>")
 @login_required
 def health_detail(record_id: int):
     return ok(get_or_404(HealthRecord, record_id, "健康记录不存在").to_dict())
