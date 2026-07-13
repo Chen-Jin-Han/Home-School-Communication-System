@@ -70,6 +70,23 @@ export class UserStore {
     }
   }
 
+  async updateCurrentUser(user: User): Promise<void> {
+    this.currentUser = user;
+    await StorageUtil.put('userId', user.id);
+    await StorageUtil.put('userName', user.name);
+    await StorageUtil.put('userRole', user.role);
+    await StorageUtil.put('userPhone', user.phone);
+    await StorageUtil.put('userEmail', user.email || '');
+    await StorageUtil.put('schoolId', user.schoolId);
+    await StorageUtil.put('schoolName', user.schoolName);
+    if (user.classId) {
+      await StorageUtil.put('classId', user.classId);
+    }
+    if (user.className) {
+      await StorageUtil.put('className', user.className);
+    }
+  }
+
   async logout(): Promise<void> {
     this.isLoggedIn = false;
     this.currentUser = null;

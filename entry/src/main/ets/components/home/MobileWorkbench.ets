@@ -2,6 +2,7 @@ import { UserRole } from '../../models/UserModel';
 import { UserStore } from '../../store/UserStore';
 import { Constants } from '../../utils/Constants';
 import { RouterUtil } from '../../utils/RouterUtil';
+import { ElementIcon } from '../common/ElementIcon';
 
 interface FeatureAction {
   title: string;
@@ -385,11 +386,11 @@ export struct MobileWorkbench {
   @Builder
   WorkbenchIcon(icon: string, active: boolean = false, size: number = 38) {
     Row() {
-      Text(this.iconGlyph(icon))
-        .fontSize(20)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(active ? Constants.COLOR_WHITE : Constants.COLOR_PRIMARY)
-        .textAlign(TextAlign.Center)
+      ElementIcon({
+        name: this.elementIconName(icon),
+        size: 21,
+        color: active ? Constants.COLOR_WHITE : Constants.COLOR_PRIMARY,
+      })
     }
     .width(size)
     .height(size)
@@ -403,11 +404,11 @@ export struct MobileWorkbench {
   @Builder
   TabIcon(icon: string, active: boolean) {
     Row() {
-      Text(this.iconGlyph(icon))
-        .fontSize(20)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(active ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT)
-        .textAlign(TextAlign.Center)
+      ElementIcon({
+        name: this.elementIconName(icon),
+        size: 20,
+        color: active ? Constants.COLOR_PRIMARY : Constants.COLOR_TEXT_HINT,
+      })
     }
     .width(36)
     .height(28)
@@ -568,50 +569,50 @@ export struct MobileWorkbench {
     return type;
   }
 
-  private iconGlyph(icon: string): string {
+  private elementIconName(icon: string): string {
     if (icon === 'home') {
-      return '⌂';
+      return 'Home';
     }
     if (icon === 'message') {
-      return '✉';
+      return 'Message';
     }
     if (icon === 'profile') {
-      return '◉';
+      return 'User';
     }
     if (icon === 'notice') {
-      return '!';
+      return 'Bell';
     }
     if (icon === 'publish') {
-      return '+';
+      return 'Edit';
     }
     if (icon === 'published') {
-      return '▤';
+      return 'Archive';
     }
     if (icon === 'homework') {
-      return '□';
+      return 'Document';
     }
     if (icon === 'grade') {
-      return '↗';
+      return 'Chart';
     }
     if (icon === 'attendance') {
-      return '✓';
+      return 'Check';
     }
     if (icon === 'health') {
-      return '♡';
+      return 'Health';
     }
     if (icon === 'evaluation') {
-      return '★';
+      return 'Star';
     }
     if (icon === 'activity') {
-      return '◇';
+      return 'Calendar';
     }
     if (icon === 'school') {
-      return '⌂';
+      return 'School';
     }
     if (icon === 'org' || icon === 'class' || icon === 'students') {
-      return '▦';
+      return 'Team';
     }
-    return '•';
+    return 'Grid';
   }
 
   private go(type: string): void {
