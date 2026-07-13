@@ -232,6 +232,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 同步个人信息编辑能力到 `main` 分支，并修正个人信息页主体布局为置顶展示。
+- Changed: 将 `feature` 分支中的个人信息编辑、数据库同步、Element 风格图标和测试用例改动合入主分支；为 `PersonalProfilePage` 的根容器、滚动内容和资料区块增加显式顶部/左侧对齐，避免页面内容在个人信息页中呈现居中布局。
+- Validation: 已确认保存链路为 `PersonalProfilePage.handleSave -> UserService.updateProfile -> PUT /api/users/profile -> UserStore.updateCurrentUser`，并执行 `git diff --check`。
+
+### 2026-07-13
+
 - Summary: 在 `feature` 分支优化主界面图标体系，重构个人信息页并补充功能测试用例。
 - Changed: 新增 Element 风格语义图标组件 `ElementIcon`，主工作台模块和底部导航改为统一系统符号图标；个人信息页重构为资料概览、可编辑表单、组织信息和保存操作区，支持修改姓名、手机号、邮箱、任教学科、职务并调用 `/api/users/profile` 同步数据库；`UserStore` 新增当前用户资料同步方法；新增 `docs/TEST_CASES.md`，覆盖移动端冒烟、个人信息、主要功能页和后端接口测试用例。
 - Validation: 已执行静态差异检查；当前命令行环境无 `hvigor`，需要在 DevEco Studio 中 Clean/Rebuild 后验证 ArkTS 构建、图标显示和个人资料保存流程。

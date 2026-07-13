@@ -52,12 +52,16 @@ struct PersonalProfilePage {
         }
         .width('100%')
         .padding({ left: 16, right: 16, top: 14, bottom: 24 })
+        .alignItems(HorizontalAlign.Start)
+        .justifyContent(FlexAlign.Start)
       }
       .layoutWeight(1)
       .scrollBar(BarState.Off)
     }
     .width('100%')
     .height('100%')
+    .justifyContent(FlexAlign.Start)
+    .alignItems(HorizontalAlign.Start)
     .backgroundColor(Constants.COLOR_BG)
   }
 
@@ -129,6 +133,7 @@ struct PersonalProfilePage {
     }
     .width('100%')
     .padding({ left: 16, right: 16, top: 16, bottom: 8 })
+    .alignItems(HorizontalAlign.Start)
     .backgroundColor(Constants.COLOR_WHITE)
     .borderRadius(Constants.CARD_RADIUS)
     .border({ width: 1, color: Constants.COLOR_BORDER })
@@ -150,6 +155,7 @@ struct PersonalProfilePage {
     }
     .width('100%')
     .padding({ left: 16, right: 16, top: 16, bottom: 8 })
+    .alignItems(HorizontalAlign.Start)
     .backgroundColor(Constants.COLOR_WHITE)
     .borderRadius(Constants.CARD_RADIUS)
     .border({ width: 1, color: Constants.COLOR_BORDER })
