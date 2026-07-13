@@ -1,4 +1,4 @@
-# Home-School Communication System
+# 家校通 Home-School Communication System
 
 <div align="center">
   <img src="./docs/assets/app_logo.png" alt="家校通 华迪 HuaDee Logo" width="180">
@@ -6,76 +6,124 @@
   <strong>家校通 · 华迪 HuaDee</strong>
 </div>
 
-家校通是一套面向家长、学生、教师和学校领导的家校沟通系统，包含 HarmonyOS ArkTS 移动端和 Flask 企业级后端。系统提供通知公告、作业、考勤、成绩、健康档案、学生评价、即时沟通、校园活动、组织架构和学校信息等能力。
+家校通是一套面向学校、教师、学生与家长的移动端家校协同系统。当前项目已经从早期 Spring Boot 后端迁移为 Flask + MySQL 架构，前端采用 HarmonyOS ArkTS / ArkUI 实现，整体目标是支持企业级部署、角色化工作台、真实后端接口访问和移动端模拟器/真机调试。
+
+当前 App 桌面名称为“家校通”，主界面已经重构为移动端工作台样式，并覆盖家长、学生、教师、领导四类角色。系统包含通知公告、课后作业、作业提交、考勤记录、成绩报告、健康档案、学生评价、即时消息、联系人选择、校园活动、学校信息、组织架构、个人主页和发布管理等核心功能。
+
+## 当前状态
+
+- 移动端：HarmonyOS ArkTS 工程，入口模块为 `entry`，主入口页面为 `entry/src/main/ets/pages/Index.ets`。
+- 后端：Flask 3 应用，使用 SQLAlchemy ORM、JWT 鉴权、统一响应结构和 Gunicorn 部署入口。
+- 数据库：MySQL 8.x，Docker Compose 默认创建 `hwadee_fsc` 数据库并持久化数据卷。
+- 部署：支持 `docker compose up -d --build` 一键启动 MySQL + Flask 后端。
+- 接口模式：前端当前关闭 Mock，默认访问公网后端 `http://8.218.156.55:8080`。
+- UI 状态：主工作台使用统一图标容器、底部导航、公共返回栏、空状态和接口异常兜底，避免后端返回空数据时直接闪退。
+- 邮箱登录：支持手机号或邮箱作为账号登录，当前不启用邮箱验证码，因此没有邮件服务成本。
 
 ## 技术栈
 
-| 模块 | 技术 |
+| 层级 | 当前技术 |
 | --- | --- |
-| 移动端 | HarmonyOS / ArkTS / ArkUI / Hvigor |
-| 后端 | Flask 3 / SQLAlchemy / Gunicorn |
+| 移动端 | HarmonyOS / ArkTS / ArkUI / DevEco Studio / Hvigor |
+| 移动端状态与服务 | ArkTS 页面状态、服务层封装、角色化路由、空数据兜底 |
+| 后端框架 | Flask 3 / Flask-CORS / Flask-Migrate / Gunicorn |
+| 数据访问 | SQLAlchemy / PyMySQL |
 | 数据库 | MySQL 8.x |
-| 鉴权 | JWT |
-| 部署 | Docker / Docker Compose |
+| 鉴权 | JWT / Werkzeug 密码哈希 |
+| 部署 | Docker / Docker Compose / Ubuntu Server |
+
+## 功能范围
+
+| 模块 | 功能说明 |
+| --- | --- |
+| 登录注册 | 支持手机号或邮箱登录，支持家长、学生、教师注册，默认测试密码为 `123456` |
+| 角色首页 | 家长、学生、教师、领导进入不同工作台，展示适合角色的功能入口 |
+| 通知公告 | 查看通知列表、通知详情，教师和领导可发布通知 |
+| 作业管理 | 查看作业、布置作业、提交作业、教师评分 |
+| 即时沟通 | 查看会话列表、选择联系人、创建或复用私聊会话、发送消息 |
+| 考勤记录 | 查看学生出勤、迟到、请假、缺勤等记录 |
+| 成绩报告 | 查看考试成绩报告和科目成绩详情 |
+| 健康档案 | 查看体检、视力、身高体重、疫苗等健康记录 |
+| 学生评价 | 查看评价记录，教师可写入评价 |
+| 校园活动 | 查看活动列表和活动详情，支持报名相关接口 |
+| 学校组织 | 查看学校信息、组织架构、班级学生名单 |
+| 个人中心 | 查看个人资料、学校信息、组织架构并退出登录 |
 
 ## 项目结构
 
 ```text
 .
-├── entry/                         # HarmonyOS ArkTS 客户端
-├── backend/                       # Flask 后端
+├── AppScope/
+│   ├── app.json5                         # 应用级配置，引用 App 名称和图标
+│   └── resources/base/element/string.json # 应用名称资源
+├── entry/
+│   ├── src/main/module.json5             # HarmonyOS entry 模块配置
+│   ├── src/main/ets/pages/               # ArkTS 页面
+│   ├── src/main/ets/components/          # 公共组件、卡片、表单、工作台
+│   ├── src/main/ets/services/            # 前端接口服务封装
+│   ├── src/main/ets/models/              # 前端数据模型
+│   ├── src/main/ets/store/               # 用户与应用状态
+│   ├── src/main/ets/utils/               # 路由、日期、常量、存储工具
+│   └── src/main/resources/               # 模块资源、网络配置、页面配置
+├── backend/
 │   ├── app/
-│   │   ├── __init__.py            # 应用工厂、扩展初始化、异常处理
-│   │   ├── config.py              # 环境配置
-│   │   ├── extensions.py          # SQLAlchemy / Migrate / CORS
-│   │   ├── models.py              # ORM 模型
-│   │   ├── routes.py              # REST API
-│   │   ├── security.py            # 密码哈希与 JWT
-│   │   └── seed.py                # 初始化数据
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── wsgi.py
-├── docs/assets/app_logo.png       # README 展示 Logo
-└── docker-compose.yml             # MySQL + Flask 一键启动
+│   │   ├── __init__.py                   # Flask 应用工厂、扩展初始化、异常处理
+│   │   ├── config.py                     # 环境变量与应用配置
+│   │   ├── extensions.py                 # SQLAlchemy / Migrate / CORS
+│   │   ├── models.py                     # 数据库 ORM 模型
+│   │   ├── routes.py                     # REST API 路由
+│   │   ├── security.py                   # 密码哈希与 JWT 工具
+│   │   └── seed.py                       # 初始化演示数据
+│   ├── Dockerfile                        # Flask + Gunicorn 镜像封装
+│   ├── requirements.txt                  # Python 依赖
+│   └── wsgi.py                           # 后端启动入口
+├── docs/assets/app_logo.png              # README 和 App 使用的 Logo 资源
+└── docker-compose.yml                    # MySQL + Flask 一键部署配置
 ```
 
-## 快速部署
+## 后端部署
 
-推荐使用 Docker Compose，本地和 Ubuntu 服务器部署方式一致：
+推荐使用 Docker Compose 启动完整后端环境：
 
 ```bash
 docker compose up -d --build
 ```
 
-启动后访问：
+启动后可访问：
 
 | 地址 | 说明 |
 | --- | --- |
 | `http://localhost:8080` | 后端健康入口 |
-| `http://localhost:8080/api/notices` | 通知接口示例 |
-| `localhost:3306` | MySQL，默认库名 `hwadee_fsc` |
+| `http://localhost:8080/api/notices` | 通知列表接口示例 |
+| `localhost:3306` | MySQL 服务端口，默认数据库为 `hwadee_fsc` |
 
 常用运维命令：
 
 ```bash
 docker compose logs -f backend
+docker compose logs -f mysql
 docker compose down
 docker compose down -v
 ```
 
-## 后端配置
+生产环境建议：
 
-生产环境务必修改默认密钥和数据库密码。
+- 修改默认数据库密码、`APP_SECRET_KEY` 和 `JWT_SECRET_KEY`。
+- 使用 HTTPS 域名替代裸 IP。
+- 将 MySQL 数据卷纳入服务器备份策略。
+- 不要在公网暴露 MySQL 端口，除非已有安全组和访问控制。
+
+## 后端配置
 
 | 环境变量 | 说明 |
 | --- | --- |
 | `DATABASE_URL` | MySQL 连接串，例如 `mysql+pymysql://root:root@mysql:3306/hwadee_fsc?charset=utf8mb4` |
 | `APP_SECRET_KEY` | Flask 应用密钥 |
 | `JWT_SECRET_KEY` | JWT 签名密钥 |
-| `AUTO_INIT_DB` | 是否启动时自动建表和初始化数据，默认 `true` |
-| `CORS_ORIGINS` | CORS 来源，默认 `*` |
+| `AUTO_INIT_DB` | 是否在启动时自动建表并初始化演示数据，默认 `true` |
+| `CORS_ORIGINS` | CORS 来源配置，开发环境可为 `*` |
 
-本地 Python 运行：
+本地 Python 方式运行后端：
 
 ```bash
 cd backend
@@ -84,24 +132,34 @@ set DATABASE_URL=mysql+pymysql://root:root@127.0.0.1:3306/hwadee_fsc?charset=utf
 python wsgi.py
 ```
 
+Linux/macOS 可将 `set` 替换为：
+
+```bash
+export DATABASE_URL=mysql+pymysql://root:root@127.0.0.1:3306/hwadee_fsc?charset=utf8mb4
+```
+
 ## DevEco 运行
 
 1. 使用 DevEco Studio 打开仓库根目录。
-2. 确认 `entry/src/main/ets/services/MockConfig.ets` 为：
+2. 选择 `entry` 模块作为运行模块。
+3. 确认前端当前使用真实后端接口：
 
 ```ts
+// entry/src/main/ets/services/MockConfig.ets
 export const USE_MOCK = false;
 ```
 
-3. 确认 `entry/src/main/ets/services/HttpUtil.ets` 后端地址为：
+4. 确认后端地址配置为公网服务器：
 
 ```ts
+// entry/src/main/ets/services/HttpUtil.ets
 const BASE_URL = 'http://8.218.156.55:8080';
 ```
 
-4. 在 DevEco 中选择 `entry` 模块，启动预览器、模拟器或真机调试。
+5. 在 DevEco Studio 中执行 Clean/Rebuild，然后 Run 到模拟器或真机。
+6. 如果修改了桌面名称、图标或资源文件，建议先从模拟器卸载旧 App，再重新安装，避免旧 HAP 缓存影响显示。
 
-如果后端部署在公网服务器，DevEco 模拟器和真机可以直接访问公网 IP。生产环境建议使用 HTTPS 域名。
+当前命令行环境未提供 `hvigor`，因此完整 ArkTS 构建请以 DevEco Studio 的构建结果为准。
 
 ## 测试账号
 
@@ -109,27 +167,16 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 | 角色 | 手机号 | 邮箱 | 说明 |
 | --- | --- | --- | --- |
-| 家长 | `13800000001` | `parent@huadee.test` | 家长端首页 |
-| 学生 | `13800000002` | `student@huadee.test` | 学生端首页 |
-| 教师 | `13800000003` | `teacher@huadee.test` | 教师端首页 |
-| 领导 | `13800000004` | `leader@huadee.test` | 领导端首页 |
+| 家长 | `13800000001` | `parent@huadee.test` | 家长工作台 |
+| 学生 | `13800000002` | `student@huadee.test` | 学生工作台 |
+| 教师 | `13800000003` | `teacher@huadee.test` | 教师工作台 |
+| 领导 | `13800000004` | `leader@huadee.test` | 领导工作台 |
+
+登录页也内置了快捷测试账号按钮，便于在模拟器中快速切换角色。
 
 ## 主要接口
 
-| 接口 | 方法 | 说明 |
-| --- | --- | --- |
-| `/api/auth/login` | POST | 登录 |
-| `/api/auth/register` | POST | 注册 |
-| `/api/notices` | GET | 通知列表 |
-| `/api/homework` | GET | 作业列表 |
-| `/api/conversations` | GET | 会话列表 |
-| `/api/attendance/records` | GET | 考勤记录 |
-| `/api/grades/reports` | GET | 成绩报告 |
-| `/api/health/records` | GET | 健康记录 |
-| `/api/evaluations` | GET | 学生评价 |
-| `/api/activities` | GET | 活动列表 |
-
-统一响应格式：
+统一响应结构：
 
 ```json
 {
@@ -138,6 +185,48 @@ const BASE_URL = 'http://8.218.156.55:8080';
   "data": {}
 }
 ```
+
+常用接口如下：
+
+| 接口 | 方法 | 说明 |
+| --- | --- | --- |
+| `/api/auth/login` | POST | 登录，支持手机号或邮箱作为账号 |
+| `/api/auth/register` | POST | 注册 |
+| `/api/auth/logout` | POST | 退出登录 |
+| `/api/users/profile` | GET / PUT | 当前用户资料查询与更新 |
+| `/api/users/class/<class_id>` | GET | 班级学生列表 |
+| `/api/users/contacts` | GET | 联系人列表 |
+| `/api/schools/<school_id>` | GET | 学校信息 |
+| `/api/schools/<school_id>/org-tree` | GET | 学校组织架构 |
+| `/api/notices` | GET / POST | 通知列表与发布通知 |
+| `/api/notices/<notice_id>` | GET / PUT / DELETE | 通知详情、更新、删除 |
+| `/api/homework` | GET / POST | 作业列表与布置作业 |
+| `/api/homework/<homework_id>` | GET | 作业详情 |
+| `/api/homework/<homework_id>/submit` | POST | 提交作业 |
+| `/api/submissions/<submission_id>/grade` | PUT | 作业评分 |
+| `/api/conversations` | GET / POST | 会话列表、创建或复用私聊会话 |
+| `/api/conversations/<conversation_id>` | GET | 会话详情 |
+| `/api/conversations/<conversation_id>/messages` | GET / POST | 消息列表与发送消息 |
+| `/api/attendance/records` | GET | 考勤记录 |
+| `/api/attendance/records/<record_id>` | GET | 考勤详情 |
+| `/api/grades/reports` | GET | 成绩报告列表 |
+| `/api/grades/reports/<report_id>` | GET | 成绩报告详情 |
+| `/api/health/records` | GET | 健康档案列表 |
+| `/api/health/records/<record_id>` | GET | 健康档案详情 |
+| `/api/evaluations` | GET / POST | 学生评价列表与写评价 |
+| `/api/evaluations/<evaluation_id>` | PUT | 更新学生评价 |
+| `/api/activities` | GET | 校园活动列表 |
+| `/api/activities/<activity_id>` | GET | 校园活动详情 |
+| `/api/activities/<activity_id>/join` | POST | 活动报名 |
+| `/api/activities/<activity_id>/comments` | POST | 活动评论 |
+
+## 开发注意事项
+
+- 前端页面应通过 `services/` 层访问接口，避免在页面中散落请求地址。
+- 列表页需要对 `null`、`undefined`、空数组和接口失败做兜底，避免 ArkTS 运行时 TypeError 导致 App 闪退。
+- 新增二级页面时应使用公共 `AppNavBar`，保证左上角返回行为一致。
+- 主工作台模块图标应通过 `MobileWorkbench` 中的统一图标渲染方法维护，不要再使用单个蓝色汉字作为图标。
+- 每次较大改动后需要更新本 README 的修改记录，并推送到 GitHub `main` 分支。
 
 ## 修改记录
 
