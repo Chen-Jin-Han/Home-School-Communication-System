@@ -233,8 +233,8 @@ const BASE_URL = 'http://8.218.156.55:8080';
 ### 2026-07-13
 
 - Summary: 将图标系统从 ASCII 字符升级为 HarmonyOS SymbolGlyph 原生矢量图标。
-- Changed: 重写 `ElementIcon` 组件，移除 `Text + glyph()` 的 ASCII 单字母渲染方式，改为 `SymbolGlyph($r('sys.symbol.xxx'))` 系统矢量图标组件；22 个语义图标名全部映射到 HarmonyOS 原生 Symbol 资源（`house_fill`、`message_fill`、`person_fill`、`bell_fill`、`square_and_pencil`、`doc_plaintext_fill_1`、`histogram`、`checkmark_circle_fill`、`heart_fill`、`star_fill`、`calendar`、`building_fill`、`person_2_fill`、`archivebox_fill`、`person_badge_plus`、`magnifyingglass`、`xmark`、`chevron_right`、`chevron_down`、`chevron_left`、`pin_fill`、`ohos_photo`）；使用 `SymbolRenderingStrategy.SINGLE` 单色渲染，保持蓝白简洁风格；API（`name`/`iconSize`/`color`）完全不变，29 处调用方零修改。
-- Validation: DevEco Studio `assembleHap` 已通过（仅 1 WARN，无 ERROR）；`git diff --check` 通过。
+- Changed: 重写 `ElementIcon` 组件，移除 `Text + glyph()` 的 ASCII 单字母渲染方式，改为 `SymbolGlyph($r('sys.symbol.xxx'))` 系统矢量图标组件；语义图标名映射到 HarmonyOS 原生 Symbol 资源（`house_fill`、`message_fill`、`person_fill`、`bell_fill`、`square_and_pencil`、`doc_plaintext_fill_1`、`histogram`、`checkmark_circle_fill`、`heart_fill`、`star_fill`、`calendar`、`building_fill`、`person_2_fill`、`archivebox_fill`、`person_badge_plus`、`magnifyingglass`、`xmark`、`chevron_right`、`chevron_down`、`chevron_left`、`pin_fill`、`ohos_photo`）；补充 `Empty`、`Error` 语义图标并让空状态、错误状态组件统一走原生 ArkUI 图标层；使用 `SymbolRenderingStrategy.SINGLE` 单色渲染，保持蓝白简洁风格；API（`name`/`iconSize`/`color`）保持兼容。
+- Validation: 已执行 `git diff --check`；使用 DevEco Studio 自带 Node/Hvigor 执行 `assembleHap --no-daemon`，`CompileArkTS` 与 `PackageHap` 均通过，最终输出 `BUILD SUCCESSFUL in 27 s 377 ms`。普通 daemon 模式曾出现 Hvigor daemon `ping timeout`，属于本地构建守护进程稳定性问题，可优先使用 `--no-daemon` 或在 DevEco Studio 中 Clean/Rebuild。
 
 ### 2026-07-13
 

@@ -54,7 +54,7 @@ export struct ElementIcon {
     if (n === 'Team' || n === 'UserGroup') {
       return $r('sys.symbol.person_2_fill');
     }
-    if (n === 'Archive' || n === 'Box') {
+    if (n === 'Archive' || n === 'Box' || n === 'Empty') {
       return $r('sys.symbol.archivebox_fill');
     }
     if (n === 'AddUser' || n === 'UserPlus') {
@@ -63,7 +63,7 @@ export struct ElementIcon {
     if (n === 'Search') {
       return $r('sys.symbol.magnifyingglass');
     }
-    if (n === 'Close') {
+    if (n === 'Close' || n === 'Error') {
       return $r('sys.symbol.xmark');
     }
     if (n === 'ChevronRight') {

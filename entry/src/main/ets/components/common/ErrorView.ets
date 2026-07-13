@@ -1,4 +1,5 @@
 import { Constants } from '../../utils/Constants';
+import { ElementIcon } from './ElementIcon';
 
 @Component
 export struct ErrorView {
@@ -7,13 +8,13 @@ export struct ErrorView {
 
   build() {
     Column() {
-      Text('!')
-        .fontSize(22)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(Constants.COLOR_DANGER)
+      Row() {
+        ElementIcon({ name: 'Error', iconSize: 28, color: Constants.COLOR_DANGER })
+      }
         .width(56)
         .height(56)
-        .textAlign(TextAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(VerticalAlign.Center)
         .backgroundColor('#FEF2F2')
         .borderRadius(18)
         .margin({ bottom: Constants.SPACE_LG })
