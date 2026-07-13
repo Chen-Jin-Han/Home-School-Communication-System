@@ -42,6 +42,7 @@
 | FUNC-003 | 作业列表 | 学生或家长进入“课后作业” | 作业列表正常展示，空列表不闪退 |
 | FUNC-004 | 布置作业 | 教师填写科目、标题、内容、截止日期并提交 | 作业创建成功 |
 | FUNC-005 | 提交作业 | 学生进入作业详情并提交内容 | 提交成功，再次进入可查看提交状态 |
+| FUNC-006A | 添加联系人 | 进入选择联系人页，点击添加，输入手机号、邮箱或用户ID并保存 | 联系人添加成功，列表刷新且可搜索到该联系人 |
 | FUNC-006 | 消息会话 | 进入消息列表，选择联系人发起会话 | 可创建或复用私聊会话 |
 | FUNC-007 | 发送消息 | 在聊天页输入文本并发送 | 消息显示在当前会话并同步到后端 |
 | FUNC-008 | 考勤记录 | 进入考勤记录页 | 出勤、迟到、请假、缺勤记录可展示 |
@@ -95,6 +96,7 @@ curl -X PUT http://8.218.156.55:8080/api/users/profile \
 | `GET /api/homework` | 返回作业分页列表 |
 | `GET /api/conversations` | 登录后返回会话数组 |
 | `GET /api/users/contacts` | 登录后返回联系人数组 |
+| `POST /api/users/contacts` | 通过手机号、邮箱或用户ID添加联系人 |
 | `GET /api/attendance/records?studentId=<ID>` | 返回考勤数组 |
 | `GET /api/grades/reports?studentId=<ID>` | 返回成绩报告数组 |
 | `GET /api/health/records?studentId=<ID>` | 返回健康档案数组 |

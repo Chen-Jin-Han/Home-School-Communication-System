@@ -92,6 +92,20 @@ class User(db.Model, SerializerMixin):
         return data
 
 
+class Contact(db.Model, SerializerMixin):
+    __tablename__ = "contact"
+    __table_args__ = (
+        db.UniqueConstraint("owner_id", "contact_user_id", name="uq_contact_owner_user"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    owner_id = db.Column(db.BigInteger, nullable=False, index=True)
+    contact_user_id = db.Column(db.BigInteger, nullable=False, index=True)
+    remark = db.Column(db.String(50), default="")
+    source = db.Column(db.String(20), default="manual")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+
 class Notice(db.Model, SerializerMixin):
     __tablename__ = "notice"
     json_fields = {"attachments"}

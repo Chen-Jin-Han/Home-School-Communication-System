@@ -43,4 +43,25 @@ export class UserService extends BaseService {
     }
     return HttpUtil.get<User[]>('/api/users/contacts', UserStore.getInstance().authToken);
   }
+
+  static async addContact(identifier: string): Promise<ApiResponse<User>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const keyword = identifier.trim();
+      const currentId = UserStore.getInstance().currentUser?.id;
+      const user = MockAuth.accounts.find(u =>
+        u.id === keyword ||
+        u.phone === keyword ||
+        u.email === keyword
+      );
+      if (!user) {
+        return BaseService.error(1000, '联系人不存在');
+      }
+      if (user.id === currentId) {
+        return BaseService.error(1000, '不能添加自己为联系人');
+      }
+      return BaseService.success(user);
+    }
+    return HttpUtil.post<User>('/api/users/contacts', { identifier }, UserStore.getInstance().authToken);
+  }
 }

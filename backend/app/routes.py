@@ -12,6 +12,7 @@ from .models import (
     Activity,
     Attendance,
     ClassInfo,
+    Contact,
     Conversation,
     Evaluation,
     GradeReport,
@@ -420,11 +421,70 @@ def class_students(class_id: int):
 @login_required
 def contacts():
     current = get_or_404(User, g.user_id, "用户不存在")
+    manual_ids = [
+        item.contact_user_id
+        for item in Contact.query.filter_by(owner_id=g.user_id).all()
+    ]
     query = User.query.filter(User.id != g.user_id)
     if current.school_id:
-        query = query.filter(User.school_id == current.school_id)
+        query = query.filter(
+            or_(
+                User.school_id == current.school_id,
+                User.id.in_(manual_ids or [0]),
+            )
+        )
+    elif manual_ids:
+        query = query.filter(User.id.in_(manual_ids))
     rows = query.order_by(User.role.asc(), User.name.asc()).all()
     return ok([row.to_dict() for row in rows])
+
+
+@api_bp.post("/api/users/contacts")
+@login_required
+def contact_add():
+    payload = body()
+    identifier = str(
+        payload.get("identifier")
+        or payload.get("account")
+        or payload.get("phone")
+        or payload.get("email")
+        or payload.get("userId")
+        or ""
+    ).strip()
+    if not identifier:
+        raise BusinessError("请输入联系人手机号、邮箱或用户ID")
+
+    if identifier.isdigit():
+        target = User.query.filter(
+            or_(
+                User.id == int(identifier),
+                User.phone == identifier,
+            )
+        ).first()
+    else:
+        target = User.query.filter(
+            or_(
+                User.email == identifier,
+                User.phone == identifier,
+            )
+        ).first()
+    if not target:
+        raise BusinessError("联系人不存在")
+    if target.id == g.user_id:
+        raise BusinessError("不能添加自己为联系人")
+
+    contact = Contact.query.filter_by(owner_id=g.user_id, contact_user_id=target.id).first()
+    if not contact:
+        contact = Contact(
+            owner_id=g.user_id,
+            contact_user_id=target.id,
+            remark=(payload.get("remark") or "").strip(),
+        )
+        db.session.add(contact)
+    elif "remark" in payload:
+        contact.remark = (payload.get("remark") or "").strip()
+    db.session.commit()
+    return ok(target.to_dict())
 
 
 @api_bp.get("/api/schools/<int:school_id>")

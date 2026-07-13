@@ -15,9 +15,12 @@ import { EmptyView } from '../../components/common/EmptyView';
 struct SelectContactPage {
   @Provide userStore: UserStore = UserStore.getInstance();
   @State searchKeyword: string = '';
+  @State addIdentifier: string = '';
   @State contacts: User[] = [];
   @State loading: boolean = true;
   @State creating: boolean = false;
+  @State adding: boolean = false;
+  @State showAddPanel: boolean = false;
 
   async aboutToAppear(): Promise<void> {
     await this.loadContacts();
@@ -32,13 +35,29 @@ struct SelectContactPage {
 
   build() {
     Column() {
-      AppNavBar({ title: '选择联系人' })
+      AppNavBar({ title: '选择联系人' }) {
+        Button(this.showAddPanel ? '收起' : '添加')
+          .fontSize(Constants.FONT_SM)
+          .fontColor(Constants.COLOR_WHITE)
+          .backgroundColor(Constants.COLOR_PRIMARY)
+          .borderRadius(Constants.BUTTON_RADIUS)
+          .height(32)
+          .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
+          .onClick(() => {
+            this.showAddPanel = !this.showAddPanel;
+          })
+      }
+
+      if (this.showAddPanel) {
+        this.AddContactPanel()
+      }
+
       SearchBar({ value: $searchKeyword, placeholder: '搜索联系人...' })
 
       if (this.loading) {
         LoadingView()
       } else if (this.filteredContacts().length === 0) {
-        EmptyView({ message: '暂无联系人' })
+        EmptyView({ message: this.searchKeyword.trim() ? '没有匹配的联系人' : '暂无联系人' })
       } else {
         List() {
           ForEach(this.filteredContacts(), (contact: User) => {
@@ -54,6 +73,65 @@ struct SelectContactPage {
     .width('100%')
     .height('100%')
     .backgroundColor(Constants.COLOR_BG)
+  }
+
+  @Builder
+  AddContactPanel() {
+    Column() {
+      Text('添加联系人')
+        .fontSize(Constants.FONT_LG)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
+
+      Text('输入对方手机号、邮箱或用户ID，添加后可直接发起家校沟通。')
+        .fontSize(Constants.FONT_SM)
+        .fontColor(Constants.COLOR_TEXT_HINT)
+        .margin({ top: Constants.SPACE_XS })
+
+      TextInput({ placeholder: '手机号 / 邮箱 / 用户ID', text: this.addIdentifier })
+        .height(44)
+        .fontSize(Constants.FONT_MD)
+        .backgroundColor(Constants.COLOR_BG)
+        .borderRadius(Constants.BUTTON_RADIUS)
+        .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
+        .margin({ top: Constants.SPACE_MD })
+        .onChange((value: string) => {
+          this.addIdentifier = value;
+        })
+
+      Row() {
+        Button('取消')
+          .fontSize(Constants.FONT_MD)
+          .fontColor(Constants.COLOR_TEXT_SECONDARY)
+          .backgroundColor(Constants.COLOR_BG)
+          .borderRadius(Constants.BUTTON_RADIUS)
+          .height(40)
+          .layoutWeight(1)
+          .onClick(() => {
+            this.addIdentifier = '';
+            this.showAddPanel = false;
+          })
+
+        Button(this.adding ? '添加中...' : '保存')
+          .fontSize(Constants.FONT_MD)
+          .fontColor(Constants.COLOR_WHITE)
+          .backgroundColor(Constants.COLOR_PRIMARY)
+          .borderRadius(Constants.BUTTON_RADIUS)
+          .height(40)
+          .layoutWeight(1)
+          .margin({ left: Constants.SPACE_MD })
+          .onClick(() => {
+            this.addContact();
+          })
+      }
+      .width('100%')
+      .margin({ top: Constants.SPACE_MD })
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .padding({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_LG, bottom: Constants.SPACE_LG })
+    .backgroundColor(Constants.COLOR_WHITE)
+    .border({ width: { bottom: 0.5 }, color: Constants.COLOR_BORDER })
   }
 
   @Builder
@@ -108,6 +186,7 @@ struct SelectContactPage {
     return (this.contacts || []).filter((item: User) =>
       item.name.includes(keyword) ||
       (item.phone || '').includes(keyword) ||
+      (item.email || '').includes(keyword) ||
       (item.className || '').includes(keyword)
     );
   }
@@ -123,6 +202,28 @@ struct SelectContactPage {
       return '学生';
     }
     return '家长';
+  }
+
+  private async addContact(): Promise<void> {
+    if (this.adding) {
+      return;
+    }
+    const identifier = this.addIdentifier.trim();
+    if (!identifier) {
+      promptAction.showToast({ message: '请输入联系人手机号、邮箱或用户ID' });
+      return;
+    }
+    this.adding = true;
+    const res = await UserService.addContact(identifier);
+    this.adding = false;
+    if (res.code === 0 && res.data) {
+      this.addIdentifier = '';
+      this.showAddPanel = false;
+      await this.loadContacts();
+      promptAction.showToast({ message: '联系人已添加' });
+    } else {
+      promptAction.showToast({ message: res.message || '添加联系人失败' });
+    }
   }
 
   private async startChat(contact: User): Promise<void> {

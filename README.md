@@ -195,7 +195,7 @@ const BASE_URL = 'http://8.218.156.55:8080';
 | `/api/auth/logout` | POST | 退出登录 |
 | `/api/users/profile` | GET / PUT | 当前用户资料查询与更新 |
 | `/api/users/class/<class_id>` | GET | 班级学生列表 |
-| `/api/users/contacts` | GET | 联系人列表 |
+| `/api/users/contacts` | GET / POST | 联系人列表、添加联系人 |
 | `/api/schools/<school_id>` | GET | 学校信息 |
 | `/api/schools/<school_id>/org-tree` | GET | 学校组织架构 |
 | `/api/notices` | GET / POST | 通知列表与发布通知 |
@@ -229,6 +229,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 - 每次较大改动后需要更新本 README 的修改记录，并推送到 GitHub `main` 分支。
 
 ## 修改记录
+
+### 2026-07-13
+
+- Summary: 为联系人页面补充添加联系人能力，并接入后端持久化联系人关系。
+- Changed: 新增后端 `Contact` 关联模型和 `POST /api/users/contacts` 接口，支持通过手机号、邮箱或用户ID添加联系人并避免重复关系；联系人列表接口兼容同校联系人和手动添加联系人；前端 `SelectContactPage` 增加可折叠添加联系人面板，保存成功后自动刷新列表；`UserService` 新增 `addContact` 服务方法，Mock 与真实后端模式均可调用。
+- Validation: 已执行 `python -m compileall -f backend/app`、`git diff --check`，并使用 Flask testing 验证登录、添加联系人、重复添加、联系人列表和禁止添加自己均符合预期。
 
 ### 2026-07-13
 
