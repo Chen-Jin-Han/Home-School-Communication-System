@@ -1,3 +1,4 @@
+import { router } from '@kit.ArkUI';
 import { Constants } from '../../utils/Constants';
 import { EvaluationService } from '../../services/EvaluationService';
 import { Evaluation } from '../../models/EvaluationModel';
@@ -8,6 +9,10 @@ import { AppNavBar } from '../../components/common/AppNavBar';
 import { LoadingView } from '../../components/common/LoadingView';
 import { EmptyView } from '../../components/common/EmptyView';
 
+interface EvaluationListParams {
+  studentId?: string;
+}
+
 @Entry
 @Component
 struct EvaluationListPage {
@@ -16,11 +21,14 @@ struct EvaluationListPage {
   @State loading: boolean = true;
 
   async aboutToAppear(): Promise<void> {
-    const studentId = this.userStore.getStudentId() || this.userStore.currentUser?.id;
-    if (studentId) {
-      const res = await EvaluationService.getList(studentId);
-      this.evaluations = res.code === 0 && res.data ? res.data : [];
+    const params = router.getParams() as EvaluationListParams;
+    const studentId = (params && params.studentId) || this.userStore.getStudentId() || this.userStore.currentUser?.id;
+    if (!studentId) {
+      this.loading = false;
+      return;
     }
+    const res = await EvaluationService.getList(studentId);
+    this.evaluations = res.code === 0 && res.data ? res.data : [];
     this.loading = false;
   }
 
@@ -37,9 +45,10 @@ struct EvaluationListPage {
             ListItem() {
               EvaluationCard({ evaluation: evaluation })
             }
-          })
+          }, (evaluation: Evaluation) => evaluation.id)
         }
         .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
     }
     .width('100%')

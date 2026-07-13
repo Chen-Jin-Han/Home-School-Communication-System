@@ -10,12 +10,24 @@ export class Constants {
   static readonly COLOR_INFO = '#0284C7';
   static readonly COLOR_BG = '#F5F7FB';
   static readonly COLOR_SURFACE = '#FFFFFF';
+  static readonly COLOR_SURFACE_ALT = '#F8FAFC';
   static readonly COLOR_WHITE = '#FFFFFF';
   static readonly COLOR_TEXT_PRIMARY = '#111827';
   static readonly COLOR_TEXT_SECONDARY = '#4B5563';
   static readonly COLOR_TEXT_HINT = '#8A94A6';
   static readonly COLOR_BORDER = '#E5E7EB';
   static readonly COLOR_DIVIDER = '#EEF2F7';
+
+  static readonly COLOR_TAG_INFO_BG = '#E6F7FF';
+  static readonly COLOR_TAG_DANGER_BG = '#FFF1F0';
+  static readonly COLOR_TAG_SUCCESS_BG = '#F6FFED';
+  static readonly COLOR_TAG_WARNING_BG = '#FFF7E6';
+  static readonly COLOR_TAG_PRIMARY_BG = '#EAF1FF';
+
+  static readonly COLOR_ROLE_PARENT = '#2563EB';
+  static readonly COLOR_ROLE_STUDENT = '#16A34A';
+  static readonly COLOR_ROLE_TEACHER = '#FF6B6B';
+  static readonly COLOR_ROLE_LEADER = '#D97706';
 
   static readonly SPACE_XS = 4;
   static readonly SPACE_SM = 8;
@@ -40,6 +52,5 @@ export class Constants {
   static readonly BUTTON_RADIUS = 10;
   static readonly ICON_SIZE = 24;
 
-  static readonly MOCK_DELAY = 400;
   static readonly PAGE_SIZE = 20;
 }

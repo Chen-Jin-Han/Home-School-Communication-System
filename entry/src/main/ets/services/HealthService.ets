@@ -23,4 +23,34 @@ export class HealthService extends BaseService {
     }
     return HttpUtil.get<HealthRecord | undefined>(`/api/health/records/${recordId}`);
   }
+
+  static async create(record: HealthRecord): Promise<ApiResponse<HealthRecord>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      MockHealth.records.unshift(record);
+      return BaseService.success(record);
+    }
+    return HttpUtil.post<HealthRecord>('/api/health/records', record);
+  }
+
+  static async update(recordId: string, record: HealthRecord): Promise<ApiResponse<HealthRecord>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const idx = MockHealth.records.findIndex(r => r.id === recordId);
+      if (idx >= 0) {
+        MockHealth.records[idx] = record;
+      }
+      return BaseService.success(record);
+    }
+    return HttpUtil.put<HealthRecord>(`/api/health/records/${recordId}`, record);
+  }
+
+  static async delete(recordId: string): Promise<ApiResponse<null>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      MockHealth.records = MockHealth.records.filter(r => r.id !== recordId);
+      return BaseService.success(null);
+    }
+    return HttpUtil.del<null>(`/api/health/records/${recordId}`);
+  }
 }

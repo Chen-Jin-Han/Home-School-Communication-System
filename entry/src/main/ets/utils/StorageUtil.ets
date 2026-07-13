@@ -25,6 +25,23 @@ export class StorageUtil {
     return store.get(key, def) as Promise<T>;
   }
 
+  static async putJSON<T>(key: string, value: T): Promise<void> {
+    await StorageUtil.put(key, JSON.stringify(value));
+  }
+
+  static async getJSON<T>(key: string): Promise<T | undefined> {
+    const raw = await StorageUtil.get<string>(key, '');
+    if (!raw) {
+      return undefined;
+    }
+    try {
+      return JSON.parse(raw) as T;
+    } catch (e) {
+      console.error(`StorageUtil.getJSON(${key}) parse failed:`, e);
+      return undefined;
+    }
+  }
+
   static async remove(key: string): Promise<void> {
     const store = await StorageUtil.getStore();
     await store.delete(key);

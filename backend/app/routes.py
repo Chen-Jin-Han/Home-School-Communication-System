@@ -10,6 +10,7 @@ from . import BusinessError
 from .extensions import db
 from .models import (
     Activity,
+    ActivityComment,
     Attendance,
     ClassInfo,
     Contact,
@@ -127,14 +128,22 @@ def register():
         raise BusinessError("Phone is already registered")
     if email and User.query.filter_by(email=email).first():
         raise BusinessError("Email is already registered")
+    school_id = payload.get("schoolId")
+    school_name = ""
+    if school_id:
+        school = db.session.get(School, int(school_id))
+        if school:
+            school_name = school.name
     user = User(
         name=payload["name"],
         phone=phone or None,
         email=email or None,
         password=hash_password(payload["password"]),
         role=payload["role"],
-        school_id=payload.get("schoolId"),
+        school_id=school_id,
+        school_name=school_name,
         class_id=payload.get("classId"),
+        class_name=payload.get("className") or "",
     )
     db.session.add(user)
     db.session.commit()
@@ -254,7 +263,11 @@ def homework_create():
 @api_bp.get("/api/homework/<int:homework_id>/submission")
 @login_required
 def homework_submission(homework_id: int):
-    submission = Submission.query.filter_by(homework_id=homework_id, student_id=g.user_id).first()
+    user = db.session.get(User, g.user_id)
+    is_staff = user is not None and str(user.role).upper() in ("TEACHER", "LEADER")
+    requested = request.args.get("studentId", type=int)
+    student_id = requested if (requested and is_staff) else g.user_id
+    submission = Submission.query.filter_by(homework_id=homework_id, student_id=student_id).first()
     if not submission:
         raise BusinessError("未找到提交记录")
     return ok(submission.to_dict())
@@ -265,11 +278,14 @@ def homework_submission(homework_id: int):
 def homework_submit(homework_id: int):
     get_or_404(Homework, homework_id, "作业不存在")
     payload = body()
+    student = db.session.get(User, g.user_id)
     submission = Submission.query.filter_by(homework_id=homework_id, student_id=g.user_id).first()
     created = submission is None
     if created:
         submission = Submission(homework_id=homework_id, student_id=g.user_id)
         db.session.add(submission)
+    submission.student_name = student.name if student else ""
+    submission.student_avatar = student.avatar if student else ""
     submission.content = payload.get("content")
     submission.attachments = json_text(payload.get("attachments"))
     submission.status = "submitted"
@@ -397,6 +413,12 @@ def profile():
     return ok(get_or_404(User, g.user_id, "用户不存在").to_dict())
 
 
+@api_bp.get("/api/users/<int:user_id>")
+@login_required
+def user_detail(user_id: int):
+    return ok(get_or_404(User, user_id, "用户不存在").to_dict())
+
+
 @api_bp.put("/api/users/profile")
 @login_required
 def profile_update():
@@ -492,6 +514,13 @@ def school_detail(school_id: int):
     return ok(get_or_404(School, school_id, "学校不存在").to_dict())
 
 
+@api_bp.get("/api/schools/<int:school_id>/classes")
+def school_classes(school_id: int):
+    get_or_404(School, school_id, "学校不存在")
+    rows = ClassInfo.query.filter_by(school_id=school_id).order_by(ClassInfo.grade.asc(), ClassInfo.name.asc()).all()
+    return ok([row.to_dict() for row in rows])
+
+
 @api_bp.get("/api/schools/<int:school_id>/org-tree")
 def org_tree(school_id: int):
     school = get_or_404(School, school_id, "学校不存在")
@@ -537,7 +566,7 @@ def attendance_summary():
     student_id = request.args.get("studentId", g.user_id, type=int)
     rows = Attendance.query.filter_by(student_id=student_id).all()
     total = len(rows)
-    normal = len([row for row in rows if row.status == "normal"])
+    normal = len([row for row in rows if row.status in ("present", "normal")])
     late = len([row for row in rows if row.status == "late"])
     leave = len([row for row in rows if row.status == "leave"])
     absent = len([row for row in rows if row.status == "absent"])
@@ -647,3 +676,288 @@ def activity_join(activity_id: int):
     activity.participant_count = (activity.participant_count or 0) + 1
     db.session.commit()
     return ok(None)
+
+
+@api_bp.get("/api/activities/<int:activity_id>/comments")
+def activity_comments(activity_id: int):
+    get_or_404(Activity, activity_id, "活动不存在")
+    rows = ActivityComment.query.filter_by(activity_id=activity_id).order_by(ActivityComment.created_at.asc()).all()
+    return ok([row.to_dict() for row in rows])
+
+
+@api_bp.post("/api/activities/<int:activity_id>/comments")
+@login_required
+def activity_comment_create(activity_id: int):
+    get_or_404(Activity, activity_id, "活动不存在")
+    payload = body()
+    content = (payload.get("content") or "").strip()
+    if not content:
+        raise BusinessError("评论内容不能为空")
+    user = db.session.get(User, g.user_id)
+    comment = ActivityComment(
+        activity_id=activity_id,
+        user_id=g.user_id,
+        user_name=user.name if user else "",
+        user_avatar=user.avatar if user else "",
+        role=user.role if user else "",
+        content=content,
+    )
+    db.session.add(comment)
+    db.session.commit()
+    return ok(comment.to_dict())
+
+
+def require_staff():
+    user = db.session.get(User, g.user_id)
+    if not user or str(user.role).upper() not in ("TEACHER", "LEADER"):
+        raise BusinessError("仅教师和领导可执行此操作", code=403, http_status=403)
+    return user
+
+
+@api_bp.put("/api/homework/<int:homework_id>")
+@login_required
+def homework_update(homework_id: int):
+    require_staff()
+    homework = get_or_404(Homework, homework_id, "作业不存在")
+    payload = body()
+    for api_key, attr in {"subject": "subject", "title": "title", "content": "content", "class_id": "class_id", "class_name": "class_name", "status": "status"}.items():
+        if api_key in payload:
+            setattr(homework, attr, payload[api_key])
+    if "dueDate" in payload:
+        homework.due_date = parse_dt(payload["dueDate"])
+    if "attachments" in payload:
+        homework.attachments = json_text(payload["attachments"])
+    homework.updated_at = datetime.utcnow()
+    db.session.commit()
+    return ok(homework.to_dict())
+
+
+@api_bp.delete("/api/homework/<int:homework_id>")
+@login_required
+def homework_delete(homework_id: int):
+    require_staff()
+    homework = get_or_404(Homework, homework_id, "作业不存在")
+    db.session.delete(homework)
+    db.session.commit()
+    return ok(None)
+
+
+@api_bp.get("/api/homework/<int:homework_id>/submissions")
+@login_required
+def homework_submissions(homework_id: int):
+    require_staff()
+    rows = Submission.query.filter_by(homework_id=homework_id).order_by(Submission.submitted_at.desc()).all()
+    return ok([row.to_dict() for row in rows])
+
+
+@api_bp.post("/api/health/records")
+@login_required
+def health_record_create():
+    require_staff()
+    payload = body()
+    record = HealthRecord(
+        student_id=payload.get("studentId"),
+        student_name=payload.get("studentName", ""),
+        class_name=payload.get("className", ""),
+        record_date=parse_dt(payload.get("recordDate")),
+        height=payload.get("height", 0),
+        weight=payload.get("weight", 0),
+        bmi=payload.get("bmi", 0),
+        vision_left=payload.get("visionLeft", 0),
+        vision_right=payload.get("visionRight", 0),
+        temperature=payload.get("temperature", 0),
+        blood_pressure=payload.get("bloodPressure", ""),
+        heart_rate=payload.get("heartRate", 0),
+        vaccinations=json_text(payload.get("vaccinations")),
+        medical_history=payload.get("medicalHistory", ""),
+        allergies=payload.get("allergies", ""),
+        health_status=payload.get("healthStatus", "healthy"),
+    )
+    db.session.add(record)
+    db.session.commit()
+    return ok(record.to_dict())
+
+
+@api_bp.put("/api/health/records/<int:record_id>")
+@login_required
+def health_record_update(record_id: int):
+    require_staff()
+    record = get_or_404(HealthRecord, record_id, "健康记录不存在")
+    payload = body()
+    for api_key, attr in {
+        "studentName": "student_name", "className": "class_name",
+        "height": "height", "weight": "weight", "bmi": "bmi",
+        "visionLeft": "vision_left", "visionRight": "vision_right",
+        "temperature": "temperature", "bloodPressure": "blood_pressure",
+        "heartRate": "heart_rate", "medicalHistory": "medical_history",
+        "allergies": "allergies", "healthStatus": "health_status",
+    }.items():
+        if api_key in payload:
+            setattr(record, attr, payload[api_key])
+    if "recordDate" in payload:
+        record.record_date = parse_dt(payload["recordDate"])
+    if "vaccinations" in payload:
+        record.vaccinations = json_text(payload["vaccinations"])
+    record.updated_at = datetime.utcnow()
+    db.session.commit()
+    return ok(record.to_dict())
+
+
+@api_bp.delete("/api/health/records/<int:record_id>")
+@login_required
+def health_record_delete(record_id: int):
+    require_staff()
+    record = get_or_404(HealthRecord, record_id, "健康记录不存在")
+    db.session.delete(record)
+    db.session.commit()
+    return ok(None)
+
+
+@api_bp.post("/api/activities")
+@login_required
+def activity_create():
+    require_staff()
+    payload = body()
+    user = db.session.get(User, g.user_id)
+    activity = Activity(
+        title=payload.get("title", ""),
+        description=payload.get("description"),
+        cover_image=payload.get("coverImage", ""),
+        organizer_id=g.user_id,
+        organizer_name=user.name if user else "",
+        location=payload.get("location", ""),
+        start_time=parse_dt(payload.get("startTime")),
+        end_time=parse_dt(payload.get("endTime")),
+        max_participants=payload.get("maxParticipants", 0),
+        photos=json_text(payload.get("photos")),
+        status=payload.get("status", "upcoming"),
+    )
+    db.session.add(activity)
+    db.session.commit()
+    return ok(activity.to_dict())
+
+
+@api_bp.put("/api/activities/<int:activity_id>")
+@login_required
+def activity_update(activity_id: int):
+    require_staff()
+    activity = get_or_404(Activity, activity_id, "活动不存在")
+    payload = body()
+    for api_key, attr in {
+        "title": "title", "description": "description", "coverImage": "cover_image",
+        "location": "location", "status": "status", "maxParticipants": "max_participants",
+    }.items():
+        if api_key in payload:
+            setattr(activity, attr, payload[api_key])
+    if "startTime" in payload:
+        activity.start_time = parse_dt(payload["startTime"])
+    if "endTime" in payload:
+        activity.end_time = parse_dt(payload["endTime"])
+    if "photos" in payload:
+        activity.photos = json_text(payload["photos"])
+    db.session.commit()
+    return ok(activity.to_dict())
+
+
+@api_bp.delete("/api/activities/<int:activity_id>")
+@login_required
+def activity_delete(activity_id: int):
+    require_staff()
+    activity = get_or_404(Activity, activity_id, "活动不存在")
+    db.session.delete(activity)
+    db.session.commit()
+    return ok(None)
+
+
+@api_bp.post("/api/attendance")
+@login_required
+def attendance_create():
+    require_staff()
+    payload = body()
+    record = Attendance(
+        student_id=payload.get("studentId"),
+        student_name=payload.get("studentName", ""),
+        class_id=payload.get("classId"),
+        class_name=payload.get("className", ""),
+        date=parse_dt(payload.get("date")),
+        day_of_week=payload.get("dayOfWeek", ""),
+        check_in_time=parse_dt(payload.get("checkInTime")),
+        status=payload.get("status", "present"),
+        method=payload.get("method", "card"),
+        remark=payload.get("remark", ""),
+    )
+    db.session.add(record)
+    db.session.commit()
+    return ok(record.to_dict())
+
+
+@api_bp.put("/api/attendance/<int:attendance_id>")
+@login_required
+def attendance_update(attendance_id: int):
+    require_staff()
+    record = get_or_404(Attendance, attendance_id, "考勤记录不存在")
+    payload = body()
+    for api_key, attr in {
+        "status": "status", "remark": "remark", "method": "method",
+        "studentName": "student_name", "dayOfWeek": "day_of_week",
+    }.items():
+        if api_key in payload:
+            setattr(record, attr, payload[api_key])
+    if "date" in payload:
+        record.date = parse_dt(payload["date"])
+    if "checkInTime" in payload:
+        record.check_in_time = parse_dt(payload["checkInTime"])
+    db.session.commit()
+    return ok(record.to_dict())
+
+
+@api_bp.delete("/api/attendance/<int:attendance_id>")
+@login_required
+def attendance_delete(attendance_id: int):
+    require_staff()
+    record = get_or_404(Attendance, attendance_id, "考勤记录不存在")
+    db.session.delete(record)
+    db.session.commit()
+    return ok(None)
+
+
+@api_bp.post("/api/grades/reports")
+@login_required
+def grade_report_create():
+    require_staff()
+    payload = body()
+    report = GradeReport(
+        student_id=payload.get("studentId"),
+        student_name=payload.get("studentName", ""),
+        class_name=payload.get("className", ""),
+        exam_name=payload.get("examName", ""),
+        exam_date=parse_dt(payload.get("examDate")),
+        subjects=json_text(payload.get("subjects")),
+        total_score=payload.get("totalScore", 0),
+        total_full_score=payload.get("totalFullScore", 0),
+        class_rank=payload.get("classRank", 0),
+        class_size=payload.get("classSize", 0),
+        grade_rank=payload.get("gradeRank", 0),
+        grade_size=payload.get("gradeSize", 0),
+        teacher_comment=payload.get("teacherComment", ""),
+    )
+    db.session.add(report)
+    db.session.commit()
+    return ok(report.to_dict())
+
+
+@api_bp.delete("/api/evaluations/<int:evaluation_id>")
+@login_required
+def evaluation_delete(evaluation_id: int):
+    require_staff()
+    evaluation = get_or_404(Evaluation, evaluation_id, "评价不存在")
+    db.session.delete(evaluation)
+    db.session.commit()
+    return ok(None)
+
+
+@api_bp.get("/api/users/class/<int:class_id>/members")
+@login_required
+def class_members(class_id: int):
+    rows = User.query.filter_by(class_id=class_id).order_by(User.role.asc(), User.name.asc()).all()
+    return ok([row.to_dict() for row in rows])

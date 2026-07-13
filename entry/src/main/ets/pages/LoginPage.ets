@@ -13,8 +13,8 @@ interface QuickAccount {
 @Entry
 @Component
 struct LoginPage {
-  @State account: string = 'parent@huadee.test';
-  @State password: string = '123456';
+  @State account: string = '';
+  @State password: string = '';
   @State loading: boolean = false;
 
   private quickAccounts: QuickAccount[] = [
@@ -213,11 +213,11 @@ struct LoginPage {
   async handleLogin(): Promise<void> {
     const account = this.account.trim();
     if (!account) {
-      promptAction.showToast({ message: '请输入手机号或邮箱' });
+      promptAction.openToast({ message: '请输入手机号或邮箱' });
       return;
     }
     if (!this.password) {
-      promptAction.showToast({ message: '请输入密码' });
+      promptAction.openToast({ message: '请输入密码' });
       return;
     }
 
@@ -228,10 +228,10 @@ struct LoginPage {
     if (res.code === 0) {
       const store = UserStore.getInstance();
       await store.login(res.data.user, res.data.token);
-      promptAction.showToast({ message: `欢迎，${res.data.user.name}` });
+      promptAction.openToast({ message: `欢迎，${res.data.user.name}` });
       RouterUtil.toHome(res.data.user.role);
     } else {
-      promptAction.showToast({ message: res.message || '登录失败' });
+      promptAction.openToast({ message: res.message || '登录失败' });
     }
   }
 }

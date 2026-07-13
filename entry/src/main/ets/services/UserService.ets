@@ -9,6 +9,8 @@ interface AddContactRequest {
   identifier: string;
 }
 
+const mockContactIds: string[] = [];
+
 export class UserService extends BaseService {
   static async getProfile(userId: string): Promise<ApiResponse<User | undefined>> {
     if (USE_MOCK) {
@@ -16,7 +18,11 @@ export class UserService extends BaseService {
       const user = MockAuth.accounts.find(u => u.id === userId);
       return BaseService.success(user);
     }
-    return HttpUtil.get<User | undefined>('/api/users/profile', UserStore.getInstance().authToken);
+    const currentId = UserStore.getInstance().currentUser?.id;
+    const path = userId && userId !== currentId
+      ? `/api/users/${userId}`
+      : '/api/users/profile';
+    return HttpUtil.get<User | undefined>(path, UserStore.getInstance().authToken);
   }
 
   static async updateProfile(user: User): Promise<ApiResponse<User>> {
@@ -42,7 +48,14 @@ export class UserService extends BaseService {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
       const currentId = UserStore.getInstance().currentUser?.id;
-      const contacts = MockAuth.accounts.filter(u => u.id !== currentId);
+      let contacts: User[];
+      if (mockContactIds.length > 0) {
+        contacts = MockAuth.accounts.filter(
+          u => mockContactIds.includes(u.id) && u.id !== currentId
+        );
+      } else {
+        contacts = MockAuth.accounts.filter(u => u.id !== currentId);
+      }
       return BaseService.success(contacts);
     }
     return HttpUtil.get<User[]>('/api/users/contacts', UserStore.getInstance().authToken);
@@ -63,6 +76,9 @@ export class UserService extends BaseService {
       }
       if (user.id === currentId) {
         return BaseService.error(1000, '不能添加自己为联系人');
+      }
+      if (!mockContactIds.includes(user.id)) {
+        mockContactIds.push(user.id);
       }
       return BaseService.success(user);
     }

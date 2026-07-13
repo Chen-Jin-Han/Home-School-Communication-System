@@ -1,13 +1,18 @@
 import { BaseService, ApiResponse, PageResult } from './BaseService';
-import { Conversation, Message } from '../models/ChatModel';
+import { Conversation, Message, Participant } from '../models/ChatModel';
 import { MockChats } from '../mock/MockChats';
 import { Constants } from '../utils/Constants';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
+import { UserRole } from '../models/UserModel';
 
 interface CreatePrivateConversationRequest {
   targetUserId: string;
+}
+
+interface SendMessageRequest {
+  content: string;
 }
 
 export class ChatService extends BaseService {
@@ -43,10 +48,12 @@ export class ChatService extends BaseService {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
       const messagesMap = MockChats.messages as Record<string, Message[]>;
-      const arr = messagesMap[message.conversationId];
-      if (arr) {
-        arr.push(message);
+      let arr = messagesMap[message.conversationId];
+      if (!arr) {
+        arr = [];
+        messagesMap[message.conversationId] = arr;
       }
+      arr.push(message);
       // Update conversation's lastMessage
       const conv = MockChats.conversations.find(c => c.id === message.conversationId);
       if (conv) {
@@ -55,10 +62,12 @@ export class ChatService extends BaseService {
       }
       return BaseService.success(message);
     }
+    const request: SendMessageRequest = {
+      content: message.content,
+    };
     return HttpUtil.post<Message>(
       `/api/conversations/${message.conversationId}/messages`,
-      message,
-      UserStore.getInstance().authToken
+      request
     );
   }
 
@@ -82,12 +91,25 @@ export class ChatService extends BaseService {
       if (existing) {
         return BaseService.success(existing);
       }
+      const currentUser = UserStore.getInstance().currentUser;
+      const currentParticipant: Participant = {
+        userId: currentUser ? currentUser.id : '',
+        userName: currentUser ? currentUser.name : '',
+        avatar: currentUser ? currentUser.avatar : '',
+        role: currentUser ? currentUser.role : UserRole.PARENT,
+      };
+      const targetParticipant: Participant = {
+        userId: targetUserId,
+        userName: targetUserId,
+        avatar: '',
+        role: UserRole.PARENT,
+      };
       const conv: Conversation = {
         id: `conv_${Date.now()}`,
         type: 'private',
         name: '新会话',
         avatar: '',
-        participants: [],
+        participants: [currentParticipant, targetParticipant],
         unreadCount: 0,
         updatedAt: Date.now(),
       };

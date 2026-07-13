@@ -45,4 +45,5 @@ export interface RegisterParams {
   role: UserRole;
   schoolId: string;
   classId?: string;
+  className?: string;
 }
