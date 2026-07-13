@@ -89,13 +89,17 @@ struct GradeDetailPage {
           }
           .width('100%')
           .padding(Constants.SPACE_LG)
+          .backgroundColor(Constants.COLOR_WHITE)
+          .borderRadius(Constants.CARD_RADIUS)
+          .border({ width: 1, color: Constants.COLOR_BORDER })
+          .margin(Constants.SPACE_LG)
         }
         .layoutWeight(1)
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(Constants.COLOR_WHITE)
+    .backgroundColor(Constants.COLOR_BG)
   }
 
   @Builder

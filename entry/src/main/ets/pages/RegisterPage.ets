@@ -3,6 +3,7 @@ import { Constants } from '../utils/Constants';
 import { RouterUtil } from '../utils/RouterUtil';
 import { UserRole, RegisterParams } from '../models/UserModel';
 import { AuthService } from '../services/AuthService';
+import { ElementIcon } from '../components/common/ElementIcon';
 
 interface RoleOption {
   role: UserRole;
@@ -29,12 +30,9 @@ struct RegisterPage {
   build() {
     Column() {
       Row() {
-        Text('‹')
-          .fontSize(34)
-          .fontColor('#174A7C')
+        ElementIcon({ name: 'Back', size: 24, color: '#174A7C' })
           .width(44)
           .height(44)
-          .textAlign(TextAlign.Center)
           .onClick(() => {
             RouterUtil.toLogin();
           })

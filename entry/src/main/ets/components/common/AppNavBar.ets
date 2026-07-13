@@ -1,5 +1,6 @@
 import { router } from '@kit.ArkUI';
 import { Constants } from '../../utils/Constants';
+import { ElementIcon } from './ElementIcon';
 
 @Component
 export struct AppNavBar {
@@ -11,12 +12,7 @@ export struct AppNavBar {
     Row() {
       if (this.showBack) {
         Row() {
-          Text('<')
-            .fontSize(24)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(Constants.COLOR_TEXT_PRIMARY)
-            .width(18)
-            .textAlign(TextAlign.Center)
+          ElementIcon({ name: 'Back', size: 18, color: Constants.COLOR_TEXT_PRIMARY })
 
           Text('返回')
             .fontSize(Constants.FONT_MD)

@@ -1,6 +1,7 @@
 import { Notice } from '../../models/NoticeModel';
 import { Constants } from '../../utils/Constants';
 import { DateUtil } from '../../utils/DateUtil';
+import { ElementIcon } from '../common/ElementIcon';
 
 @Component
 export struct NotificationItem {
@@ -49,10 +50,7 @@ export struct NotificationItem {
       }
       .layoutWeight(1)
 
-      Image($r('sys.symbol.chevron_right'))
-        .width(16)
-        .height(16)
-        .fillColor(Constants.COLOR_TEXT_HINT)
+      ElementIcon({ name: 'ChevronRight', size: 16, color: Constants.COLOR_TEXT_HINT })
         .margin({ left: Constants.SPACE_SM })
     }
     .width('100%')

@@ -5,6 +5,7 @@ import { RouterUtil } from '../../utils/RouterUtil';
 import { UserStore } from '../../store/UserStore';
 import { AppNavBar } from '../../components/common/AppNavBar';
 import { LoadingView } from '../../components/common/LoadingView';
+import { ElementIcon } from '../../components/common/ElementIcon';
 
 @Entry
 @Component
@@ -33,25 +34,30 @@ struct OrgStructurePage {
           Column() {
             // School node
             Row() {
-              Text('🏫').fontSize(24)
+              this.NodeIcon('School', Constants.COLOR_PRIMARY)
               Text(this.orgTree.name).fontSize(Constants.FONT_XL).fontWeight(FontWeight.Bold).margin({ left: Constants.SPACE_SM })
             }
             .width('100%')
             .padding(Constants.SPACE_LG)
             .backgroundColor(Constants.COLOR_WHITE)
+            .borderRadius(Constants.CARD_RADIUS)
+            .border({ width: 1, color: Constants.COLOR_BORDER })
+            .margin({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_LG })
 
             // Grades
             ForEach(this.orgTree.children || [], (grade: OrgNode) => {
               Column() {
                 Row() {
-                  Text('📚').fontSize(20)
+                  this.NodeIcon('Team', Constants.COLOR_PRIMARY)
                   Text(grade.name).fontSize(Constants.FONT_LG).fontWeight(FontWeight.Bold).layoutWeight(1).margin({ left: Constants.SPACE_SM })
                   Text(this.expandedGrades.has(String(grade.id)) ? '收起' : '展开').fontSize(Constants.FONT_SM).fontColor(Constants.COLOR_PRIMARY)
                 }
                 .width('100%')
                 .padding(Constants.SPACE_MD)
                 .backgroundColor(Constants.COLOR_WHITE)
-                .margin({ top: Constants.SPACE_SM })
+                .borderRadius(Constants.CARD_RADIUS)
+                .border({ width: 1, color: Constants.COLOR_BORDER })
+                .margin({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_SM })
                 .onClick(() => {
                   const gradeId = String(grade.id);
                   if (this.expandedGrades.has(gradeId)) {
@@ -65,13 +71,14 @@ struct OrgStructurePage {
                 if (this.expandedGrades.has(String(grade.id))) {
                   ForEach(grade.children || [], (cls: OrgNode) => {
                     Row() {
-                      Text('  📖').fontSize(16)
+                      this.NodeIcon('Document', Constants.COLOR_TEXT_HINT)
                       Text(cls.name).fontSize(Constants.FONT_MD).fontColor(Constants.COLOR_TEXT_SECONDARY).layoutWeight(1).margin({ left: Constants.SPACE_SM })
                       Text('查看').fontSize(Constants.FONT_SM).fontColor(Constants.COLOR_PRIMARY)
                     }
                     .width('100%')
-                    .padding({ left: Constants.SPACE_XXL, right: Constants.SPACE_MD, top: Constants.SPACE_SM, bottom: Constants.SPACE_SM })
+                    .padding({ left: Constants.SPACE_XL, right: Constants.SPACE_LG, top: Constants.SPACE_SM, bottom: Constants.SPACE_SM })
                     .backgroundColor(Constants.COLOR_WHITE)
+                    .margin({ left: Constants.SPACE_XXL, right: Constants.SPACE_LG })
                     .border({ width: { top: 0.5 }, color: Constants.COLOR_DIVIDER })
                     .onClick(() => { RouterUtil.toStudentList(String(cls.id)); })
                   })
@@ -89,5 +96,18 @@ struct OrgStructurePage {
     .width('100%')
     .height('100%')
     .backgroundColor(Constants.COLOR_BG)
+  }
+
+  @Builder
+  NodeIcon(name: string, color: string) {
+    Row() {
+      ElementIcon({ name: name, size: 18, color: color })
+    }
+    .width(34)
+    .height(34)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(VerticalAlign.Center)
+    .backgroundColor(Constants.COLOR_PRIMARY_SOFT)
+    .borderRadius(10)
   }
 }

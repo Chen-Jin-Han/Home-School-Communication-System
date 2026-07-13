@@ -5,6 +5,7 @@ import { HealthRecord, Vaccination } from '../../models/HealthModel';
 import { DateUtil } from '../../utils/DateUtil';
 import { AppNavBar } from '../../components/common/AppNavBar';
 import { LoadingView } from '../../components/common/LoadingView';
+import { ElementIcon } from '../../components/common/ElementIcon';
 
 interface HealthDetailParams {
   recordId: string;
@@ -71,7 +72,7 @@ struct HealthDetailPage {
               Text('疫苗接种').fontSize(Constants.FONT_LG).fontWeight(FontWeight.Bold).width('100%').margin({ top: Constants.SPACE_XL, bottom: Constants.SPACE_SM })
               ForEach(this.record.vaccinations || [], (v: Vaccination) => {
                 Row() {
-                  Text('💉').fontSize(16)
+                  ElementIcon({ name: 'Health', size: 16, color: Constants.COLOR_SUCCESS })
                   Column() {
                     Text(v.name || '疫苗记录').fontSize(Constants.FONT_MD).fontColor(Constants.COLOR_TEXT_PRIMARY)
                     Text(`${v.date ? DateUtil.formatDate(v.date) : '--'} · ${v.location || '未记录地点'}`).fontSize(Constants.FONT_SM).fontColor(Constants.COLOR_TEXT_HINT).margin({ top: 2 })
@@ -107,13 +108,17 @@ struct HealthDetailPage {
           }
           .width('100%')
           .padding(Constants.SPACE_LG)
+          .backgroundColor(Constants.COLOR_WHITE)
+          .borderRadius(Constants.CARD_RADIUS)
+          .border({ width: 1, color: Constants.COLOR_BORDER })
+          .margin(Constants.SPACE_LG)
         }
         .layoutWeight(1)
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(Constants.COLOR_WHITE)
+    .backgroundColor(Constants.COLOR_BG)
   }
 
   @Builder

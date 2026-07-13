@@ -1,5 +1,6 @@
 import { Constants } from '../../utils/Constants';
 import { DateUtil } from '../../utils/DateUtil';
+import { ElementIcon } from '../common/ElementIcon';
 
 @Component
 export struct FormDatePicker {
@@ -14,10 +15,7 @@ export struct FormDatePicker {
         .fontColor(this.timestamp > 0 ? Constants.COLOR_TEXT_PRIMARY : Constants.COLOR_TEXT_HINT)
         .layoutWeight(1)
 
-      Image($r('sys.symbol.calendar'))
-        .width(18)
-        .height(18)
-        .fillColor(Constants.COLOR_TEXT_HINT)
+      ElementIcon({ name: 'Calendar', size: 18, color: Constants.COLOR_TEXT_HINT })
     }
     .width('100%')
     .height(44)

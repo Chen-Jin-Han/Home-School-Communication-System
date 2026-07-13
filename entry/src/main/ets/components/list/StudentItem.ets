@@ -1,4 +1,5 @@
 import { Constants } from '../../utils/Constants';
+import { ElementIcon } from '../common/ElementIcon';
 
 @Component
 export struct StudentItem {
@@ -45,10 +46,7 @@ export struct StudentItem {
           .borderRadius(10)
       }
 
-      Image($r('sys.symbol.chevron_right'))
-        .width(16)
-        .height(16)
-        .fillColor(Constants.COLOR_TEXT_HINT)
+      ElementIcon({ name: 'ChevronRight', size: 16, color: Constants.COLOR_TEXT_HINT })
         .margin({ left: Constants.SPACE_SM })
     }
     .width('100%')

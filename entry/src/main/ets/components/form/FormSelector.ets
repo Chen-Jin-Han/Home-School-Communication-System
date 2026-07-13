@@ -1,4 +1,5 @@
 import { Constants } from '../../utils/Constants';
+import { ElementIcon } from '../common/ElementIcon';
 
 export interface SelectOption {
   label: string;
@@ -19,10 +20,7 @@ export struct FormSelector {
         .fontColor(this.selectedValue ? Constants.COLOR_TEXT_PRIMARY : Constants.COLOR_TEXT_HINT)
         .layoutWeight(1)
 
-      Image($r('sys.symbol.chevron_down'))
-        .width(16)
-        .height(16)
-        .fillColor(Constants.COLOR_TEXT_HINT)
+      ElementIcon({ name: 'ChevronDown', size: 16, color: Constants.COLOR_TEXT_HINT })
     }
     .width('100%')
     .height(46)

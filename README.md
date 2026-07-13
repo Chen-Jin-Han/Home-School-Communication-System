@@ -232,6 +232,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 全面复查功能页布局规范，并重构 App 图标体系为统一的 Element/Ant Design 风格语义图标层。
+- Changed: 重写 `ElementIcon` 为 ArkTS 原生统一图标组件，采用 `Home`、`Message`、`User`、`Bell`、`Document`、`Chart`、`Calendar`、`School`、`Team`、`ChevronRight` 等常见 TypeScript 组件库语义命名；替换工作台、底部导航、公共返回栏、搜索框、表单选择器、日期选择器、图片选择器、通知/学生列表、活动卡片、组织架构和健康详情中的 `sys.symbol`、emoji、文本箭头和单字符占位图标；统一活动、成绩、作业、通知、健康等详情页为灰底页面 + 白色内容卡片布局，和列表页、表单页保持一致。
+- Validation: 已执行 `git diff --check`，并确认 `entry/src/main/ets` 中不再存在 `sys.symbol`、emoji 图标和 `<` / `>` 文本箭头图标；当前命令行环境仍无 `hvigor`，最终 ArkTS 构建需在 DevEco Studio 中 Clean/Rebuild 验证。
+
+### 2026-07-13
+
 - Summary: 为联系人页面补充添加联系人能力，并接入后端持久化联系人关系。
 - Changed: 新增后端 `Contact` 关联模型和 `POST /api/users/contacts` 接口，支持通过手机号、邮箱或用户ID添加联系人并避免重复关系；联系人列表接口兼容同校联系人和手动添加联系人；前端 `SelectContactPage` 增加可折叠添加联系人面板，保存成功后自动刷新列表；`UserService` 新增 `addContact` 服务方法，Mock 与真实后端模式均可调用。
 - Validation: 已执行 `python -m compileall -f backend/app`、`git diff --check`，并使用 Flask testing 验证登录、添加联系人、重复添加、联系人列表和禁止添加自己均符合预期。

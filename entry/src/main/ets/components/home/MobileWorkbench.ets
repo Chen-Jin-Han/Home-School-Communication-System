@@ -287,12 +287,7 @@ export struct MobileWorkbench {
     Row() {
       if (showBack) {
         Row() {
-          Text('<')
-            .fontSize(24)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(Constants.COLOR_TEXT_PRIMARY)
-            .width(18)
-            .textAlign(TextAlign.Center)
+          ElementIcon({ name: 'Back', size: 18, color: Constants.COLOR_TEXT_PRIMARY })
 
           Text('返回')
             .fontSize(Constants.FONT_MD)
@@ -342,9 +337,7 @@ export struct MobileWorkbench {
       .margin({ left: 12 })
       .layoutWeight(1)
 
-      Text('>')
-        .fontSize(22)
-        .fontColor(Constants.COLOR_TEXT_HINT)
+      ElementIcon({ name: 'ChevronRight', size: 18, color: Constants.COLOR_TEXT_HINT })
     }
     .width('100%')
     .padding(16)

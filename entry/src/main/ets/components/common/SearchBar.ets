@@ -1,4 +1,5 @@
 import { Constants } from '../../utils/Constants';
+import { ElementIcon } from './ElementIcon';
 
 @Component
 export struct SearchBar {
@@ -8,10 +9,7 @@ export struct SearchBar {
 
   build() {
     Row() {
-      Image($r('sys.symbol.magnifyingglass'))
-        .width(18)
-        .height(18)
-        .fillColor(Constants.COLOR_TEXT_HINT)
+      ElementIcon({ name: 'Search', size: 18, color: Constants.COLOR_TEXT_HINT })
         .margin({ left: Constants.SPACE_MD, right: Constants.SPACE_SM })
 
       TextInput({ placeholder: this.placeholder, text: this.value })
@@ -32,10 +30,7 @@ export struct SearchBar {
         })
 
       if (this.value) {
-        Image($r('sys.symbol.xmark_circle_fill'))
-          .width(18)
-          .height(18)
-          .fillColor(Constants.COLOR_TEXT_HINT)
+        ElementIcon({ name: 'Close', size: 18, color: Constants.COLOR_TEXT_HINT })
           .margin({ right: Constants.SPACE_MD })
           .onClick(() => {
             this.value = '';
