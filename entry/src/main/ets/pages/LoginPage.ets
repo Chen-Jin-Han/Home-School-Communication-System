@@ -16,7 +16,6 @@ struct LoginPage {
   @State account: string = 'parent@huadee.test';
   @State password: string = '123456';
   @State loading: boolean = false;
-  @State showPassword: boolean = false;
 
   private quickAccounts: QuickAccount[] = [
     { label: '家长', account: 'parent@huadee.test', password: '123456' },
@@ -173,33 +172,21 @@ struct LoginPage {
         .fontColor(Constants.COLOR_TEXT_HINT)
         .width('100%')
         .margin({ top: 16, bottom: 8 })
-
-      Row() {
-        TextInput({ placeholder: '请输入密码', text: this.password })
-          .layoutWeight(1)
-          .height(48)
-          .fontSize(Constants.FONT_LG)
-          .fontColor(Constants.COLOR_TEXT_PRIMARY)
-          .placeholderColor('#A8B3BF')
-          .backgroundColor(Color.Transparent)
-          .type(this.showPassword ? InputType.Normal : InputType.Password)
-          .onChange((text: string) => {
-            this.password = text;
-          })
-
-        Text(this.showPassword ? '隐藏' : '显示')
-          .fontSize(Constants.FONT_SM)
-          .fontColor('#4A90D9')
-          .padding({ left: 12 })
-          .onClick(() => {
-            this.showPassword = !this.showPassword;
-          })
-      }
-      .width('100%')
-      .height(48)
-      .padding({ left: 14, right: 14 })
-      .backgroundColor('#F6F9FC')
-      .borderRadius(12)
+      TextInput({ placeholder: '请输入密码', text: this.password })
+        .height(48)
+        .fontSize(Constants.FONT_LG)
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
+        .placeholderColor('#A8B3BF')
+        .backgroundColor(Color.Transparent)
+        .type(InputType.Password)
+        .onChange((text: string) => {
+          this.password = text;
+        })
+        .width('100%')
+        .height(48)
+        .padding({ left: 14, right: 14 })
+        .backgroundColor('#F6F9FC')
+        .borderRadius(12)
     }
     .width('100%')
   }
