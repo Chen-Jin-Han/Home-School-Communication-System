@@ -14,7 +14,6 @@ struct Index {
     } catch (e) {
       // Continue to login when local auth cache cannot be restored.
     }
-    await new Promise<void>(resolve => setTimeout(resolve, 800));
     this.loading = false;
     try {
       RouterUtil.toHomeFromSplash();

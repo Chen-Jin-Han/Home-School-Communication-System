@@ -1,4 +1,4 @@
-import { router } from '@kit.ArkUI';
+import { router, promptAction } from '@kit.ArkUI';
 import { Constants } from '../../utils/Constants';
 import { ChatService } from '../../services/ChatService';
 import { Message } from '../../models/ChatModel';
@@ -22,14 +22,69 @@ struct ChatPage {
   @State inputText: string = '';
   private conversationId: string = '';
   private conversationName: string = '';
+  private scroller: ListScroller = new ListScroller();
+  private pollTimer: number = -1;
+  private isSending: boolean = false;
+  private isRefreshing: boolean = false;
 
   async aboutToAppear(): Promise<void> {
     const params = router.getParams() as ChatPageParams;
+    if (!params || !params.conversationId) {
+      router.back();
+      return;
+    }
     this.conversationId = params.conversationId;
     this.conversationName = params.name;
     const res = await ChatService.getMessages(this.conversationId, 1);
     this.messages = res.code === 0 && res.data ? (res.data.list || []) : [];
     this.loading = false;
+    this.scrollToBottom();
+    this.startPolling();
+  }
+
+  aboutToDisappear(): void {
+    this.stopPolling();
+  }
+
+  private startPolling(): void {
+    this.stopPolling();
+    this.pollTimer = setInterval(() => {
+      this.refreshMessages();
+    }, 5000);
+  }
+
+  private stopPolling(): void {
+    if (this.pollTimer !== -1) {
+      clearInterval(this.pollTimer);
+      this.pollTimer = -1;
+    }
+  }
+
+  private async refreshMessages(): Promise<void> {
+    if (this.loading || this.isSending || this.isRefreshing) {
+      return;
+    }
+    this.isRefreshing = true;
+    try {
+      const res = await ChatService.getMessages(this.conversationId, 1);
+      if (res.code === 0 && res.data) {
+        const newMessages = res.data.list || [];
+        if (newMessages.length !== this.messages.length) {
+          this.messages = newMessages;
+          this.scrollToBottom();
+        }
+      }
+    } finally {
+      this.isRefreshing = false;
+    }
+  }
+
+  private scrollToBottom(): void {
+    if (this.messages.length > 0) {
+      setTimeout(() => {
+        this.scroller.scrollToIndex(this.messages.length - 1);
+      }, 50);
+    }
   }
 
   build() {
@@ -39,14 +94,15 @@ struct ChatPage {
       if (this.loading) {
         LoadingView()
       } else {
-        List() {
+        List({ scroller: this.scroller }) {
           ForEach(this.messages || [], (msg: Message) => {
             ListItem() {
               this.MessageBubble(msg)
             }
-          })
+          }, (msg: Message) => msg.id)
         }
         .layoutWeight(1)
+        .scrollBar(BarState.Off)
         .padding({ left: Constants.SPACE_LG, right: Constants.SPACE_LG })
       }
 
@@ -60,6 +116,7 @@ struct ChatPage {
           .borderRadius(20)
           .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
           .onChange((v: string) => { this.inputText = v; })
+          .onSubmit(() => { this.sendMessage(); })
 
         Button('发送')
           .fontSize(Constants.FONT_MD)
@@ -116,7 +173,9 @@ struct ChatPage {
 
   async sendMessage(): Promise<void> {
     if (!this.inputText) return;
+    if (this.isSending) return;
     const store = this.userStore;
+    const content = this.inputText;
     const msg: Message = {
       id: `msg_${Date.now()}`,
       conversationId: this.conversationId,
@@ -124,12 +183,30 @@ struct ChatPage {
       senderName: store.currentUser?.name || '',
       senderAvatar: '',
       type: 'text',
-      content: this.inputText,
+      content: content,
       createdAt: Date.now(),
       status: 'sent',
     };
+    this.isSending = true;
     this.messages = [...(this.messages || []), msg];
     this.inputText = '';
-    await ChatService.sendMessage(msg);
+    this.scrollToBottom();
+    const res = await ChatService.sendMessage(msg);
+    this.isSending = false;
+    if (res.code === 0 && res.data) {
+      const arr = [...(this.messages || [])];
+      if (arr.length > 0) {
+        arr[arr.length - 1] = res.data;
+      }
+      this.messages = arr;
+    } else {
+      promptAction.openToast({ message: res.message || '发送失败' });
+      const arr = [...(this.messages || [])];
+      if (arr.length > 0) {
+        arr.length = arr.length - 1;
+      }
+      this.messages = arr;
+      this.inputText = content;
+    }
   }
 }

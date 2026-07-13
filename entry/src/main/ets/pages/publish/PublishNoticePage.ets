@@ -92,11 +92,11 @@ struct PublishNoticePage {
 
   async handlePublish(): Promise<void> {
     if (!this.title) {
-      promptAction.showToast({ message: '请输入标题' });
+      promptAction.openToast({ message: '请输入标题' });
       return;
     }
     if (!this.content) {
-      promptAction.showToast({ message: '请输入内容' });
+      promptAction.openToast({ message: '请输入内容' });
       return;
     }
 
@@ -121,10 +121,10 @@ struct PublishNoticePage {
     const res = await NoticeService.create(notice);
     this.loading = false;
     if (res.code === 0) {
-      promptAction.showToast({ message: '发布成功' });
+      promptAction.openToast({ message: '发布成功' });
       RouterUtil.back();
     } else {
-      promptAction.showToast({ message: res.message || '发布失败' });
+      promptAction.openToast({ message: res.message || '发布失败' });
     }
   }
 }

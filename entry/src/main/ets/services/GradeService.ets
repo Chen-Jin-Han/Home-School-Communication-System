@@ -23,4 +23,12 @@ export class GradeService extends BaseService {
     }
     return HttpUtil.get<GradeReport | undefined>(`/api/grades/reports/${reportId}`);
   }
+
+  static async create(report: GradeReport): Promise<ApiResponse<GradeReport>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      return BaseService.success(report);
+    }
+    return HttpUtil.post<GradeReport>('/api/grades/reports', report);
+  }
 }

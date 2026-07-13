@@ -19,6 +19,11 @@ struct GradeDetailPage {
 
   async aboutToAppear(): Promise<void> {
     const params = router.getParams() as GradeDetailParams;
+    if (!params || !params.reportId) {
+      router.back();
+      this.loading = false;
+      return;
+    }
     this.reportId = params.reportId;
     const res = await GradeService.getDetail(this.reportId);
     this.report = res.data || null;
@@ -95,6 +100,7 @@ struct GradeDetailPage {
           .margin(Constants.SPACE_LG)
         }
         .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
     }
     .width('100%')

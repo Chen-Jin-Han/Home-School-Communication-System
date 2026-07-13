@@ -40,7 +40,24 @@ export class NoticeService extends BaseService {
       await BaseService.simulateDelay();
       const notice = MockNotices.list.find(n => n.id === noticeId);
       if (notice) {
-        notice.viewCount += 1;
+        const copy: Notice = {
+          id: notice.id,
+          title: notice.title,
+          summary: notice.summary,
+          content: notice.content,
+          type: notice.type,
+          publisherId: notice.publisherId,
+          publisherName: notice.publisherName,
+          publisherAvatar: notice.publisherAvatar,
+          scope: notice.scope,
+          scopeTargetId: notice.scopeTargetId,
+          attachments: notice.attachments,
+          isTop: notice.isTop,
+          viewCount: notice.viewCount + 1,
+          createdAt: notice.createdAt,
+          updatedAt: notice.updatedAt,
+        };
+        return BaseService.success(copy);
       }
       return BaseService.success(notice);
     }

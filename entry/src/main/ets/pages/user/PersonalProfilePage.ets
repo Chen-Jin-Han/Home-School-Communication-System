@@ -6,6 +6,7 @@ import { User } from '../../models/UserModel';
 import { AppNavBar } from '../../components/common/AppNavBar';
 import { Avatar } from '../../components/common/Avatar';
 import { ElementIcon } from '../../components/common/ElementIcon';
+import { LoadingView } from '../../components/common/LoadingView';
 
 @Entry
 @Component
@@ -42,21 +43,25 @@ struct PersonalProfilePage {
     Column() {
       AppNavBar({ title: '个人信息' })
 
-      Scroll() {
-        Column() {
-          this.ProfileHeader()
-          this.EditSection()
-          this.ReadonlySection()
-          this.ActionBar()
-          Blank().height(24)
+      if (this.loading) {
+        LoadingView()
+      } else {
+        Scroll() {
+          Column() {
+            this.ProfileHeader()
+            this.EditSection()
+            this.ReadonlySection()
+            this.ActionBar()
+            Blank().height(24)
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16, top: 14, bottom: 24 })
+          .alignItems(HorizontalAlign.Start)
+          .justifyContent(FlexAlign.Start)
         }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 14, bottom: 24 })
-        .alignItems(HorizontalAlign.Start)
-        .justifyContent(FlexAlign.Start)
+        .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
-      .layoutWeight(1)
-      .scrollBar(BarState.Off)
     }
     .width('100%')
     .height('100%')
@@ -197,7 +202,7 @@ struct PersonalProfilePage {
         .border({ width: 1, color: Constants.COLOR_BORDER })
         .padding({ left: 12, right: 12 })
         .type(inputType)
-        .enabled(!this.saving)
+        .enabled(!this.saving && !this.loading)
         .onChange((text: string) => {
           onChange(text);
         })
@@ -272,7 +277,7 @@ struct PersonalProfilePage {
   private async handleSave(): Promise<void> {
     const current = this.userStore.currentUser;
     if (!current) {
-      promptAction.showToast({ message: '请先登录' });
+      promptAction.openToast({ message: '请先登录' });
       return;
     }
 
@@ -280,11 +285,11 @@ struct PersonalProfilePage {
     const phone = this.formPhone.trim();
     const email = this.formEmail.trim();
     if (!name) {
-      promptAction.showToast({ message: '姓名不能为空' });
+      promptAction.openToast({ message: '姓名不能为空' });
       return;
     }
     if (email && email.indexOf('@') < 0) {
-      promptAction.showToast({ message: '请输入正确的邮箱' });
+      promptAction.openToast({ message: '请输入正确的邮箱' });
       return;
     }
 
@@ -312,9 +317,9 @@ struct PersonalProfilePage {
     if (res.code === 0 && res.data) {
       await this.userStore.updateCurrentUser(res.data);
       this.fillForm(res.data);
-      promptAction.showToast({ message: '个人信息已保存' });
+      promptAction.openToast({ message: '个人信息已保存' });
     } else {
-      promptAction.showToast({ message: res.message || '保存失败' });
+      promptAction.openToast({ message: res.message || '保存失败' });
     }
   }
 

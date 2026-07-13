@@ -10,17 +10,31 @@ import { SearchBar } from '../../components/common/SearchBar';
 import { LoadingView } from '../../components/common/LoadingView';
 import { EmptyView } from '../../components/common/EmptyView';
 
+interface RoleFilterOption {
+  value: string;
+  label: string;
+}
+
 @Entry
 @Component
 struct SelectContactPage {
   @Provide userStore: UserStore = UserStore.getInstance();
-  @State searchKeyword: string = '';
+  @State @Watch('onKeywordChange') searchKeyword: string = '';
+  @State @Watch('onFilterChange') selectedRoleFilter: string = 'all';
   @State addIdentifier: string = '';
   @State contacts: User[] = [];
+  @State filteredContactList: User[] = [];
   @State loading: boolean = true;
   @State creating: boolean = false;
   @State adding: boolean = false;
-  @State showAddPanel: boolean = false;
+
+  private roleFilterOptions: RoleFilterOption[] = [
+    { value: 'all', label: '全部' },
+    { value: 'teacher', label: '教师' },
+    { value: 'parent', label: '家长' },
+    { value: 'student', label: '学生' },
+    { value: 'leader', label: '领导' },
+  ];
 
   async aboutToAppear(): Promise<void> {
     await this.loadContacts();
@@ -30,41 +44,70 @@ struct SelectContactPage {
     this.loading = true;
     const res = await UserService.getContacts();
     this.contacts = res.code === 0 && res.data ? res.data : [];
+    this.filteredContactList = this.computeFilteredContacts();
     this.loading = false;
   }
 
   build() {
     Column() {
-      AppNavBar({ title: '选择联系人' }) {
-        Button(this.showAddPanel ? '收起' : '添加')
-          .fontSize(Constants.FONT_SM)
-          .fontColor(Constants.COLOR_WHITE)
-          .backgroundColor(Constants.COLOR_PRIMARY)
-          .borderRadius(Constants.BUTTON_RADIUS)
-          .height(32)
-          .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
-          .onClick(() => {
-            this.showAddPanel = !this.showAddPanel;
-          })
-      }
+      AppNavBar({ title: '选择联系人' })
 
-      if (this.showAddPanel) {
-        this.AddContactPanel()
-      }
+      this.AddContactPanel()
 
       SearchBar({ value: $searchKeyword, placeholder: '搜索联系人...' })
 
+      this.RoleFilterBar()
+
       if (this.loading) {
         LoadingView()
-      } else if (this.filteredContacts().length === 0) {
+      } else if (this.filteredContactList.length === 0) {
         EmptyView({ message: this.searchKeyword.trim() ? '没有匹配的联系人' : '暂无联系人' })
       } else {
         List() {
-          ForEach(this.filteredContacts(), (contact: User) => {
+          ForEach(this.filteredContactList, (contact: User) => {
             ListItem() {
-              this.ContactRow(contact)
+              Row() {
+                Column() {
+                  Text((contact.name || '?').charAt(0))
+                    .fontSize(18)
+                    .fontColor(Constants.COLOR_WHITE)
+                    .fontWeight(FontWeight.Bold)
+                }
+                .width(42)
+                .height(42)
+                .borderRadius(21)
+                .backgroundColor(Constants.COLOR_PRIMARY)
+                .justifyContent(FlexAlign.Center)
+
+                Column() {
+                  Text(contact.name)
+                    .fontSize(Constants.FONT_LG)
+                    .fontWeight(FontWeight.Medium)
+                    .fontColor(Constants.COLOR_TEXT_PRIMARY)
+                  Text(`${this.roleLabel(contact.role)}${contact.className ? ' · ' + contact.className : ''}`)
+                    .fontSize(Constants.FONT_SM)
+                    .fontColor(Constants.COLOR_TEXT_HINT)
+                    .margin({ top: 3 })
+                }
+                .margin({ left: Constants.SPACE_MD })
+                .alignItems(HorizontalAlign.Start)
+                .layoutWeight(1)
+
+                Text('发起')
+                  .fontSize(Constants.FONT_SM)
+                  .fontColor(Constants.COLOR_PRIMARY)
+                  .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD, top: 6, bottom: 6 })
+                  .backgroundColor(Constants.COLOR_PRIMARY_SOFT)
+                  .borderRadius(Constants.BUTTON_RADIUS)
+              }
+              .width('100%')
+              .padding({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_MD, bottom: Constants.SPACE_MD })
+              .backgroundColor(Constants.COLOR_WHITE)
+              .onClick(() => {
+                this.startChat(contact);
+              })
             }
-          })
+          }, (c: User) => c.id)
         }
         .layoutWeight(1)
         .divider({ strokeWidth: 0.5, color: Constants.COLOR_DIVIDER })
@@ -76,119 +119,84 @@ struct SelectContactPage {
   }
 
   @Builder
+  RoleFilterBar() {
+    Row() {
+      ForEach(this.roleFilterOptions, (opt: RoleFilterOption) => {
+        Text(opt.label)
+          .fontSize(Constants.FONT_SM)
+          .fontColor(this.selectedRoleFilter === opt.value ? Constants.COLOR_WHITE : Constants.COLOR_TEXT_SECONDARY)
+          .backgroundColor(this.selectedRoleFilter === opt.value ? Constants.COLOR_PRIMARY : Constants.COLOR_BG)
+          .borderRadius(14)
+          .height(28)
+          .padding({ left: 12, right: 12 })
+          .margin({ right: 8 })
+          .onClick(() => {
+            this.selectedRoleFilter = opt.value;
+          })
+      }, (opt: RoleFilterOption) => opt.value)
+    }
+    .width('100%')
+    .padding({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, bottom: Constants.SPACE_SM })
+  }
+
+  @Builder
   AddContactPanel() {
     Column() {
-      Text('添加联系人')
-        .fontSize(Constants.FONT_LG)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(Constants.COLOR_TEXT_PRIMARY)
-
-      Text('输入对方手机号、邮箱或用户ID，添加后可直接发起家校沟通。')
-        .fontSize(Constants.FONT_SM)
-        .fontColor(Constants.COLOR_TEXT_HINT)
-        .margin({ top: Constants.SPACE_XS })
-
-      TextInput({ placeholder: '手机号 / 邮箱 / 用户ID', text: this.addIdentifier })
-        .height(44)
-        .fontSize(Constants.FONT_MD)
-        .backgroundColor(Constants.COLOR_BG)
-        .borderRadius(Constants.BUTTON_RADIUS)
-        .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
-        .margin({ top: Constants.SPACE_MD })
-        .onChange((value: string) => {
-          this.addIdentifier = value;
-        })
-
       Row() {
-        Button('取消')
+        TextInput({ placeholder: '输入手机号/邮箱/用户ID添加联系人', text: this.addIdentifier })
+          .layoutWeight(1)
+          .height(40)
           .fontSize(Constants.FONT_MD)
-          .fontColor(Constants.COLOR_TEXT_SECONDARY)
           .backgroundColor(Constants.COLOR_BG)
           .borderRadius(Constants.BUTTON_RADIUS)
-          .height(40)
-          .layoutWeight(1)
-          .onClick(() => {
-            this.addIdentifier = '';
-            this.showAddPanel = false;
+          .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
+          .onChange((value: string) => {
+            this.addIdentifier = value;
           })
 
-        Button(this.adding ? '添加中...' : '保存')
+        Button(this.adding ? '...' : '添加')
           .fontSize(Constants.FONT_MD)
           .fontColor(Constants.COLOR_WHITE)
           .backgroundColor(Constants.COLOR_PRIMARY)
           .borderRadius(Constants.BUTTON_RADIUS)
           .height(40)
-          .layoutWeight(1)
-          .margin({ left: Constants.SPACE_MD })
+          .margin({ left: Constants.SPACE_SM })
+          .enabled(!this.adding && this.addIdentifier.trim().length > 0)
           .onClick(() => {
             this.addContact();
           })
       }
       .width('100%')
-      .margin({ top: Constants.SPACE_MD })
     }
     .width('100%')
-    .alignItems(HorizontalAlign.Start)
-    .padding({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_LG, bottom: Constants.SPACE_LG })
+    .padding({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_SM, bottom: Constants.SPACE_SM })
     .backgroundColor(Constants.COLOR_WHITE)
     .border({ width: { bottom: 0.5 }, color: Constants.COLOR_BORDER })
   }
 
-  @Builder
-  ContactRow(contact: User) {
-    Row() {
-      Column() {
-        Text((contact.name || '?').charAt(0))
-          .fontSize(18)
-          .fontColor(Constants.COLOR_WHITE)
-          .fontWeight(FontWeight.Bold)
-      }
-      .width(42)
-      .height(42)
-      .borderRadius(21)
-      .backgroundColor(Constants.COLOR_PRIMARY)
-      .justifyContent(FlexAlign.Center)
-
-      Column() {
-        Text(contact.name)
-          .fontSize(Constants.FONT_LG)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(Constants.COLOR_TEXT_PRIMARY)
-        Text(`${this.roleLabel(contact.role)}${contact.className ? ' · ' + contact.className : ''}`)
-          .fontSize(Constants.FONT_SM)
-          .fontColor(Constants.COLOR_TEXT_HINT)
-          .margin({ top: 3 })
-      }
-      .margin({ left: Constants.SPACE_MD })
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Text('发起')
-        .fontSize(Constants.FONT_SM)
-        .fontColor(Constants.COLOR_PRIMARY)
-        .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD, top: 6, bottom: 6 })
-        .backgroundColor(Constants.COLOR_PRIMARY_SOFT)
-        .borderRadius(Constants.BUTTON_RADIUS)
-    }
-    .width('100%')
-    .padding({ left: Constants.SPACE_LG, right: Constants.SPACE_LG, top: Constants.SPACE_MD, bottom: Constants.SPACE_MD })
-    .backgroundColor(Constants.COLOR_WHITE)
-    .onClick(() => {
-      this.startChat(contact);
-    })
+  onKeywordChange(): void {
+    this.filteredContactList = this.computeFilteredContacts();
   }
 
-  private filteredContacts(): User[] {
+  onFilterChange(): void {
+    this.filteredContactList = this.computeFilteredContacts();
+  }
+
+  private computeFilteredContacts(): User[] {
     const keyword = this.searchKeyword.trim();
-    if (!keyword) {
-      return this.contacts || [];
-    }
-    return (this.contacts || []).filter((item: User) =>
-      item.name.includes(keyword) ||
-      (item.phone || '').includes(keyword) ||
-      (item.email || '').includes(keyword) ||
-      (item.className || '').includes(keyword)
-    );
+    const roleFilter = this.selectedRoleFilter;
+    return (this.contacts || []).filter((item: User) => {
+      if (roleFilter !== 'all' && item.role !== roleFilter) {
+        return false;
+      }
+      if (!keyword) {
+        return true;
+      }
+      return item.name.includes(keyword) ||
+        (item.phone || '').includes(keyword) ||
+        (item.email || '').includes(keyword) ||
+        (item.className || '').includes(keyword);
+    });
   }
 
   private roleLabel(role: string): string {
@@ -210,19 +218,21 @@ struct SelectContactPage {
     }
     const identifier = this.addIdentifier.trim();
     if (!identifier) {
-      promptAction.showToast({ message: '请输入联系人手机号、邮箱或用户ID' });
+      promptAction.openToast({ message: '请输入联系人手机号、邮箱或用户ID' });
       return;
     }
     this.adding = true;
-    const res = await UserService.addContact(identifier);
-    this.adding = false;
-    if (res.code === 0 && res.data) {
-      this.addIdentifier = '';
-      this.showAddPanel = false;
-      await this.loadContacts();
-      promptAction.showToast({ message: '联系人已添加' });
-    } else {
-      promptAction.showToast({ message: res.message || '添加联系人失败' });
+    try {
+      const res = await UserService.addContact(identifier);
+      if (res.code === 0 && res.data) {
+        this.addIdentifier = '';
+        await this.loadContacts();
+        promptAction.openToast({ message: '联系人已添加' });
+      } else {
+        promptAction.openToast({ message: res.message || '添加联系人失败' });
+      }
+    } finally {
+      this.adding = false;
     }
   }
 
@@ -231,12 +241,15 @@ struct SelectContactPage {
       return;
     }
     this.creating = true;
-    const res = await ChatService.createPrivateConversation(contact.id);
-    this.creating = false;
-    if (res.code === 0 && res.data) {
-      RouterUtil.toChat(res.data.id, res.data.name || contact.name);
-    } else {
-      promptAction.showToast({ message: res.message || '无法发起会话' });
+    try {
+      const res = await ChatService.createPrivateConversation(contact.id);
+      if (res.code === 0 && res.data) {
+        RouterUtil.toChat(res.data.id, res.data.name || contact.name);
+      } else {
+        promptAction.openToast({ message: res.message || '无法发起会话' });
+      }
+    } finally {
+      this.creating = false;
     }
   }
 }

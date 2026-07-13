@@ -24,10 +24,18 @@ export struct FormDatePicker {
     .border({ width: 1, color: Constants.COLOR_BORDER })
     .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
     .onClick(() => {
-      this.timestamp = Date.now();
-      if (this.onChange) {
-        this.onChange(this.timestamp);
-      }
+      DatePickerDialog.show({
+        start: new Date('2020-01-01'),
+        end: new Date('2035-12-31'),
+        selected: this.timestamp ? new Date(this.timestamp) : new Date(),
+        onAccept: (value: DatePickerResult) => {
+          const d = new Date(value.year, value.month, value.day);
+          this.timestamp = d.getTime();
+          if (this.onChange) {
+            this.onChange(this.timestamp);
+          }
+        }
+      });
     })
   }
 }

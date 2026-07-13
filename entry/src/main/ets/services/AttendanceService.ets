@@ -48,4 +48,34 @@ export class AttendanceService extends BaseService {
     }
     return HttpUtil.get<AttendanceRecord | undefined>(`/api/attendance/records/${recordId}`);
   }
+
+  static async create(record: AttendanceRecord): Promise<ApiResponse<AttendanceRecord>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      MockAttendance.records.unshift(record);
+      return BaseService.success(record);
+    }
+    return HttpUtil.post<AttendanceRecord>('/api/attendance', record);
+  }
+
+  static async update(recordId: string, record: AttendanceRecord): Promise<ApiResponse<AttendanceRecord>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const idx = MockAttendance.records.findIndex(r => r.id === recordId);
+      if (idx >= 0) {
+        MockAttendance.records[idx] = record;
+      }
+      return BaseService.success(record);
+    }
+    return HttpUtil.put<AttendanceRecord>(`/api/attendance/${recordId}`, record);
+  }
+
+  static async delete(recordId: string): Promise<ApiResponse<null>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      MockAttendance.records = MockAttendance.records.filter(r => r.id !== recordId);
+      return BaseService.success(null);
+    }
+    return HttpUtil.del<null>(`/api/attendance/${recordId}`);
+  }
 }

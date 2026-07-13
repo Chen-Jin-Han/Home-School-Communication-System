@@ -12,11 +12,17 @@ export interface ActivityPhoto {
 
 export interface ActivityComment {
   id: string;
+  activityId: string;
   userId: string;
   userName: string;
-  avatar: string;
+  userAvatar: string;
+  role: string;
   content: string;
   createdAt: number;
+}
+
+export interface ActivityCommentPayload {
+  content: string;
 }
 
 export interface Activity {

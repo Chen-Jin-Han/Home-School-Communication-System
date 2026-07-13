@@ -94,7 +94,7 @@ def seed_data() -> None:
     ])
 
     db.session.add_all([
-        Attendance(student_id=2, student_name="张小伟", class_id=2, class_name="三年级(2)班", date=date.today(), day_of_week="周一", check_in_time=time(7, 50), status="normal"),
+        Attendance(student_id=2, student_name="张小伟", class_id=2, class_name="三年级(2)班", date=date.today(), day_of_week="周一", check_in_time=time(7, 50), status="present"),
         Attendance(student_id=2, student_name="张小伟", class_id=2, class_name="三年级(2)班", date=date.today() - timedelta(days=1), day_of_week="周日", check_in_time=time(8, 5), status="late", remark="早高峰迟到 5 分钟"),
         Attendance(student_id=2, student_name="张小伟", class_id=2, class_name="三年级(2)班", date=date.today() - timedelta(days=2), day_of_week="周六", status="leave", remark="家长已请假"),
     ])

@@ -30,7 +30,7 @@ export struct MemberItem {
         .fontSize(Constants.FONT_SM)
         .fontColor(Constants.COLOR_PRIMARY)
         .padding({ left: 8, right: 8, top: 3, bottom: 3 })
-        .backgroundColor('#E6F7FF')
+        .backgroundColor(Constants.COLOR_TAG_PRIMARY_BG)
         .borderRadius(10)
     }
     .width('100%')
@@ -48,13 +48,19 @@ export struct MemberItem {
   }
 
   getRoleColor(): string {
-    const colors = {
-      '教师': '#FF6B6B',
-      '班主任': '#FF6B6B',
-      '学生': '#4ECDC4',
-      '家长': '#45B7D1',
-      '校长': '#96CEB4',
-    };
-    return colors[this.roleName] || Constants.COLOR_PRIMARY;
+    switch (this.roleName) {
+      case '教师':
+      case '班主任':
+        return Constants.COLOR_ROLE_TEACHER;
+      case '学生':
+        return Constants.COLOR_ROLE_STUDENT;
+      case '家长':
+        return Constants.COLOR_ROLE_PARENT;
+      case '校长':
+      case '领导':
+        return Constants.COLOR_ROLE_LEADER;
+      default:
+        return Constants.COLOR_PRIMARY;
+    }
   }
 }

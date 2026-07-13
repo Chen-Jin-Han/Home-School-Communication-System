@@ -194,31 +194,36 @@ const BASE_URL = 'http://8.218.156.55:8080';
 | `/api/auth/register` | POST | 注册 |
 | `/api/auth/logout` | POST | 退出登录 |
 | `/api/users/profile` | GET / PUT | 当前用户资料查询与更新 |
+| `/api/users/<user_id>` | GET | 查看指定用户资料 |
 | `/api/users/class/<class_id>` | GET | 班级学生列表 |
+| `/api/users/class/<class_id>/members` | GET | 班级全部成员 |
 | `/api/users/contacts` | GET / POST | 联系人列表、添加联系人 |
 | `/api/schools/<school_id>` | GET | 学校信息 |
+| `/api/schools/<school_id>/classes` | GET | 学校班级列表 |
 | `/api/schools/<school_id>/org-tree` | GET | 学校组织架构 |
 | `/api/notices` | GET / POST | 通知列表与发布通知 |
 | `/api/notices/<notice_id>` | GET / PUT / DELETE | 通知详情、更新、删除 |
 | `/api/homework` | GET / POST | 作业列表与布置作业 |
-| `/api/homework/<homework_id>` | GET | 作业详情 |
-| `/api/homework/<homework_id>/submit` | POST | 提交作业 |
+| `/api/homework/<homework_id>` | GET / PUT / DELETE | 作业详情、编辑、删除 |
+| `/api/homework/<homework_id>/submission` | GET / POST | 查看/提交作业 |
+| `/api/homework/<homework_id>/submissions` | GET | 教师查看全部学生提交 |
 | `/api/submissions/<submission_id>/grade` | PUT | 作业评分 |
 | `/api/conversations` | GET / POST | 会话列表、创建或复用私聊会话 |
 | `/api/conversations/<conversation_id>` | GET | 会话详情 |
 | `/api/conversations/<conversation_id>/messages` | GET / POST | 消息列表与发送消息 |
 | `/api/attendance/records` | GET | 考勤记录 |
-| `/api/attendance/records/<record_id>` | GET | 考勤详情 |
-| `/api/grades/reports` | GET | 成绩报告列表 |
+| `/api/attendance` | POST | 教师新增考勤记录 |
+| `/api/attendance/<attendance_id>` | GET / PUT / DELETE | 考勤详情、编辑、删除 |
+| `/api/grades/reports` | GET / POST | 成绩报告列表与录入 |
 | `/api/grades/reports/<report_id>` | GET | 成绩报告详情 |
-| `/api/health/records` | GET | 健康档案列表 |
-| `/api/health/records/<record_id>` | GET | 健康档案详情 |
+| `/api/health/records` | GET / POST | 健康档案列表与新增 |
+| `/api/health/records/<record_id>` | GET / PUT / DELETE | 健康档案详情、编辑、删除 |
 | `/api/evaluations` | GET / POST | 学生评价列表与写评价 |
-| `/api/evaluations/<evaluation_id>` | PUT | 更新学生评价 |
-| `/api/activities` | GET | 校园活动列表 |
-| `/api/activities/<activity_id>` | GET | 校园活动详情 |
+| `/api/evaluations/<evaluation_id>` | PUT / DELETE | 更新、删除学生评价 |
+| `/api/activities` | GET / POST | 校园活动列表与发布 |
+| `/api/activities/<activity_id>` | GET / PUT / DELETE | 活动详情、编辑、删除 |
 | `/api/activities/<activity_id>/join` | POST | 活动报名 |
-| `/api/activities/<activity_id>/comments` | POST | 活动评论 |
+| `/api/activities/<activity_id>/comments` | GET / POST | 活动评论列表与发送 |
 
 ## 开发注意事项
 
@@ -229,6 +234,26 @@ const BASE_URL = 'http://8.218.156.55:8080';
 - 每次较大改动后需要更新本 README 的修改记录，并推送到 GitHub `main` 分支。
 
 ## 修改记录
+
+### 2026-07-13
+
+- Summary: 全面修复前端功能缺陷，实现家校沟通端到端可用，补齐教师管理能力，美化 UI。
+- Changed:
+  - **网络安全**：`HttpUtil` 重写为自动附带 JWT、检查 HTTP 状态码、401 自动登出跳登录、安全 JSON 解析与日志、`setBaseUrl` 可配置。
+  - **数据持久化**：`UserStore` 改为单 JSON blob 持久化（消除半写损坏），`role` 枚举校验；`AppStore` 持久化暗色模式/字体/通知开关；`StorageUtil` 增加 `putJSON`/`getJSON`。
+  - **矢量图标**：`ElementIcon` 由 ASCII 字母重写为 Shape/Path 矢量线性图标，动态缩放填满组件。
+  - **家校沟通**：会话列表加"+"发起按钮；聊天页加 5 秒轮询刷新、消息发送乐观更新+服务端替换、回车发送、自动滚底；`ChatService.sendMessage` 只发 content；联系人页添加输入框始终可见、角色筛选 tab。
+  - **注册班级选择**：RegisterPage 去掉领导选项，新增班级 chips 选择器（学生/家长必选，教师可选），后端 register 自动查询并填充 `school_name`，新增 `GET /api/schools/<id>/classes`。
+  - **教师作业管理**：HomeworkDetailPage 教师可编辑/删除作业、查看全部学生提交、内联批改打分；后端新增 `GET /api/homework/<id>/submissions`、`PUT/DELETE /api/homework/<id>`。
+  - **教师健康记录管理**：HealthRecordListPage 教师可新增学生健康记录；后端新增 `POST/PUT/DELETE /api/health/records`。
+  - **教师活动管理**：ActivityListPage 教师可发布活动；ActivityDetailPage 加评论列表与发送；后端新增 `POST/PUT/DELETE /api/activities`、`GET/POST /api/activities/<id>/comments`。
+  - **教师考勤/成绩录入**：AttendanceListPage 教师可新增考勤记录；GradeListPage 教师可录入成绩报告；后端新增 `POST/PUT/DELETE /api/attendance`、`POST /api/grades/reports`。
+  - **教师班级管理**：StudentListPage 加搜索、学生手机号显示、"发消息"按钮（直接创建私聊）、"写评价"/"详情"按钮；后端新增 `GET /api/users/class/<id>/members`、`GET /api/users/<id>`、`DELETE /api/evaluations/<id>`。
+  - **活动评论**：新增 `ActivityComment` 模型，详情页显示评论列表与输入框。
+  - **Bug 修复**：FormDatePicker 真正调用 DatePickerDialog；列表页读路由 studentId 参数（教师可查看指定学生数据）；9 个详情页 router.getParams 空守卫；switch 补 default；MemberItem 角色色改 switch；删死组件 AppTabBar/FormImagePicker；考勤统计从 records 实时计算；splash 去 800ms；LoginPage 默认空；ForEach 全加 keyGenerator；详情页统一 scrollBar(BarState.Off)；作业提交存 student_name；考勤种子 status 统一为 present；`showToast`→`openToast`（43 处）；解构声明→索引访问；对象 spread→显式构造；`any`→具体类型。
+  - **工作台**：教师 secondaryActions 补"健康档案"和"我的发布"入口；KPI 假数据改欢迎条；Grid 高度自适应。
+- Validation: 后端 Flask testing 冒烟测试全绿——三角色登录、家长↔老师/学生↔老师会话发消息互收、教师查看/批改作业提交、健康记录 CRUD、活动 CRUD、考勤 CRUD、班级成员、权限校验（学生 403）、联系人添加（手机/邮箱/ID 三种方式）。
+- Push: 本次修改推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `harmonyos-app` 分支。
 
 ### 2026-07-13
 

@@ -21,6 +21,11 @@ struct AttendanceDetailPage {
 
   async aboutToAppear(): Promise<void> {
     const params = router.getParams() as AttendanceDetailParams;
+    if (!params || !params.date || !params.studentId) {
+      router.back();
+      this.loading = false;
+      return;
+    }
     this.date = params.date;
     this.studentId = params.studentId;
     const res = await AttendanceService.getRecords(this.studentId);
