@@ -2,19 +2,24 @@ import { Constants } from '../../utils/Constants';
 import { SchoolService } from '../../services/SchoolService';
 import { OrgNode } from '../../models/SchoolModel';
 import { RouterUtil } from '../../utils/RouterUtil';
+import { UserStore } from '../../store/UserStore';
 import { AppNavBar } from '../../components/common/AppNavBar';
 import { LoadingView } from '../../components/common/LoadingView';
 
 @Entry
 @Component
 struct OrgStructurePage {
+  @Provide userStore: UserStore = UserStore.getInstance();
   @State orgTree: OrgNode | null = null;
   @State loading: boolean = true;
-  @State expandedGrades: Set<string> = new Set(['grade3']);
+  @State expandedGrades: Set<string> = new Set(['3']);
 
   async aboutToAppear(): Promise<void> {
-    const res = await SchoolService.getOrgTree('s001');
+    const res = await SchoolService.getOrgTree(this.userStore.currentUser?.schoolId || '1');
     this.orgTree = res.data;
+    if (this.orgTree?.children && this.orgTree.children.length > 0) {
+      this.expandedGrades = new Set([String(this.orgTree.children[0].id)]);
+    }
     this.loading = false;
   }
 
@@ -41,22 +46,23 @@ struct OrgStructurePage {
                 Row() {
                   Text('📚').fontSize(20)
                   Text(grade.name).fontSize(Constants.FONT_LG).fontWeight(FontWeight.Bold).layoutWeight(1).margin({ left: Constants.SPACE_SM })
-                  Text(this.expandedGrades.has(grade.id) ? '收起' : '展开').fontSize(Constants.FONT_SM).fontColor(Constants.COLOR_PRIMARY)
+                  Text(this.expandedGrades.has(String(grade.id)) ? '收起' : '展开').fontSize(Constants.FONT_SM).fontColor(Constants.COLOR_PRIMARY)
                 }
                 .width('100%')
                 .padding(Constants.SPACE_MD)
                 .backgroundColor(Constants.COLOR_WHITE)
                 .margin({ top: Constants.SPACE_SM })
                 .onClick(() => {
-                  if (this.expandedGrades.has(grade.id)) {
-                    this.expandedGrades.delete(grade.id);
+                  const gradeId = String(grade.id);
+                  if (this.expandedGrades.has(gradeId)) {
+                    this.expandedGrades.delete(gradeId);
                   } else {
-                    this.expandedGrades.add(grade.id);
+                    this.expandedGrades.add(gradeId);
                   }
                   this.expandedGrades = new Set(this.expandedGrades);
                 })
 
-                if (this.expandedGrades.has(grade.id)) {
+                if (this.expandedGrades.has(String(grade.id))) {
                   ForEach(grade.children || [], (cls: OrgNode) => {
                     Row() {
                       Text('  📖').fontSize(16)
@@ -67,7 +73,7 @@ struct OrgStructurePage {
                     .padding({ left: Constants.SPACE_XXL, right: Constants.SPACE_MD, top: Constants.SPACE_SM, bottom: Constants.SPACE_SM })
                     .backgroundColor(Constants.COLOR_WHITE)
                     .border({ width: { top: 0.5 }, color: Constants.COLOR_DIVIDER })
-                    .onClick(() => { RouterUtil.toStudentList(cls.id); })
+                    .onClick(() => { RouterUtil.toStudentList(String(cls.id)); })
                   })
                 }
               }

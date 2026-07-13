@@ -143,6 +143,13 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-13
 
+- Summary: 进行完整功能复查，修复真实后端模式下的列表分页、联系人、会话、学生名单、学校组织架构和初始化数据问题。
+- Changed: 后端分页响应同时返回 `list` 与 `records`，兼容前端 `PageResult`；作业列表支持 `classId` 过滤，活动列表支持 `status` 过滤；新增 `/api/users/contacts` 和 `POST /api/conversations`，选择联系人可发起或复用私聊会话；重写初始化 seed 数据为可读中文，并补充会话、消息和活动样例；前端学生名单改为调用班级学生接口，联系人选择页改为真实联系人接口并接入聊天；学校信息与组织架构改为使用当前用户 `schoolId`，不再使用旧的 `s001`；`DateUtil` 兼容后端 ISO 时间字符串并修复中文时间文案。
+- Validation: 已执行 `git diff --check`、`python -m compileall -f backend/app`，并使用 Flask testing 模式验证登录、通知分页、作业班级过滤、活动状态过滤、消息分页、学校信息、组织架构、班级学生、联系人列表和创建/复用私聊会话均返回成功。
+- Push: 本次修改推送到 `https://github.com/Chen-Jin-Han/Home-School-Communication-System` 的 `main` 分支。
+
+### 2026-07-13
+
 - Summary: 重构 HarmonyOS ArkTS 前端为企业级移动端工作台规范，并复查主要功能入口、返回导航和表单状态逻辑。
 - Changed: 统一 `Constants` 设计令牌，重构 `AppNavBar`、搜索、加载、空状态、错误态、表单输入、文本域、日期、选择器和评分组件；重写 `MobileWorkbench`，让家长、学生、教师、领导首页共享统一工作台；修复通知发布、布置作业、提交作业、写评价、搜索列表等页面的 `@Link` 双向绑定；恢复乱码中文文案；保留公网后端地址 `http://8.218.156.55:8080`。
 - Function Review: 工作台入口覆盖通知、作业、成绩、考勤、健康、评价、活动、学校信息、组织架构、消息、发布通知、我的发布和个人信息；二级页面统一使用公共导航栏返回；后端补充会话详情、考勤详情、成绩详情、健康详情兼容接口。

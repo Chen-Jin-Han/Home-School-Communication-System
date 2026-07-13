@@ -1,17 +1,19 @@
 import { Constants } from '../../utils/Constants';
 import { SchoolService } from '../../services/SchoolService';
 import { School } from '../../models/SchoolModel';
+import { UserStore } from '../../store/UserStore';
 import { AppNavBar } from '../../components/common/AppNavBar';
 import { LoadingView } from '../../components/common/LoadingView';
 
 @Entry
 @Component
 struct SchoolInfoPage {
+  @Provide userStore: UserStore = UserStore.getInstance();
   @State school: School | null = null;
   @State loading: boolean = true;
 
   async aboutToAppear(): Promise<void> {
-    const res = await SchoolService.getSchoolInfo('s001');
+    const res = await SchoolService.getSchoolInfo(this.userStore.currentUser?.schoolId || '1');
     if (res.data) {
       this.school = res.data;
     }

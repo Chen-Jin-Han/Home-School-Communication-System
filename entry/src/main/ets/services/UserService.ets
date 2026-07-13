@@ -33,4 +33,14 @@ export class UserService extends BaseService {
     }
     return HttpUtil.get<User[]>(`/api/users/class/${classId}`, UserStore.getInstance().authToken);
   }
+
+  static async getContacts(): Promise<ApiResponse<User[]>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const currentId = UserStore.getInstance().currentUser?.id;
+      const contacts = MockAuth.accounts.filter(u => u.id !== currentId);
+      return BaseService.success(contacts);
+    }
+    return HttpUtil.get<User[]>('/api/users/contacts', UserStore.getInstance().authToken);
+  }
 }

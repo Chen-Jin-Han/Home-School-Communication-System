@@ -1,26 +1,34 @@
 export class DateUtil {
-  static formatDate(timestamp: number): string {
-    const d = new Date(timestamp);
+  static toMillis(value: number | string): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+    const parsed = new Date(value).getTime();
+    return Number.isNaN(parsed) ? Date.now() : parsed;
+  }
+
+  static formatDate(timestamp: number | string): string {
+    const d = new Date(DateUtil.toMillis(timestamp));
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
   }
 
-  static formatTime(timestamp: number): string {
-    const d = new Date(timestamp);
+  static formatTime(timestamp: number | string): string {
+    const d = new Date(DateUtil.toMillis(timestamp));
     const h = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
     return `${h}:${min}`;
   }
 
-  static formatDateTime(timestamp: number): string {
+  static formatDateTime(timestamp: number | string): string {
     return `${DateUtil.formatDate(timestamp)} ${DateUtil.formatTime(timestamp)}`;
   }
 
-  static timeAgo(timestamp: number): string {
+  static timeAgo(timestamp: number | string): string {
     const now = Date.now();
-    const diff = now - timestamp;
+    const diff = Math.max(now - DateUtil.toMillis(timestamp), 0);
     const sec = Math.floor(diff / 1000);
     if (sec < 60) {
       return '刚刚';

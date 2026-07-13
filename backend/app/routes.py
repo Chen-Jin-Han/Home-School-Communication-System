@@ -37,12 +37,26 @@ def page_result(query, page: int, page_size: int, serializer=lambda item: item.t
     page = max(page, 1)
     page_size = min(max(page_size, 1), 100)
     pagination = query.paginate(page=page, per_page=page_size, error_out=False)
+    items = [serializer(item) for item in pagination.items]
     return {
-        "records": [serializer(item) for item in pagination.items],
+        "list": items,
+        "records": items,
         "total": pagination.total,
         "page": page,
         "pageSize": page_size,
     }
+
+
+def conversation_payload(conversation: Conversation) -> dict:
+    data = conversation.to_dict()
+    participants = Participant.query.filter_by(conversation_id=conversation.id).all()
+    data["participants"] = [item.to_dict() for item in participants]
+    if conversation.type == "private":
+        other = next((item for item in participants if item.user_id != g.user_id), None)
+        if other:
+            data["name"] = other.user_name
+            data["avatar"] = other.avatar
+    return data
 
 
 def body() -> dict:
@@ -201,7 +215,10 @@ def notice_delete(notice_id: int):
 
 @api_bp.get("/api/homework")
 def homework_list():
-    query = Homework.query.order_by(Homework.assigned_at.desc())
+    query = Homework.query
+    if request.args.get("classId"):
+        query = query.filter(Homework.class_id == request.args.get("classId", type=int))
+    query = query.order_by(Homework.assigned_at.desc())
     return ok(page_result(query, int(request.args.get("page", 1)), int(request.args.get("pageSize", 20))))
 
 
@@ -281,7 +298,54 @@ def conversations():
     if not ids:
         return ok([])
     rows = Conversation.query.filter(Conversation.id.in_(ids)).order_by(Conversation.updated_at.desc()).all()
-    return ok([row.to_dict() for row in rows])
+    return ok([conversation_payload(row) for row in rows])
+
+
+@api_bp.post("/api/conversations")
+@login_required
+def conversation_create():
+    payload = body()
+    target_user_id = int(payload.get("targetUserId") or payload.get("target_user_id") or 0)
+    if not target_user_id:
+        raise BusinessError("请选择联系人")
+    if target_user_id == g.user_id:
+        raise BusinessError("不能和自己发起会话")
+
+    target = get_or_404(User, target_user_id, "联系人不存在")
+    current = get_or_404(User, g.user_id, "用户不存在")
+    target_conversation_ids = [
+        item.conversation_id for item in Participant.query.filter_by(user_id=target_user_id).all()
+    ]
+    existing_participant = None
+    if target_conversation_ids:
+        existing_participant = Participant.query.filter(
+            Participant.user_id == g.user_id,
+            Participant.conversation_id.in_(target_conversation_ids),
+        ).first()
+    if existing_participant:
+        return ok(conversation_payload(get_or_404(Conversation, existing_participant.conversation_id, "会话不存在")))
+
+    conversation = Conversation(type="private", name=target.name, avatar=target.avatar, updated_at=datetime.utcnow())
+    db.session.add(conversation)
+    db.session.flush()
+    db.session.add_all([
+        Participant(
+            conversation_id=conversation.id,
+            user_id=current.id,
+            user_name=current.name,
+            avatar=current.avatar,
+            role=current.role,
+        ),
+        Participant(
+            conversation_id=conversation.id,
+            user_id=target.id,
+            user_name=target.name,
+            avatar=target.avatar,
+            role=target.role,
+        ),
+    ])
+    db.session.commit()
+    return ok(conversation_payload(conversation))
 
 
 @api_bp.get("/api/conversations/<int:conversation_id>/messages")
@@ -300,7 +364,7 @@ def conversation_detail(conversation_id: int):
     ).first()
     if not participant:
         raise BusinessError("Conversation not found", http_status=404)
-    return ok(get_or_404(Conversation, conversation_id, "Conversation not found").to_dict())
+    return ok(conversation_payload(get_or_404(Conversation, conversation_id, "Conversation not found")))
 
 
 @api_bp.post("/api/conversations/<int:conversation_id>/messages")
@@ -347,6 +411,17 @@ def profile_update():
 @login_required
 def class_students(class_id: int):
     rows = User.query.filter_by(class_id=class_id).order_by(User.name.asc()).all()
+    return ok([row.to_dict() for row in rows])
+
+
+@api_bp.get("/api/users/contacts")
+@login_required
+def contacts():
+    current = get_or_404(User, g.user_id, "用户不存在")
+    query = User.query.filter(User.id != g.user_id)
+    if current.school_id:
+        query = query.filter(User.school_id == current.school_id)
+    rows = query.order_by(User.role.asc(), User.name.asc()).all()
     return ok([row.to_dict() for row in rows])
 
 
@@ -489,7 +564,10 @@ def evaluation_update(evaluation_id: int):
 
 @api_bp.get("/api/activities")
 def activities():
-    query = Activity.query.order_by(Activity.created_at.desc())
+    query = Activity.query
+    if request.args.get("status"):
+        query = query.filter(Activity.status == request.args["status"])
+    query = query.order_by(Activity.created_at.desc())
     return ok(page_result(query, int(request.args.get("page", 1)), int(request.args.get("pageSize", 20))))
 
 

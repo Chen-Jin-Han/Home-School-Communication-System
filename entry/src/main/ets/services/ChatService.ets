@@ -68,4 +68,32 @@ export class ChatService extends BaseService {
       UserStore.getInstance().authToken
     );
   }
+
+  static async createPrivateConversation(targetUserId: string): Promise<ApiResponse<Conversation>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const existing = MockChats.conversations.find(c =>
+        c.type === 'private' && c.participants.some(p => p.userId === targetUserId)
+      );
+      if (existing) {
+        return BaseService.success(existing);
+      }
+      const conv: Conversation = {
+        id: `conv_${Date.now()}`,
+        type: 'private',
+        name: '新会话',
+        avatar: '',
+        participants: [],
+        unreadCount: 0,
+        updatedAt: Date.now(),
+      };
+      MockChats.conversations.unshift(conv);
+      return BaseService.success(conv);
+    }
+    return HttpUtil.post<Conversation>(
+      '/api/conversations',
+      { targetUserId: targetUserId },
+      UserStore.getInstance().authToken
+    );
+  }
 }
