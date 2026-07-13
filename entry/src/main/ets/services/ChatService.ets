@@ -6,6 +6,10 @@ import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
 
+interface CreatePrivateConversationRequest {
+  targetUserId: string;
+}
+
 export class ChatService extends BaseService {
   static async getConversations(): Promise<ApiResponse<Conversation[]>> {
     if (USE_MOCK) {
@@ -90,9 +94,12 @@ export class ChatService extends BaseService {
       MockChats.conversations.unshift(conv);
       return BaseService.success(conv);
     }
+    const request: CreatePrivateConversationRequest = {
+      targetUserId: targetUserId,
+    };
     return HttpUtil.post<Conversation>(
       '/api/conversations',
-      { targetUserId: targetUserId },
+      request,
       UserStore.getInstance().authToken
     );
   }
