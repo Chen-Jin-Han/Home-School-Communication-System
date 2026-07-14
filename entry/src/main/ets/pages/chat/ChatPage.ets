@@ -167,7 +167,7 @@ struct ChatPage {
             .padding(Constants.SPACE_MD)
             .borderRadius(12)
             .backgroundColor(msg.senderId === this.userStore.currentUser?.id ? Constants.COLOR_PRIMARY : Constants.COLOR_WHITE)
-            .gesture(LongPressGesture({ repeat: false }).onAction(() => {
+            .gesture(LongPressGesture().onAction(() => {
               if (this.canRecall(msg)) {
                 this.actionMessageId = this.actionMessageId === msg.id ? '' : msg.id;
               }

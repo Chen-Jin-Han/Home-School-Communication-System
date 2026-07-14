@@ -418,7 +418,7 @@ struct HomeworkDetailPage {
     this.editSubject = current.subject;
     this.editTitle = current.title;
     this.editContent = current.content;
-    this.editDueDate = current.dueDate;
+    this.editDueDate = DateUtil.toMillis(current.dueDate);
     this.showEditForm = true;
   }
 

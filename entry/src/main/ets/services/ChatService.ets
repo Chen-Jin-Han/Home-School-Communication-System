@@ -96,7 +96,7 @@ export class ChatService extends BaseService {
     }
     return HttpUtil.post<Message>(
       `/api/conversations/${conversationId}/messages/${messageId}/recall`,
-      {},
+      undefined,
       UserStore.getInstance().authToken
     );
   }
