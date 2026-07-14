@@ -237,24 +237,6 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-14
 
-- Summary: 修复底部导航栏图标点击后颜色不跟随高亮的问题。
-- Changed: `MobileWorkbench.ets` 中 `TabIcon` Builder 的 `active: boolean` 参数改为 `tabIndex: number`，在 Builder 内部直接引用 `this.currentTab === tabIndex` 计算激活态，解决 ArkTS `@Builder` 参数按值传递导致的响应式失效问题。
-- Validation: 已在 DevEco Studio 中验证底部导航栏图标与文字颜色同步高亮/置灰。
-
-### 2026-07-13
-
-- Summary: 将图标系统从 ASCII 字符升级为 HarmonyOS SymbolGlyph 原生矢量图标。
-- Changed: 重写 `ElementIcon` 组件，移除 `Text + glyph()` 的 ASCII 单字母渲染方式，改为 `SymbolGlyph($r('sys.symbol.xxx'))` 系统矢量图标组件；22 个语义图标名全部映射到 HarmonyOS 原生 Symbol 资源（`house_fill`、`message_fill`、`person_fill`、`bell_fill`、`square_and_pencil`、`doc_plaintext_fill_1`、`histogram`、`checkmark_circle_fill`、`heart_fill`、`star_fill`、`calendar`、`building_fill`、`person_2_fill`、`archivebox_fill`、`person_badge_plus`、`magnifyingglass`、`xmark`、`chevron_right`、`chevron_down`、`chevron_left`、`pin_fill`、`ohos_photo`）；使用 `SymbolRenderingStrategy.SINGLE` 单色渲染，保持蓝白简洁风格；API（`name`/`iconSize`/`color`）完全不变，29 处调用方零修改。
-- Validation: DevEco Studio `assembleHap` 已通过（仅 1 WARN，无 ERROR）；`git diff --check` 通过。
-
-### 2026-07-13
-
-- Summary: 修复底部导航栏图标点击后颜色不跟随高亮的问题。
-- Changed: `MobileWorkbench.ets` 中 `TabIcon` Builder 的 `active: boolean` 参数改为 `tabIndex: number`，在 Builder 内部直接引用 `this.currentTab === tabIndex` 计算激活态，解决 ArkTS `@Builder` 参数按值传递导致的响应式失效问题。
-- Validation: 已在 DevEco Studio 中验证底部导航栏图标与文字颜色同步高亮/置灰。
-
-### 2026-07-14
-
 - Summary: 实现微信式未读消息红点——底部导航"消息"tab 显示总未读数，会话列表显示单个会话未读数。
 - Changed:
   - **后端未读计数体系**：将未读计数从 `Conversation` 表移至 `Participant` 表（按用户隔离）；`POST /api/conversations/<id>/messages` 发消息时递增其他参与者 `unread_count`；`GET /api/conversations/<id>/messages` 拉取消息时重置当前用户 `unread_count` 为 0；新增 `GET /api/conversations/unread-count` 返回当前用户总未读数；`conversation_payload()` 覆写 `unreadCount` 为按用户隔离值；`seed.py` 新增 `participant` 表 `unread_count` 列迁移逻辑。
@@ -262,7 +244,15 @@ const BASE_URL = 'http://8.218.156.55:8080';
   - **新增方法**：`ChatService.getUnreadCount()`、`UserStore.setUnreadChatCount()`。
 - Validation: Mock 模式已验证底部 tab 红点数字显示（合计 17）、单会话头像红点（2/15）、点击进入会话后红点消失；`python -m compileall -f backend/app` 编译通过。
 
+- Summary: 修复底部导航栏图标点击后颜色不跟随高亮的问题。
+- Changed: `MobileWorkbench.ets` 中 `TabIcon` Builder 的 `active: boolean` 参数改为 `tabIndex: number`，在 Builder 内部直接引用 `this.currentTab === tabIndex` 计算激活态，解决 ArkTS `@Builder` 参数按值传递导致的响应式失效问题。
+- Validation: 已在 DevEco Studio 中验证底部导航栏图标与文字颜色同步高亮/置灰。
+
 ### 2026-07-13
+
+- Summary: 将图标系统从 ASCII 字符升级为 HarmonyOS SymbolGlyph 原生矢量图标。
+- Changed: 重写 `ElementIcon` 组件，移除 `Text + glyph()` 的 ASCII 单字母渲染方式，改为 `SymbolGlyph($r('sys.symbol.xxx'))` 系统矢量图标组件；22 个语义图标名全部映射到 HarmonyOS 原生 Symbol 资源；使用 `SymbolRenderingStrategy.SINGLE` 单色渲染，保持蓝白简洁风格；API（`name`/`iconSize`/`color`）完全不变，29 处调用方零修改。
+- Validation: DevEco Studio `assembleHap` 已通过（仅 1 WARN，无 ERROR）；`git diff --check` 通过。
 
 - Summary: 合并 `harmonyos-app` 分支到 `main`，全面修复前端功能缺陷，实现家校沟通端到端可用，并按原生 ArkUI 规则解决冲突。
 - Changed:
