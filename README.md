@@ -230,6 +230,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ## 修改记录
 
+### 2026-07-14
+
+- Summary: 修复底部导航栏图标点击后颜色不跟随高亮的问题。
+- Changed: `MobileWorkbench.ets` 中 `TabIcon` Builder 的 `active: boolean` 参数改为 `tabIndex: number`，在 Builder 内部直接引用 `this.currentTab === tabIndex` 计算激活态，解决 ArkTS `@Builder` 参数按值传递导致的响应式失效问题。
+- Validation: 已在 DevEco Studio 中验证底部导航栏图标与文字颜色同步高亮/置灰。
+
 ### 2026-07-13
 
 - Summary: 将图标系统从 ASCII 字符升级为 HarmonyOS SymbolGlyph 原生矢量图标。
