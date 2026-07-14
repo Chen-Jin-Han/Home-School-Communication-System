@@ -36,7 +36,7 @@ export struct FormDatePicker {
       
       // 弹出日期选择器弹窗
       DatePickerDialog.show({
-        start: this.selectedDate,
+        start: new Date(),
         end: new Date('2100-12-31'),
         selected: this.selectedDate,
         lunar: false,
