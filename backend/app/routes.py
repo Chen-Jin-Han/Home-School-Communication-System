@@ -53,6 +53,9 @@ def conversation_payload(conversation: Conversation) -> dict:
     data = conversation.to_dict()
     participants = Participant.query.filter_by(conversation_id=conversation.id).all()
     data["participants"] = [item.to_dict() for item in participants]
+    # Override with per-user unread count
+    current = next((item for item in participants if item.user_id == g.user_id), None)
+    data["unreadCount"] = current.unread_count if current else 0
     if conversation.type == "private":
         other = next((item for item in participants if item.user_id != g.user_id), None)
         if other:
@@ -370,8 +373,27 @@ def conversation_create():
 @api_bp.get("/api/conversations/<int:conversation_id>/messages")
 @login_required
 def messages(conversation_id: int):
+    # Reset unread count for the requesting user (mark as read)
+    participant = Participant.query.filter_by(
+        conversation_id=conversation_id,
+        user_id=g.user_id,
+    ).first()
+    if participant and participant.unread_count > 0:
+        participant.unread_count = 0
+        db.session.commit()
+
     query = Message.query.filter_by(conversation_id=conversation_id).order_by(Message.created_at.asc())
     return ok(page_result(query, int(request.args.get("page", 1)), int(request.args.get("pageSize", 20))))
+
+
+@api_bp.get("/api/conversations/unread-count")
+@login_required
+def unread_count():
+    """Return total unread message count across all conversations for the current user."""
+    total = db.session.query(db.func.sum(Participant.unread_count)).filter(
+        Participant.user_id == g.user_id
+    ).scalar()
+    return ok({"count": total or 0})
 
 
 @api_bp.get("/api/conversations/<int:conversation_id>")
@@ -403,6 +425,15 @@ def message_send(conversation_id: int):
     conversation.last_message = json.dumps({"type": "text", "content": message.content}, ensure_ascii=False)
     conversation.updated_at = datetime.utcnow()
     db.session.add(message)
+
+    # Increment unread_count for all other participants
+    other_participants = Participant.query.filter(
+        Participant.conversation_id == conversation_id,
+        Participant.user_id != g.user_id
+    ).all()
+    for p in other_participants:
+        p.unread_count = (p.unread_count or 0) + 1
+
     db.session.commit()
     return ok(message.to_dict())
 

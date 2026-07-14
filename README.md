@@ -253,6 +253,15 @@ const BASE_URL = 'http://8.218.156.55:8080';
 - Changed: `MobileWorkbench.ets` 中 `TabIcon` Builder 的 `active: boolean` 参数改为 `tabIndex: number`，在 Builder 内部直接引用 `this.currentTab === tabIndex` 计算激活态，解决 ArkTS `@Builder` 参数按值传递导致的响应式失效问题。
 - Validation: 已在 DevEco Studio 中验证底部导航栏图标与文字颜色同步高亮/置灰。
 
+### 2026-07-14
+
+- Summary: 实现微信式未读消息红点——底部导航"消息"tab 显示总未读数，会话列表显示单个会话未读数。
+- Changed:
+  - **后端未读计数体系**：将未读计数从 `Conversation` 表移至 `Participant` 表（按用户隔离）；`POST /api/conversations/<id>/messages` 发消息时递增其他参与者 `unread_count`；`GET /api/conversations/<id>/messages` 拉取消息时重置当前用户 `unread_count` 为 0；新增 `GET /api/conversations/unread-count` 返回当前用户总未读数；`conversation_payload()` 覆写 `unreadCount` 为按用户隔离值；`seed.py` 新增 `participant` 表 `unread_count` 列迁移逻辑。
+  - **前端未读红点 UI**：`MobileWorkbench.ets` 底部导航 `BottomTabs` 新增 `AppBadge` 红点（99+ 封顶），`TabAction` 接口新增 `badgeCount` 字段，新增 10 秒轮询 `refreshUnreadCount()`，引入 `@State unreadBadgeCount` 解决 ArkTS `@Observed`+`@Provide` Provider 自身不重绘的响应式断裂问题；`ConversationItem.ets` 内置 `Badge` 替换为 `AppBadge` 统一风格；`ConversationListPage.ets` 的 `onPageShow` 触发即时刷新未读数；Mock 模式下 `ChatService.getMessages()` 进入会话时自动将 `unreadCount` 置 0 模拟已读。
+  - **新增方法**：`ChatService.getUnreadCount()`、`UserStore.setUnreadChatCount()`。
+- Validation: Mock 模式已验证底部 tab 红点数字显示（合计 17）、单会话头像红点（2/15）、点击进入会话后红点消失；`python -m compileall -f backend/app` 编译通过。
+
 ### 2026-07-13
 
 - Summary: 合并 `harmonyos-app` 分支到 `main`，全面修复前端功能缺陷，实现家校沟通端到端可用，并按原生 ArkUI 规则解决冲突。
