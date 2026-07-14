@@ -33,13 +33,7 @@ struct StudentListPage {
 
   async loadStudents(): Promise<void> {
     this.loading = true;
-    if (!this.classId) {
-      this.students = [];
-      this.filteredList = [];
-      this.loading = false;
-      return;
-    }
-    const res = await UserService.getClassStudents(this.classId);
+    const res = await UserService.getStudents(this.classId || undefined);
     this.students = res.code === 0 ? (res.data || []).filter((item: User) => item.role === 'student') : [];
     this.filteredList = this.computeFiltered();
     this.loading = false;

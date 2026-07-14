@@ -44,6 +44,19 @@ export class UserService extends BaseService {
     return HttpUtil.get<User[]>(`/api/users/class/${classId}`, UserStore.getInstance().authToken);
   }
 
+  static async getStudents(classId?: string): Promise<ApiResponse<User[]>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      let students = MockAuth.accounts.filter(u => u.role === 'student');
+      if (classId) {
+        students = students.filter(u => u.classId === classId);
+      }
+      return BaseService.success(students);
+    }
+    const query = classId ? `?classId=${classId}` : '';
+    return HttpUtil.get<User[]>(`/api/users/students${query}`, UserStore.getInstance().authToken);
+  }
+
   static async getContacts(): Promise<ApiResponse<User[]>> {
     if (USE_MOCK) {
       await BaseService.simulateDelay();

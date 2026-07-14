@@ -28,11 +28,20 @@ def ensure_schema() -> None:
     if "user" not in inspector.get_table_names():
         return
 
+    def ensure_participant_unread_count() -> None:
+        if "participant" not in inspector.get_table_names():
+            return
+        participant_cols = {col["name"] for col in inspector.get_columns("participant")}
+        if "unread_count" not in participant_cols:
+            db.session.execute(text("ALTER TABLE participant ADD COLUMN unread_count INTEGER DEFAULT 0"))
+            db.session.commit()
+
     columns = {column["name"] for column in inspector.get_columns("user")}
     if db.engine.dialect.name == "mysql":
         db.session.execute(text("ALTER TABLE `user` MODIFY phone VARCHAR(20) NULL"))
     if "email" in columns:
         db.session.commit()
+        ensure_participant_unread_count()
         return
 
     if db.engine.dialect.name == "mysql":
@@ -43,14 +52,7 @@ def ensure_schema() -> None:
         db.session.execute(text("CREATE UNIQUE INDEX ix_user_email ON user (email)"))
     db.session.commit()
 
-    if "participant" in inspector.get_table_names():
-        participant_cols = {col["name"] for col in inspector.get_columns("participant")}
-        if "unread_count" not in participant_cols:
-            if db.engine.dialect.name == "mysql":
-                db.session.execute(text("ALTER TABLE participant ADD COLUMN unread_count INTEGER DEFAULT 0"))
-            else:
-                db.session.execute(text("ALTER TABLE participant ADD COLUMN unread_count INTEGER DEFAULT 0"))
-            db.session.commit()
+    ensure_participant_unread_count()
 
 
 def as_json(value) -> str:

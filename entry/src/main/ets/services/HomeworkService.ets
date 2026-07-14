@@ -12,18 +12,22 @@ interface GradeData {
 }
 
 export class HomeworkService extends BaseService {
-  static async getList(classId?: string, page: number = 1): Promise<ApiResponse<PageResult<Homework>>> {
+  static async getList(classId?: string, page: number = 1, status?: string): Promise<ApiResponse<PageResult<Homework>>> {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
       let filtered = [...MockHomework.list];
       if (classId) {
         filtered = filtered.filter(h => h.classId === classId);
       }
+      if (status && status !== 'all') {
+        filtered = filtered.filter(h => h.status === status);
+      }
       filtered.sort((a, b) => b.assignedAt - a.assignedAt);
       return BaseService.success(BaseService.paginate(filtered, page, Constants.PAGE_SIZE));
     }
+    const statusParam = status && status !== 'all' ? `&status=${status}` : '';
     return HttpUtil.get<PageResult<Homework>>(
-      `/api/homework?classId=${classId || ''}&page=${page}&pageSize=${Constants.PAGE_SIZE}`
+      `/api/homework?classId=${classId || ''}&page=${page}&pageSize=${Constants.PAGE_SIZE}${statusParam}`
     );
   }
 
@@ -115,7 +119,7 @@ export class HomeworkService extends BaseService {
       const submissionsMap = MockHomework.submissions as Record<string, Submission[]>;
       return BaseService.success(submissionsMap[homeworkId] || []);
     }
-    return HttpUtil.get<Submission[]>(`/api/homework/${homeworkId}/submissions`);
+    return HttpUtil.get<Submission[]>(`/api/homework/${homeworkId}/submissions`, UserStore.getInstance().authToken);
   }
 
   static async update(homework: Homework): Promise<ApiResponse<Homework>> {
@@ -127,7 +131,7 @@ export class HomeworkService extends BaseService {
       }
       return BaseService.success(homework);
     }
-    return HttpUtil.put<Homework>(`/api/homework/${homework.id}`, homework);
+    return HttpUtil.put<Homework>(`/api/homework/${homework.id}`, homework, UserStore.getInstance().authToken);
   }
 
   static async delete(homeworkId: string): Promise<ApiResponse<null>> {
@@ -136,6 +140,6 @@ export class HomeworkService extends BaseService {
       MockHomework.list = MockHomework.list.filter(h => h.id !== homeworkId);
       return BaseService.success(null);
     }
-    return HttpUtil.del<null>(`/api/homework/${homeworkId}`);
+    return HttpUtil.del<null>(`/api/homework/${homeworkId}`, UserStore.getInstance().authToken);
   }
 }

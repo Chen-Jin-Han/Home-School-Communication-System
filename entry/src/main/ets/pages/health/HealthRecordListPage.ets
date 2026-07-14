@@ -40,12 +40,12 @@ struct HealthRecordListPage {
 
   async loadRecords(): Promise<void> {
     this.loading = true;
-    if (!this.studentId) {
+    if (!this.studentId && !this.userStore.isTeacher() && !this.userStore.isLeader()) {
       this.records = [];
       this.loading = false;
       return;
     }
-    const res = await HealthService.getRecords(this.studentId);
+    const res = await HealthService.getRecords(this.studentId || undefined);
     this.records = res.code === 0 && res.data ? res.data : [];
     this.loading = false;
   }

@@ -49,6 +49,29 @@ def page_result(query, page: int, page_size: int, serializer=lambda item: item.t
     }
 
 
+def visible_student_ids(user: User | None) -> list[int] | None:
+    if not user:
+        return []
+    role = str(user.role).upper()
+    if role in ("TEACHER", "LEADER"):
+        return None
+    if role == "STUDENT":
+        return [int(user.id)]
+    if role == "PARENT":
+        try:
+            return [int(item) for item in json.loads(user.child_ids or "[]")]
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return []
+    return []
+
+
+def homework_payload(homework: Homework) -> dict:
+    data = homework.to_dict()
+    due = homework.due_date
+    data["status"] = "expired" if due and due < datetime.utcnow() else (homework.status or "active")
+    return data
+
+
 def conversation_payload(conversation: Conversation) -> dict:
     data = conversation.to_dict()
     participants = Participant.query.filter_by(conversation_id=conversation.id).all()
@@ -231,8 +254,15 @@ def homework_list():
     query = Homework.query
     if request.args.get("classId"):
         query = query.filter(Homework.class_id == request.args.get("classId", type=int))
+    status = request.args.get("status")
+    if status in ("active", "expired"):
+        now = datetime.utcnow()
+        if status == "expired":
+            query = query.filter(Homework.due_date.isnot(None), Homework.due_date < now)
+        else:
+            query = query.filter(or_(Homework.due_date.is_(None), Homework.due_date >= now))
     query = query.order_by(Homework.assigned_at.desc())
-    return ok(page_result(query, int(request.args.get("page", 1)), int(request.args.get("pageSize", 20))))
+    return ok(page_result(query, int(request.args.get("page", 1)), int(request.args.get("pageSize", 20)), homework_payload))
 
 
 @api_bp.get("/api/homework/<int:homework_id>")
@@ -335,15 +365,30 @@ def conversation_create():
 
     target = get_or_404(User, target_user_id, "联系人不存在")
     current = get_or_404(User, g.user_id, "用户不存在")
-    target_conversation_ids = [
+    current_ids = {
+        item.conversation_id for item in Participant.query.filter_by(user_id=g.user_id).all()
+    }
+    target_ids = {
         item.conversation_id for item in Participant.query.filter_by(user_id=target_user_id).all()
-    ]
+    }
     existing_participant = None
-    if target_conversation_ids:
-        existing_participant = Participant.query.filter(
-            Participant.user_id == g.user_id,
-            Participant.conversation_id.in_(target_conversation_ids),
-        ).first()
+    for conversation_id in current_ids.intersection(target_ids):
+        row = Conversation.query.filter_by(id=conversation_id, type="private").first()
+        if not row:
+            continue
+        participants = Participant.query.filter_by(conversation_id=conversation_id).all()
+        participant_ids: set[int] = set()
+        for item in participants:
+            try:
+                participant_ids.add(int(item.user_id))
+            except (TypeError, ValueError):
+                continue
+        if participant_ids == {int(g.user_id), target_user_id}:
+            existing_participant = next(
+                (item for item in participants if str(item.user_id) == str(g.user_id)),
+                None,
+            )
+            break
     if existing_participant:
         return ok(conversation_payload(get_or_404(Conversation, existing_participant.conversation_id, "会话不存在")))
 
@@ -378,6 +423,8 @@ def messages(conversation_id: int):
         conversation_id=conversation_id,
         user_id=g.user_id,
     ).first()
+    if not participant:
+        raise BusinessError("Conversation not found", http_status=404)
     if participant and participant.unread_count > 0:
         participant.unread_count = 0
         db.session.commit()
@@ -412,6 +459,9 @@ def conversation_detail(conversation_id: int):
 @login_required
 def message_send(conversation_id: int):
     conversation = get_or_404(Conversation, conversation_id, "会话不存在")
+    participant = Participant.query.filter_by(conversation_id=conversation_id, user_id=g.user_id).first()
+    if not participant:
+        raise BusinessError("Conversation not found", http_status=404)
     payload = body()
     user = db.session.get(User, g.user_id)
     message = Message(
@@ -466,7 +516,36 @@ def profile_update():
 @api_bp.get("/api/users/class/<int:class_id>")
 @login_required
 def class_students(class_id: int):
-    rows = User.query.filter_by(class_id=class_id).order_by(User.name.asc()).all()
+    current = get_or_404(User, g.user_id, "User not found")
+    query = User.query.filter_by(class_id=class_id)
+    role = str(current.role).upper()
+    if role in ("TEACHER", "LEADER") and current.school_id:
+        query = query.filter(User.school_id == current.school_id)
+    elif role in ("PARENT", "STUDENT"):
+        allowed = visible_student_ids(current) or []
+        query = query.filter(User.id.in_(allowed or [0]))
+    rows = query.order_by(User.name.asc()).all()
+    return ok([row.to_dict() for row in rows])
+
+
+@api_bp.get("/api/users/students")
+@login_required
+def students():
+    current = get_or_404(User, g.user_id, "User not found")
+    role = str(current.role).upper()
+    class_id = request.args.get("classId", type=int)
+    query = User.query.filter(User.role.in_(["student", "STUDENT"]))
+    if class_id:
+        query = query.filter(User.class_id == class_id)
+    if role in ("TEACHER", "LEADER"):
+        if current.school_id:
+            query = query.filter(User.school_id == current.school_id)
+        if role == "TEACHER" and current.class_id and not class_id:
+            query = query.filter(User.class_id == current.class_id)
+    else:
+        allowed = visible_student_ids(current) or []
+        query = query.filter(User.id.in_(allowed or [0]))
+    rows = query.order_by(User.class_id.asc(), User.name.asc()).all()
     return ok([row.to_dict() for row in rows])
 
 
@@ -629,8 +708,25 @@ def grade_detail(grade_id: int):
 @api_bp.get("/api/health/records")
 @login_required
 def health_records():
-    student_id = request.args.get("studentId", g.user_id, type=int)
-    rows = HealthRecord.query.filter_by(student_id=student_id).order_by(HealthRecord.record_date.desc()).all()
+    current = get_or_404(User, g.user_id, "User not found")
+    student_id = request.args.get("studentId", type=int)
+    allowed = visible_student_ids(current)
+    query = HealthRecord.query
+    if student_id:
+        if allowed is not None and student_id not in allowed:
+            raise BusinessError("No permission to view this health record", code=403, http_status=403)
+        query = query.filter(HealthRecord.student_id == student_id)
+    elif allowed is not None:
+        query = query.filter(HealthRecord.student_id.in_(allowed or [0]))
+    elif current.school_id:
+        student_query = User.query.with_entities(User.id).filter(
+            User.role.in_(["student", "STUDENT"]),
+            User.school_id == current.school_id,
+        )
+        if str(current.role).upper() == "TEACHER" and current.class_id:
+            student_query = student_query.filter(User.class_id == current.class_id)
+        query = query.filter(HealthRecord.student_id.in_(student_query))
+    rows = query.order_by(HealthRecord.record_date.desc()).all()
     return ok([row.to_dict() for row in rows])
 
 
