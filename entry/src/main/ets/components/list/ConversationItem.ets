@@ -1,6 +1,7 @@
 import { Conversation } from '../../models/ChatModel';
 import { Constants } from '../../utils/Constants';
 import { DateUtil } from '../../utils/DateUtil';
+import { AppBadge } from '../common/Badge';
 
 @Component
 export struct ConversationItem {
@@ -23,7 +24,7 @@ export struct ConversationItem {
         .justifyContent(FlexAlign.Center)
 
         if (this.conversation.unreadCount > 0) {
-          Badge({ value: String(this.conversation.unreadCount), style: { badgeSize: 7, badgeColor: '#FF4D4F' } })
+          AppBadge({ count: this.conversation.unreadCount })
             .position({ x: 30, y: -4 })
         }
       }

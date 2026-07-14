@@ -149,6 +149,7 @@ class Participant(db.Model, SerializerMixin):
     user_name = db.Column(db.String(50), default="")
     avatar = db.Column(db.String(500), default="")
     role = db.Column(db.String(20), default="")
+    unread_count = db.Column(db.Integer, default=0)
 
 
 class Message(db.Model, SerializerMixin):

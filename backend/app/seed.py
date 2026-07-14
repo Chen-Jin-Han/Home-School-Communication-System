@@ -43,6 +43,15 @@ def ensure_schema() -> None:
         db.session.execute(text("CREATE UNIQUE INDEX ix_user_email ON user (email)"))
     db.session.commit()
 
+    if "participant" in inspector.get_table_names():
+        participant_cols = {col["name"] for col in inspector.get_columns("participant")}
+        if "unread_count" not in participant_cols:
+            if db.engine.dialect.name == "mysql":
+                db.session.execute(text("ALTER TABLE participant ADD COLUMN unread_count INTEGER DEFAULT 0"))
+            else:
+                db.session.execute(text("ALTER TABLE participant ADD COLUMN unread_count INTEGER DEFAULT 0"))
+            db.session.commit()
+
 
 def as_json(value) -> str:
     return json.dumps(value, ensure_ascii=False)
@@ -109,8 +118,8 @@ def seed_data() -> None:
     db.session.add(conversation)
     db.session.flush()
     db.session.add_all([
-        Participant(conversation_id=1, user_id=1, user_name="张伟", role="parent"),
-        Participant(conversation_id=1, user_id=3, user_name="李老师", role="teacher"),
+        Participant(conversation_id=1, user_id=1, user_name="张伟", role="parent", unread_count=1),
+        Participant(conversation_id=1, user_id=3, user_name="李老师", role="teacher", unread_count=0),
         Message(conversation_id=1, sender_id=3, sender_name="李老师", type="text", content="今天作业完成得不错，请继续保持。", created_at=now - timedelta(hours=2), status="sent"),
         Message(conversation_id=1, sender_id=1, sender_name="张伟", type="text", content="收到，谢谢老师。", created_at=now - timedelta(hours=1, minutes=50), status="sent"),
     ])

@@ -6,6 +6,7 @@ import { RouterUtil } from '../../utils/RouterUtil';
 import { AppNavBar } from '../../components/common/AppNavBar';
 import { LoadingView } from '../../components/common/LoadingView';
 import { EmptyView } from '../../components/common/EmptyView';
+import { UserStore } from '../../store/UserStore';
 
 @Entry
 @Component
@@ -24,6 +25,11 @@ struct ConversationListPage {
       return;
     }
     this.loadConversations();
+    ChatService.getUnreadCount().then(res => {
+      if (res.code === 0 && res.data) {
+        UserStore.getInstance().setUnreadChatCount(res.data.count ?? 0);
+      }
+    });
   }
 
   private async loadConversations(): Promise<void> {

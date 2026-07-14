@@ -15,6 +15,10 @@ interface SendMessageRequest {
   content: string;
 }
 
+interface UnreadCountResult {
+  count: number;
+}
+
 export class ChatService extends BaseService {
   static async getConversations(): Promise<ApiResponse<Conversation[]>> {
     if (USE_MOCK) {
@@ -33,6 +37,11 @@ export class ChatService extends BaseService {
   ): Promise<ApiResponse<PageResult<Message>>> {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
+      // Reset unread count for this conversation (mark as read)
+      const conv = MockChats.conversations.find(c => c.id === conversationId);
+      if (conv) {
+        conv.unreadCount = 0;
+      }
       const messagesMap = MockChats.messages as Record<string, Message[]>;
       const msgs = messagesMap[conversationId] || [];
       const sorted = [...msgs].sort((a, b) => a.createdAt - b.createdAt);
@@ -122,6 +131,21 @@ export class ChatService extends BaseService {
     return HttpUtil.post<Conversation>(
       '/api/conversations',
       request,
+      UserStore.getInstance().authToken
+    );
+  }
+
+  static async getUnreadCount(): Promise<ApiResponse<UnreadCountResult>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const total = MockChats.conversations.reduce(
+        (sum, c) => sum + (c.unreadCount || 0), 0
+      );
+      const result: UnreadCountResult = { count: total };
+      return BaseService.success(result);
+    }
+    return HttpUtil.get<UnreadCountResult>(
+      '/api/conversations/unread-count',
       UserStore.getInstance().authToken
     );
   }

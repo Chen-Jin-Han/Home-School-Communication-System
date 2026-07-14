@@ -109,6 +109,10 @@ export class UserStore {
     return this.hasRole(UserRole.LEADER);
   }
 
+  setUnreadChatCount(count: number): void {
+    this.unreadChatCount = count;
+  }
+
   getChildId(): string | undefined {
     if (this.isParent() && this.currentUser?.childIds && this.currentUser.childIds.length > 0) {
       return this.currentUser.childIds[0];

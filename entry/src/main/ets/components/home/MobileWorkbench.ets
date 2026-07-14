@@ -3,6 +3,8 @@ import { UserStore } from '../../store/UserStore';
 import { Constants } from '../../utils/Constants';
 import { RouterUtil } from '../../utils/RouterUtil';
 import { ElementIcon } from '../common/ElementIcon';
+import { AppBadge } from '../common/Badge';
+import { ChatService } from '../../services/ChatService';
 
 interface FeatureAction {
   title: string;
@@ -14,13 +16,48 @@ interface FeatureAction {
 interface TabAction {
   title: string;
   icon: string;
+  badgeCount?: number;
 }
 
 @Component
 export struct MobileWorkbench {
   @Prop role: UserRole = UserRole.PARENT;
   @State currentTab: number = 0;
+  @State unreadBadgeCount: number = 0;
   @Provide userStore: UserStore = UserStore.getInstance();
+  private unreadPollTimer: number = -1;
+
+  aboutToAppear(): void {
+    this.refreshUnreadCount();
+    this.startUnreadPolling();
+  }
+
+  aboutToDisappear(): void {
+    this.stopUnreadPolling();
+  }
+
+  private startUnreadPolling(): void {
+    this.stopUnreadPolling();
+    this.unreadPollTimer = setInterval(() => {
+      this.refreshUnreadCount();
+    }, 10000);
+  }
+
+  private stopUnreadPolling(): void {
+    if (this.unreadPollTimer !== -1) {
+      clearInterval(this.unreadPollTimer);
+      this.unreadPollTimer = -1;
+    }
+  }
+
+  private async refreshUnreadCount(): Promise<void> {
+    const res = await ChatService.getUnreadCount();
+    if (res.code === 0 && res.data) {
+      const count = res.data.count ?? 0;
+      this.userStore.setUnreadChatCount(count);
+      this.unreadBadgeCount = count;
+    }
+  }
 
   build() {
     Column() {
@@ -351,7 +388,14 @@ export struct MobileWorkbench {
     Row() {
       ForEach(this.tabs(), (item: TabAction, index: number) => {
         Column() {
-          this.TabIcon(item.icon, index)
+          Stack() {
+            this.TabIcon(item.icon, index)
+
+            if ((item.badgeCount ?? 0) > 0) {
+              AppBadge({ count: item.badgeCount! })
+                .position({ x: 26, y: -4 })
+            }
+          }
 
           Text(item.title)
             .fontSize(11)
@@ -364,7 +408,7 @@ export struct MobileWorkbench {
         .onClick(() => {
           this.currentTab = index;
         })
-      }, (item: TabAction) => item.title)
+      }, (item: TabAction) => item.title + '_' + (item.badgeCount ?? 0))
     }
     .width('100%')
     .height(Constants.TAB_BAR_HEIGHT)
@@ -445,16 +489,17 @@ export struct MobileWorkbench {
   }
 
   private tabs(): TabAction[] {
+    const chatUnread = this.unreadBadgeCount;
     if (this.role === UserRole.PARENT) {
-      return [{ title: '首页', icon: 'home' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
+      return [{ title: '首页', icon: 'home' }, { title: '消息', icon: 'message', badgeCount: chatUnread }, { title: '我的', icon: 'profile' }];
     }
     if (this.role === UserRole.STUDENT) {
-      return [{ title: '首页', icon: 'home' }, { title: '作业', icon: 'homework' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
+      return [{ title: '首页', icon: 'home' }, { title: '作业', icon: 'homework' }, { title: '消息', icon: 'message', badgeCount: chatUnread }, { title: '我的', icon: 'profile' }];
     }
     if (this.role === UserRole.TEACHER) {
-      return [{ title: '首页', icon: 'home' }, { title: '班级', icon: 'class' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
+      return [{ title: '首页', icon: 'home' }, { title: '班级', icon: 'class' }, { title: '消息', icon: 'message', badgeCount: chatUnread }, { title: '我的', icon: 'profile' }];
     }
-    return [{ title: '首页', icon: 'home' }, { title: '发布', icon: 'publish' }, { title: '消息', icon: 'message' }, { title: '我的', icon: 'profile' }];
+    return [{ title: '首页', icon: 'home' }, { title: '发布', icon: 'publish' }, { title: '消息', icon: 'message', badgeCount: chatUnread }, { title: '我的', icon: 'profile' }];
   }
 
   private primaryActions(): FeatureAction[] {
