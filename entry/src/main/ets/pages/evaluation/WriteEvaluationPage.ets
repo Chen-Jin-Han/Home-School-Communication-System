@@ -17,6 +17,8 @@ interface EvalTypeOption {
 
 interface WriteEvaluationParams {
   studentId: string;
+  studentName?: string;
+  studentAvatar?: string;
 }
 
 @Entry
@@ -27,10 +29,18 @@ struct WriteEvaluationPage {
   @State evaluationType: string = 'daily';
   @State loading: boolean = false;
   private studentId: string = '';
+  private studentName: string = '';
+  private studentAvatar: string = '';
 
   aboutToAppear(): void {
     const params = router.getParams() as WriteEvaluationParams;
+    if (!params || !params.studentId) {
+      router.back();
+      return;
+    }
     this.studentId = params.studentId;
+    this.studentName = params.studentName || '';
+    this.studentAvatar = params.studentAvatar || '';
   }
 
   build() {
@@ -105,11 +115,11 @@ struct WriteEvaluationPage {
 
   async handleSubmit(): Promise<void> {
     if (this.rating === 0) {
-      promptAction.showToast({ message: '请评分' });
+      promptAction.openToast({ message: '请评分' });
       return;
     }
     if (!this.content) {
-      promptAction.showToast({ message: '请输入评价内容' });
+      promptAction.openToast({ message: '请输入评价内容' });
       return;
     }
 
@@ -118,11 +128,11 @@ struct WriteEvaluationPage {
     const ev: Evaluation = {
       id: `ev_${Date.now()}`,
       studentId: this.studentId,
-      studentName: '',
-      studentAvatar: '',
+      studentName: this.studentName,
+      studentAvatar: this.studentAvatar,
       teacherId: store.currentUser?.id || '',
       teacherName: store.currentUser?.name || '',
-      teacherAvatar: '',
+      teacherAvatar: store.currentUser?.avatar || '',
       type: this.evaluationType as EvaluationPeriod,
       periodLabel: new Date().toISOString().substring(0, 10),
       rating: this.rating,
@@ -134,10 +144,10 @@ struct WriteEvaluationPage {
     const res = await EvaluationService.create(ev);
     this.loading = false;
     if (res.code === 0) {
-      promptAction.showToast({ message: '评价提交成功' });
+      promptAction.openToast({ message: '评价提交成功' });
       RouterUtil.back();
     } else {
-      promptAction.showToast({ message: res.message || '提交失败' });
+      promptAction.openToast({ message: res.message || '提交失败' });
     }
   }
 }

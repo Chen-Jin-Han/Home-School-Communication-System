@@ -97,31 +97,27 @@ export struct MobileWorkbench {
   @Builder
   KpiStrip() {
     Row() {
-      this.KpiItem('待办', this.role === UserRole.TEACHER ? '3' : '2')
-      this.KpiItem('通知', '7')
-      this.KpiItem(this.role === UserRole.LEADER ? '出勤率' : '本周', this.role === UserRole.LEADER ? '96%' : '正常')
+      Column() {
+        Text(`欢迎回来，${this.userStore.currentUser?.name || '同学'}`)
+          .fontSize(Constants.FONT_LG)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Constants.COLOR_TEXT_PRIMARY)
+        Text(this.roleLabel())
+          .fontSize(Constants.FONT_SM)
+          .fontColor(Constants.COLOR_TEXT_HINT)
+          .margin({ top: 4 })
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      ElementIcon({ name: 'Bell', iconSize: 22, color: Constants.COLOR_PRIMARY })
     }
     .width('90%')
-    .padding({ top: 16, bottom: 16 })
+    .padding({ left: 18, right: 18, top: 16, bottom: 16 })
     .backgroundColor(Constants.COLOR_WHITE)
     .borderRadius(Constants.CARD_RADIUS)
     .shadow({ radius: 14, color: '#1E3A8A14', offsetY: 6 })
     .margin({ left: 20, right: 20, top: -22 })
-  }
-
-  @Builder
-  KpiItem(label: string, value: string) {
-    Column() {
-      Text(value)
-        .fontSize(22)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(Constants.COLOR_TEXT_PRIMARY)
-      Text(label)
-        .fontSize(Constants.FONT_SM)
-        .fontColor(Constants.COLOR_TEXT_HINT)
-        .margin({ top: 4 })
-    }
-    .layoutWeight(1)
   }
 
   @Builder
@@ -144,13 +140,13 @@ export struct MobileWorkbench {
         GridItem() {
           this.FeatureCard(item)
         }
-      })
+      }, (item: FeatureAction) => item.title)
     }
     .columnsTemplate('1fr 1fr')
     .columnsGap(12)
     .rowsGap(12)
     .width('100%')
-    .height(items.length > 4 ? 260 : 170)
+    .height(Math.ceil(items.length / 2) * (78 + 12))
     .padding({ left: 20, right: 20 })
   }
 
@@ -368,7 +364,7 @@ export struct MobileWorkbench {
         .onClick(() => {
           this.currentTab = index;
         })
-      })
+      }, (item: TabAction) => item.title)
     }
     .width('100%')
     .height(Constants.TAB_BAR_HEIGHT)
@@ -492,7 +488,9 @@ export struct MobileWorkbench {
         { title: '作业列表', desc: '查看作业进度', icon: 'homework', type: 'homework' },
         { title: '考勤管理', desc: '学生出勤记录', icon: 'attendance', type: 'attendance' },
         { title: '成绩管理', desc: '成绩报告查询', icon: 'grade', type: 'grade' },
+        { title: '健康档案', desc: '学生健康记录', icon: 'health', type: 'health' },
         { title: '校园活动', desc: '活动安排查看', icon: 'activity', type: 'activity' },
+        { title: '我的发布', desc: '发布记录管理', icon: 'published', type: 'published' },
         { title: '学校信息', desc: '校园基础资料', icon: 'school', type: 'school' },
         { title: '消息沟通', desc: '进入会话列表', icon: 'message', type: 'chat' },
       ];

@@ -62,7 +62,7 @@ export class RouterUtil {
   static toPublishNotice(): void {
     const store = UserStore.getInstance();
     if (!store.isTeacher() && !store.isLeader()) {
-      promptAction.showToast({ message: '仅教师和领导可发布通知' });
+      promptAction.openToast({ message: '仅教师和领导可发布通知' });
       return;
     }
     router.pushUrl({ url: 'pages/publish/PublishNoticePage' });
@@ -95,7 +95,7 @@ export class RouterUtil {
   static toAssignHomework(): void {
     const store = UserStore.getInstance();
     if (!store.isTeacher()) {
-      promptAction.showToast({ message: '仅教师可布置作业' });
+      promptAction.openToast({ message: '仅教师可布置作业' });
       return;
     }
     router.pushUrl({ url: 'pages/homework/AssignHomeworkPage' });
@@ -141,12 +141,12 @@ export class RouterUtil {
     router.pushUrl({ url: 'pages/evaluation/EvaluationListPage', params: { studentId } });
   }
 
-  static toWriteEvaluation(studentId: string): void {
+  static toWriteEvaluation(studentId: string, studentName?: string): void {
     const store = UserStore.getInstance();
     if (!store.isTeacher()) {
-      promptAction.showToast({ message: '仅教师可写评价' });
+      promptAction.openToast({ message: '仅教师可写评价' });
       return;
     }
-    router.pushUrl({ url: 'pages/evaluation/WriteEvaluationPage', params: { studentId } });
+    router.pushUrl({ url: 'pages/evaluation/WriteEvaluationPage', params: { studentId, studentName } });
   }
 }

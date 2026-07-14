@@ -22,6 +22,10 @@ struct SubmitHomeworkPage {
 
   aboutToAppear(): void {
     const params = router.getParams() as SubmitHomeworkParams;
+    if (!params || !params.homeworkId) {
+      router.back();
+      return;
+    }
     this.homeworkId = params.homeworkId;
   }
 
@@ -59,7 +63,7 @@ struct SubmitHomeworkPage {
 
   async handleSubmit(): Promise<void> {
     if (!this.content) {
-      promptAction.showToast({ message: '请输入提交内容' });
+      promptAction.openToast({ message: '请输入提交内容' });
       return;
     }
 
@@ -79,10 +83,10 @@ struct SubmitHomeworkPage {
     const res = await HomeworkService.submit(sub);
     this.loading = false;
     if (res.code === 0) {
-      promptAction.showToast({ message: '提交成功' });
+      promptAction.openToast({ message: '提交成功' });
       RouterUtil.back();
     } else {
-      promptAction.showToast({ message: res.message || '提交失败' });
+      promptAction.openToast({ message: res.message || '提交失败' });
     }
   }
 }

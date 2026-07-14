@@ -19,6 +19,11 @@ struct NotificationDetailPage {
 
   async aboutToAppear(): Promise<void> {
     const params = router.getParams() as NotificationDetailParams;
+    if (!params || !params.noticeId) {
+      router.back();
+      this.loading = false;
+      return;
+    }
     this.noticeId = params.noticeId;
     const res = await NoticeService.getDetail(this.noticeId);
     this.notice = res.data || null;
@@ -71,6 +76,7 @@ struct NotificationDetailPage {
           .margin(Constants.SPACE_LG)
         }
         .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
     }
     .width('100%')

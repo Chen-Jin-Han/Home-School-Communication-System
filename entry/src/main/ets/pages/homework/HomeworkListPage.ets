@@ -44,6 +44,7 @@ struct HomeworkListPage {
 
       // Tab filter
       Row() {
+        this.FilterTab('全部', 'all')
         this.FilterTab('进行中', 'active')
         this.FilterTab('已截止', 'expired')
       }
@@ -60,10 +61,12 @@ struct HomeworkListPage {
               ListItem() {
                 HomeworkCard({ homework: hw, onTap: () => { RouterUtil.toHomeworkDetail(hw.id); } })
               }
-            }
+            },
+            (hw: Homework) => hw.id
           )
         }
         .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
     }
     .width('100%')

@@ -108,4 +108,34 @@ export class HomeworkService extends BaseService {
       UserStore.getInstance().authToken
     );
   }
+
+  static async getSubmissions(homeworkId: string): Promise<ApiResponse<Submission[]>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const submissionsMap = MockHomework.submissions as Record<string, Submission[]>;
+      return BaseService.success(submissionsMap[homeworkId] || []);
+    }
+    return HttpUtil.get<Submission[]>(`/api/homework/${homeworkId}/submissions`);
+  }
+
+  static async update(homework: Homework): Promise<ApiResponse<Homework>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const idx = MockHomework.list.findIndex(h => h.id === homework.id);
+      if (idx >= 0) {
+        MockHomework.list[idx] = homework;
+      }
+      return BaseService.success(homework);
+    }
+    return HttpUtil.put<Homework>(`/api/homework/${homework.id}`, homework);
+  }
+
+  static async delete(homeworkId: string): Promise<ApiResponse<null>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      MockHomework.list = MockHomework.list.filter(h => h.id !== homeworkId);
+      return BaseService.success(null);
+    }
+    return HttpUtil.del<null>(`/api/homework/${homeworkId}`);
+  }
 }

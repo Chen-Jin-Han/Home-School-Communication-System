@@ -223,6 +223,19 @@ class Activity(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 
+class ActivityComment(db.Model, SerializerMixin):
+    __tablename__ = "activity_comment"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    activity_id = db.Column(db.BigInteger, nullable=False, index=True)
+    user_id = db.Column(db.BigInteger, nullable=False, index=True)
+    user_name = db.Column(db.String(50), default="")
+    user_avatar = db.Column(db.String(500), default="")
+    role = db.Column(db.String(20), default="")
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+
 class Attendance(db.Model, SerializerMixin):
     __tablename__ = "attendance"
 

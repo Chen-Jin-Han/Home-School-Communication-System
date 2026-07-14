@@ -1,5 +1,5 @@
 import { BaseService, ApiResponse, PageResult } from './BaseService';
-import { Activity, ActivityComment } from '../models/ActivityModel';
+import { Activity, ActivityComment, ActivityCommentPayload } from '../models/ActivityModel';
 import { MockActivities } from '../mock/MockActivities';
 import { Constants } from '../utils/Constants';
 import { USE_MOCK } from './MockConfig';
@@ -33,6 +33,14 @@ export class ActivityService extends BaseService {
     return HttpUtil.get<Activity | undefined>(`/api/activities/${activityId}`);
   }
 
+  static async getComments(activityId: string): Promise<ApiResponse<ActivityComment[]>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      return BaseService.success([]);
+    }
+    return HttpUtil.get<ActivityComment[]>(`/api/activities/${activityId}/comments`);
+  }
+
   static async join(activityId: string): Promise<ApiResponse<null>> {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
@@ -45,15 +53,57 @@ export class ActivityService extends BaseService {
     return HttpUtil.post<null>(`/api/activities/${activityId}/join`, undefined, UserStore.getInstance().authToken);
   }
 
-  static async addComment(activityId: string, comment: ActivityComment): Promise<ApiResponse<ActivityComment>> {
+  static async addComment(activityId: string, content: string): Promise<ApiResponse<ActivityComment>> {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
-      return BaseService.success(comment);
+      const store = UserStore.getInstance();
+      const now = Date.now();
+      return BaseService.success<ActivityComment>({
+        id: `mock_${now}`,
+        activityId: activityId,
+        userId: store.currentUser?.id || '',
+        userName: store.currentUser?.name || '',
+        userAvatar: store.currentUser?.avatar || '',
+        role: store.currentUser?.role || '',
+        content: content,
+        createdAt: now,
+      });
     }
+    const payload: ActivityCommentPayload = { content: content };
     return HttpUtil.post<ActivityComment>(
       `/api/activities/${activityId}/comments`,
-      comment,
+      payload,
       UserStore.getInstance().authToken
     );
+  }
+
+  static async create(activity: Activity): Promise<ApiResponse<Activity>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      MockActivities.list.unshift(activity);
+      return BaseService.success(activity);
+    }
+    return HttpUtil.post<Activity>('/api/activities', activity);
+  }
+
+  static async update(activityId: string, activity: Activity): Promise<ApiResponse<Activity>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const idx = MockActivities.list.findIndex(a => a.id === activityId);
+      if (idx >= 0) {
+        MockActivities.list[idx] = activity;
+      }
+      return BaseService.success(activity);
+    }
+    return HttpUtil.put<Activity>(`/api/activities/${activityId}`, activity);
+  }
+
+  static async delete(activityId: string): Promise<ApiResponse<null>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      MockActivities.list = MockActivities.list.filter(a => a.id !== activityId);
+      return BaseService.success(null);
+    }
+    return HttpUtil.del<null>(`/api/activities/${activityId}`);
   }
 }

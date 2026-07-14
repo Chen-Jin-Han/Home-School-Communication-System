@@ -13,10 +13,9 @@ interface QuickAccount {
 @Entry
 @Component
 struct LoginPage {
-  @State account: string = 'parent@huadee.test';
-  @State password: string = '123456';
+  @State account: string = '';
+  @State password: string = '';
   @State loading: boolean = false;
-  @State showPassword: boolean = false;
 
   private quickAccounts: QuickAccount[] = [
     { label: '家长', account: 'parent@huadee.test', password: '123456' },
@@ -173,33 +172,21 @@ struct LoginPage {
         .fontColor(Constants.COLOR_TEXT_HINT)
         .width('100%')
         .margin({ top: 16, bottom: 8 })
-
-      Row() {
-        TextInput({ placeholder: '请输入密码', text: this.password })
-          .layoutWeight(1)
-          .height(48)
-          .fontSize(Constants.FONT_LG)
-          .fontColor(Constants.COLOR_TEXT_PRIMARY)
-          .placeholderColor('#A8B3BF')
-          .backgroundColor(Color.Transparent)
-          .type(this.showPassword ? InputType.Normal : InputType.Password)
-          .onChange((text: string) => {
-            this.password = text;
-          })
-
-        Text(this.showPassword ? '隐藏' : '显示')
-          .fontSize(Constants.FONT_SM)
-          .fontColor('#4A90D9')
-          .padding({ left: 12 })
-          .onClick(() => {
-            this.showPassword = !this.showPassword;
-          })
-      }
-      .width('100%')
-      .height(48)
-      .padding({ left: 14, right: 14 })
-      .backgroundColor('#F6F9FC')
-      .borderRadius(12)
+      TextInput({ placeholder: '请输入密码', text: this.password })
+        .height(48)
+        .fontSize(Constants.FONT_LG)
+        .fontColor(Constants.COLOR_TEXT_PRIMARY)
+        .placeholderColor('#A8B3BF')
+        .backgroundColor(Color.Transparent)
+        .type(InputType.Password)
+        .onChange((text: string) => {
+          this.password = text;
+        })
+        .width('100%')
+        .height(48)
+        .padding({ left: 14, right: 14 })
+        .backgroundColor('#F6F9FC')
+        .borderRadius(12)
     }
     .width('100%')
   }
@@ -226,11 +213,11 @@ struct LoginPage {
   async handleLogin(): Promise<void> {
     const account = this.account.trim();
     if (!account) {
-      promptAction.showToast({ message: '请输入手机号或邮箱' });
+      promptAction.openToast({ message: '请输入手机号或邮箱' });
       return;
     }
     if (!this.password) {
-      promptAction.showToast({ message: '请输入密码' });
+      promptAction.openToast({ message: '请输入密码' });
       return;
     }
 
@@ -241,10 +228,10 @@ struct LoginPage {
     if (res.code === 0) {
       const store = UserStore.getInstance();
       await store.login(res.data.user, res.data.token);
-      promptAction.showToast({ message: `欢迎，${res.data.user.name}` });
+      promptAction.openToast({ message: `欢迎，${res.data.user.name}` });
       RouterUtil.toHome(res.data.user.role);
     } else {
-      promptAction.showToast({ message: res.message || '登录失败' });
+      promptAction.openToast({ message: res.message || '登录失败' });
     }
   }
 }

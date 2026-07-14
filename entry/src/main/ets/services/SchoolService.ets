@@ -1,9 +1,22 @@
 import { BaseService, ApiResponse } from './BaseService';
-import { School, OrgNode } from '../models/SchoolModel';
+import { School, OrgNode, ClassInfo } from '../models/SchoolModel';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 
 export class SchoolService extends BaseService {
+  static async getClasses(schoolId: string): Promise<ApiResponse<ClassInfo[]>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const list: ClassInfo[] = [
+        { id: '1', name: '一年级(1)班', grade: 1, schoolId: schoolId, headTeacherId: '', headTeacherName: '', studentCount: 36 },
+        { id: '2', name: '三年级(2)班', grade: 3, schoolId: schoolId, headTeacherId: '3', headTeacherName: '李老师', studentCount: 40 },
+        { id: '3', name: '五年级(1)班', grade: 5, schoolId: schoolId, headTeacherId: '', headTeacherName: '', studentCount: 35 },
+      ];
+      return BaseService.success(list);
+    }
+    return HttpUtil.get<ClassInfo[]>(`/api/schools/${schoolId}/classes`);
+  }
+
   static async getSchoolInfo(schoolId: string): Promise<ApiResponse<School>> {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
@@ -22,7 +35,7 @@ export class SchoolService extends BaseService {
     return HttpUtil.get<School>(`/api/schools/${schoolId}`);
   }
 
-  static async getOrgTree(_schoolId: string): Promise<ApiResponse<OrgNode>> {
+  static async getOrgTree(schoolId: string): Promise<ApiResponse<OrgNode>> {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
       const grade1Class1: OrgNode = { id: 'c101', name: '一年级(1)班', type: 'class', headTeacherId: 't101' };
@@ -41,13 +54,13 @@ export class SchoolService extends BaseService {
       const grade3: OrgNode = { id: 'grade3', name: '三年级', type: 'grade', children: grade3Children };
 
       const orgRoot: OrgNode = {
-        id: _schoolId,
+        id: schoolId,
         name: '华德小学',
         type: 'school',
         children: [grade1, grade2, grade3],
       };
       return BaseService.success(orgRoot);
     }
-    return HttpUtil.get<OrgNode>(`/api/schools/${_schoolId}/org-tree`);
+    return HttpUtil.get<OrgNode>(`/api/schools/${schoolId}/org-tree`);
   }
 }

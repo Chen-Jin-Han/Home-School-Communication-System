@@ -20,6 +20,11 @@ struct HealthDetailPage {
 
   async aboutToAppear(): Promise<void> {
     const params = router.getParams() as HealthDetailParams;
+    if (!params || !params.recordId) {
+      router.back();
+      this.loading = false;
+      return;
+    }
     this.recordId = params.recordId;
     const res = await HealthService.getDetail(this.recordId);
     this.record = res.data || null;
@@ -114,6 +119,7 @@ struct HealthDetailPage {
           .margin(Constants.SPACE_LG)
         }
         .layoutWeight(1)
+        .scrollBar(BarState.Off)
       }
     }
     .width('100%')

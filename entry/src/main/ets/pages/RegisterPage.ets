@@ -2,13 +2,18 @@ import { promptAction } from '@kit.ArkUI';
 import { Constants } from '../utils/Constants';
 import { RouterUtil } from '../utils/RouterUtil';
 import { UserRole, RegisterParams } from '../models/UserModel';
+import { ClassInfo } from '../models/SchoolModel';
 import { AuthService } from '../services/AuthService';
+import { SchoolService } from '../services/SchoolService';
 import { ElementIcon } from '../components/common/ElementIcon';
+import { LoadingView } from '../components/common/LoadingView';
 
 interface RoleOption {
   role: UserRole;
   label: string;
 }
+
+const DEFAULT_SCHOOL_ID = '1';
 
 @Entry
 @Component
@@ -19,6 +24,10 @@ struct RegisterPage {
   @State password: string = '';
   @State confirmPassword: string = '';
   @State selectedRole: UserRole = UserRole.PARENT;
+  @State classes: ClassInfo[] = [];
+  @State selectedClassId: string = '';
+  @State selectedClassName: string = '';
+  @State loadingClasses: boolean = true;
   @State loading: boolean = false;
 
   private roleOptions: RoleOption[] = [
@@ -26,6 +35,17 @@ struct RegisterPage {
     { role: UserRole.STUDENT, label: '学生' },
     { role: UserRole.TEACHER, label: '教师' },
   ];
+
+  async aboutToAppear(): Promise<void> {
+    await this.loadClasses();
+  }
+
+  private async loadClasses(): Promise<void> {
+    this.loadingClasses = true;
+    const res = await SchoolService.getClasses(DEFAULT_SCHOOL_ID);
+    this.classes = res.code === 0 && res.data ? res.data : [];
+    this.loadingClasses = false;
+  }
 
   build() {
     Column() {
@@ -87,22 +107,26 @@ struct RegisterPage {
               .width('100%')
               .margin({ top: 16, bottom: 8 })
 
-            Row() {
+            Flex({ wrap: FlexWrap.Wrap }) {
               ForEach(this.roleOptions, (item: RoleOption) => {
-                Button(item.label)
-                  .layoutWeight(1)
-                  .height(38)
+                Text(item.label)
                   .fontSize(Constants.FONT_MD)
                   .fontColor(this.selectedRole === item.role ? Constants.COLOR_WHITE : '#2469A8')
                   .backgroundColor(this.selectedRole === item.role ? '#4A90D9' : '#E7F2FD')
                   .borderRadius(19)
-                  .margin({ right: 8 })
+                  .height(38)
+                  .padding({ left: 18, right: 18 })
+                  .margin({ right: 8, bottom: 8 })
                   .onClick(() => {
                     this.selectedRole = item.role;
                   })
-              })
+              }, (item: RoleOption) => item.role)
             }
             .width('100%')
+
+            if (this.selectedRole !== UserRole.TEACHER) {
+              this.ClassSelector()
+            }
 
             Button(this.loading ? '提交中...' : '注册')
               .width('100%')
@@ -132,9 +156,10 @@ struct RegisterPage {
               .fontColor('#4A90D9')
               .fontWeight(FontWeight.Bold)
               .onClick(() => {
-                RouterUtil.toLogin();
+                RouterUtil.back();
               })
           }
+          .width('100%')
           .justifyContent(FlexAlign.Center)
           .margin({ top: 20, bottom: 24 })
         }
@@ -147,6 +172,49 @@ struct RegisterPage {
     .width('100%')
     .height('100%')
     .backgroundColor('#F4F8FC')
+  }
+
+  @Builder
+  ClassSelector() {
+    Column() {
+      Text(this.selectedRole === UserRole.TEACHER ? '任教班级（可选）' : '所在班级')
+        .fontSize(Constants.FONT_SM)
+        .fontColor(Constants.COLOR_TEXT_HINT)
+        .width('100%')
+        .margin({ top: 16, bottom: 8 })
+
+      if (this.loadingClasses) {
+        LoadingView()
+      } else if ((this.classes || []).length === 0) {
+        Text('暂无可选班级')
+          .fontSize(Constants.FONT_SM)
+          .fontColor(Constants.COLOR_TEXT_HINT)
+      } else {
+        Flex({ wrap: FlexWrap.Wrap }) {
+          ForEach(this.classes, (item: ClassInfo) => {
+            Text(item.name)
+              .fontSize(Constants.FONT_MD)
+              .fontColor(this.selectedClassId === item.id ? Constants.COLOR_WHITE : '#2469A8')
+              .backgroundColor(this.selectedClassId === item.id ? '#4A90D9' : '#E7F2FD')
+              .borderRadius(16)
+              .height(34)
+              .padding({ left: 14, right: 14 })
+              .margin({ right: 8, bottom: 8 })
+              .onClick(() => {
+                if (this.selectedClassId === item.id) {
+                  this.selectedClassId = '';
+                  this.selectedClassName = '';
+                } else {
+                  this.selectedClassId = item.id;
+                  this.selectedClassName = item.name;
+                }
+              })
+          }, (item: ClassInfo) => item.id)
+        }
+        .width('100%')
+      }
+    }
+    .width('100%')
   }
 
   @Builder
@@ -180,23 +248,31 @@ struct RegisterPage {
     const email = this.email.trim();
 
     if (!this.name.trim()) {
-      promptAction.showToast({ message: '请输入姓名' });
+      promptAction.openToast({ message: '请输入姓名' });
       return;
     }
     if (!phone && !email) {
-      promptAction.showToast({ message: '手机号和邮箱至少填写一个' });
+      promptAction.openToast({ message: '手机号和邮箱至少填写一个' });
       return;
     }
     if (email && email.indexOf('@') < 0) {
-      promptAction.showToast({ message: '请输入正确的邮箱' });
+      promptAction.openToast({ message: '请输入正确的邮箱' });
       return;
     }
     if (this.password.length < 6) {
-      promptAction.showToast({ message: '密码至少 6 位' });
+      promptAction.openToast({ message: '密码至少 6 位' });
       return;
     }
     if (this.password !== this.confirmPassword) {
-      promptAction.showToast({ message: '两次密码不一致' });
+      promptAction.openToast({ message: '两次密码不一致' });
+      return;
+    }
+    if (this.selectedRole === UserRole.PARENT && !this.selectedClassId) {
+      promptAction.openToast({ message: '请选择所在班级' });
+      return;
+    }
+    if (this.selectedRole === UserRole.STUDENT && !this.selectedClassId) {
+      promptAction.openToast({ message: '请选择所在班级' });
       return;
     }
 
@@ -206,7 +282,9 @@ struct RegisterPage {
       password: this.password,
       name: this.name.trim(),
       role: this.selectedRole,
-      schoolId: '1',
+      schoolId: DEFAULT_SCHOOL_ID,
+      classId: this.selectedClassId || undefined,
+      className: this.selectedClassName || undefined,
     };
 
     this.loading = true;
@@ -214,10 +292,10 @@ struct RegisterPage {
     this.loading = false;
 
     if (res.code === 0) {
-      promptAction.showToast({ message: '注册成功，请登录' });
+      promptAction.openToast({ message: '注册成功，请登录' });
       RouterUtil.toLogin();
     } else {
-      promptAction.showToast({ message: res.message || '注册失败' });
+      promptAction.openToast({ message: res.message || '注册失败' });
     }
   }
 }

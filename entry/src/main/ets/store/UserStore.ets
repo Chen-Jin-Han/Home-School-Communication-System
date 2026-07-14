@@ -1,6 +1,14 @@
 import { User, UserRole } from '../models/UserModel';
 import { StorageUtil } from '../utils/StorageUtil';
 
+const SESSION_KEY = 'user_session';
+const VALID_ROLES: string[] = [UserRole.PARENT, UserRole.STUDENT, UserRole.TEACHER, UserRole.LEADER];
+
+interface SessionBlob {
+  token: string;
+  user: User;
+}
+
 @Observed
 export class UserStore {
   private static _instance: UserStore;
@@ -21,69 +29,25 @@ export class UserStore {
   }
 
   async init(): Promise<void> {
-    const token = await StorageUtil.get<string>('authToken', '');
-    const userId = await StorageUtil.get<string>('userId', '');
-    const userName = await StorageUtil.get<string>('userName', '');
-    const userRole = await StorageUtil.get<string>('userRole', '');
-    const userPhone = await StorageUtil.get<string>('userPhone', '');
-    const userEmail = await StorageUtil.get<string>('userEmail', '');
-    const schoolId = await StorageUtil.get<string>('schoolId', '');
-    const schoolName = await StorageUtil.get<string>('schoolName', '');
-    const className = await StorageUtil.get<string>('className', '');
-    const classId = await StorageUtil.get<string>('classId', '');
-
-    if (token && userId) {
-      this.authToken = token;
+    const blob = await StorageUtil.getJSON<SessionBlob>(SESSION_KEY);
+    if (blob && blob.token && blob.user && blob.user.id) {
+      this.authToken = blob.token;
       this.isLoggedIn = true;
-      this.currentUser = {
-        id: userId,
-        name: userName,
-        avatar: '',
-        role: userRole as UserRole,
-        phone: userPhone,
-        email: userEmail || undefined,
-        schoolId: schoolId,
-        schoolName: schoolName,
-        classId: classId || undefined,
-        className: className || undefined,
-      };
+      this.currentUser = this.sanitizeUser(blob.user);
     }
   }
 
   async login(user: User, token: string): Promise<void> {
     this.isLoggedIn = true;
-    this.currentUser = user;
+    this.currentUser = this.sanitizeUser(user);
     this.authToken = token;
-    await StorageUtil.put('authToken', token);
-    await StorageUtil.put('userId', user.id);
-    await StorageUtil.put('userName', user.name);
-    await StorageUtil.put('userRole', user.role);
-    await StorageUtil.put('userPhone', user.phone);
-    await StorageUtil.put('userEmail', user.email || '');
-    await StorageUtil.put('schoolId', user.schoolId);
-    await StorageUtil.put('schoolName', user.schoolName);
-    if (user.classId) {
-      await StorageUtil.put('classId', user.classId);
-    }
-    if (user.className) {
-      await StorageUtil.put('className', user.className);
-    }
+    await this.persist();
   }
 
   async updateCurrentUser(user: User): Promise<void> {
-    this.currentUser = user;
-    await StorageUtil.put('userId', user.id);
-    await StorageUtil.put('userName', user.name);
-    await StorageUtil.put('userRole', user.role);
-    await StorageUtil.put('userPhone', user.phone);
-    await StorageUtil.put('userEmail', user.email || '');
-    await StorageUtil.put('schoolId', user.schoolId);
-    await StorageUtil.put('schoolName', user.schoolName);
-    if (user.classId) {
-      await StorageUtil.put('classId', user.classId);
-    }
-    if (user.className) {
-      await StorageUtil.put('className', user.className);
+    this.currentUser = this.sanitizeUser(user);
+    if (this.isLoggedIn) {
+      await this.persist();
     }
   }
 
@@ -91,16 +55,38 @@ export class UserStore {
     this.isLoggedIn = false;
     this.currentUser = null;
     this.authToken = '';
-    await StorageUtil.remove('authToken');
-    await StorageUtil.remove('userId');
-    await StorageUtil.remove('userName');
-    await StorageUtil.remove('userRole');
-    await StorageUtil.remove('userPhone');
-    await StorageUtil.remove('userEmail');
-    await StorageUtil.remove('schoolId');
-    await StorageUtil.remove('schoolName');
-    await StorageUtil.remove('classId');
-    await StorageUtil.remove('className');
+    await StorageUtil.remove(SESSION_KEY);
+  }
+
+  private async persist(): Promise<void> {
+    if (!this.currentUser) {
+      return;
+    }
+    const blob: SessionBlob = { token: this.authToken, user: this.currentUser };
+    await StorageUtil.putJSON(SESSION_KEY, blob);
+  }
+
+  private sanitizeUser(user: User): User {
+    const role: UserRole = VALID_ROLES.includes(user.role as string)
+      ? (user.role as UserRole)
+      : UserRole.PARENT;
+    return {
+      id: user.id,
+      name: user.name,
+      avatar: user.avatar || '',
+      role: role,
+      phone: user.phone,
+      email: user.email || undefined,
+      schoolId: user.schoolId,
+      schoolName: user.schoolName,
+      classId: user.classId || undefined,
+      className: user.className || undefined,
+      grade: user.grade,
+      childIds: user.childIds || [],
+      childNames: user.childNames || [],
+      subject: user.subject,
+      position: user.position,
+    };
   }
 
   hasRole(role: UserRole): boolean {
