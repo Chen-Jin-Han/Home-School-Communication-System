@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 
 from flask import Blueprint, g, jsonify, request
 from sqlalchemy import or_
@@ -11,6 +11,7 @@ from .extensions import db
 from .models import (
     Activity,
     ActivityComment,
+    ActivityParticipant,
     Attendance,
     ClassInfo,
     Contact,
@@ -96,11 +97,70 @@ def parse_dt(value):
         return None
     if isinstance(value, datetime):
         return value
+    if isinstance(value, date):
+        return datetime.combine(value, time.min)
+    if isinstance(value, (int, float)) or (isinstance(value, str) and value.strip().isdigit()):
+        try:
+            number = float(value)
+            if number > 10_000_000_000:
+                number = number / 1000
+            return datetime.fromtimestamp(number)
+        except (TypeError, ValueError, OSError):
+            return None
     normalized = str(value).replace("Z", "+00:00")
     try:
-        return datetime.fromisoformat(normalized)
+        parsed = datetime.fromisoformat(normalized)
+        return parsed.replace(tzinfo=None) if parsed.tzinfo else parsed
     except ValueError:
         return None
+
+
+def parse_date(value):
+    parsed = parse_dt(value)
+    return parsed.date() if parsed else None
+
+
+def parse_time(value):
+    if not value:
+        return None
+    if isinstance(value, time):
+        return value
+    parsed = parse_dt(value)
+    if parsed:
+        return parsed.time().replace(microsecond=0)
+    try:
+        return time.fromisoformat(str(value))
+    except ValueError:
+        return None
+
+
+def parse_int_id(value, field: str = "id") -> int:
+    raw = str(value or "").strip()
+    if not raw or not raw.isdigit() or len(raw) > 18:
+        raise BusinessError(f"Invalid {field}")
+    return int(raw)
+
+
+def scoped_student_query(current: User):
+    role = str(current.role).upper()
+    query = User.query.filter(User.role.in_(["student", "STUDENT"]))
+    if role in ("TEACHER", "LEADER"):
+        if current.school_id:
+            query = query.filter(User.school_id == current.school_id)
+    else:
+        allowed = visible_student_ids(current) or []
+        query = query.filter(User.id.in_(allowed or [0]))
+    class_id = request.args.get("classId", type=int)
+    if class_id:
+        query = query.filter(User.class_id == class_id)
+    return query
+
+
+def assert_visible_student(current: User, student_id: int) -> User:
+    student = scoped_student_query(current).filter(User.id == student_id).first()
+    if not student:
+        raise BusinessError("No permission to access this student", code=403, http_status=403)
+    return student
 
 
 def json_text(value, default="[]"):
@@ -160,6 +220,19 @@ def register():
         school = db.session.get(School, int(school_id))
         if school:
             school_name = school.name
+    class_id = payload.get("classId")
+    class_name = payload.get("className") or ""
+    grade = 0
+    if class_id:
+        class_info = db.session.get(ClassInfo, int(class_id))
+        if class_info:
+            class_name = class_info.name
+            grade = class_info.grade or 0
+            if not school_id:
+                school_id = class_info.school_id
+            if not school_name and class_info.school_id:
+                school = db.session.get(School, int(class_info.school_id))
+                school_name = school.name if school else ""
     user = User(
         name=payload["name"],
         phone=phone or None,
@@ -168,8 +241,9 @@ def register():
         role=payload["role"],
         school_id=school_id,
         school_name=school_name,
-        class_id=payload.get("classId"),
-        class_name=payload.get("className") or "",
+        class_id=class_id,
+        class_name=class_name,
+        grade=grade,
     )
     db.session.add(user)
     db.session.commit()
@@ -488,6 +562,36 @@ def message_send(conversation_id: int):
     return ok(message.to_dict())
 
 
+@api_bp.post("/api/conversations/<int:conversation_id>/messages/<int:message_id>/recall")
+@login_required
+def message_recall(conversation_id: int, message_id: int):
+    conversation = get_or_404(Conversation, conversation_id, "Conversation not found")
+    participant = Participant.query.filter_by(conversation_id=conversation_id, user_id=g.user_id).first()
+    if not participant:
+        raise BusinessError("Conversation not found", http_status=404)
+    message = get_or_404(Message, message_id, "Message not found")
+    if int(message.conversation_id) != int(conversation_id):
+        raise BusinessError("Message does not belong to this conversation")
+    if int(message.sender_id) != int(g.user_id):
+        raise BusinessError("Only the sender can recall this message", code=403, http_status=403)
+    if message.status == "recalled":
+        return ok(message.to_dict())
+    if message.created_at and datetime.utcnow() - message.created_at > timedelta(minutes=2):
+        raise BusinessError("Messages can only be recalled within 2 minutes")
+
+    message.status = "recalled"
+    message.content = "消息已撤回"
+    latest = Message.query.filter_by(conversation_id=conversation_id).order_by(Message.created_at.desc()).first()
+    if latest and int(latest.id) == int(message.id):
+        conversation.last_message = json.dumps(
+            {"type": "text", "content": "消息已撤回", "status": "recalled"},
+            ensure_ascii=False,
+        )
+        conversation.updated_at = datetime.utcnow()
+    db.session.commit()
+    return ok(message.to_dict())
+
+
 @api_bp.get("/api/users/profile")
 @login_required
 def profile():
@@ -532,19 +636,7 @@ def class_students(class_id: int):
 @login_required
 def students():
     current = get_or_404(User, g.user_id, "User not found")
-    role = str(current.role).upper()
-    class_id = request.args.get("classId", type=int)
-    query = User.query.filter(User.role.in_(["student", "STUDENT"]))
-    if class_id:
-        query = query.filter(User.class_id == class_id)
-    if role in ("TEACHER", "LEADER"):
-        if current.school_id:
-            query = query.filter(User.school_id == current.school_id)
-        if role == "TEACHER" and current.class_id and not class_id:
-            query = query.filter(User.class_id == current.class_id)
-    else:
-        allowed = visible_student_ids(current) or []
-        query = query.filter(User.id.in_(allowed or [0]))
+    query = scoped_student_query(current)
     rows = query.order_by(User.class_id.asc(), User.name.asc()).all()
     return ok([row.to_dict() for row in rows])
 
@@ -557,7 +649,21 @@ def contacts():
         item.contact_user_id
         for item in Contact.query.filter_by(owner_id=g.user_id).all()
     ]
+    role = str(current.role).lower()
+    allowed_roles_by_role = {
+        "leader": ["leader", "teacher"],
+        "teacher": ["leader", "teacher"],
+        "student": ["leader", "teacher", "parent"],
+        "parent": ["leader", "teacher", "student"],
+    }
+    allowed_roles = allowed_roles_by_role.get(role, ["leader", "teacher"])
     query = User.query.filter(User.id != g.user_id)
+    query = query.filter(
+        or_(
+            User.role.in_(allowed_roles + [item.upper() for item in allowed_roles]),
+            User.id.in_(manual_ids or [0]),
+        )
+    )
     if current.school_id:
         query = query.filter(
             or_(
@@ -567,6 +673,14 @@ def contacts():
         )
     elif manual_ids:
         query = query.filter(User.id.in_(manual_ids))
+    if role == "parent":
+        child_ids = visible_student_ids(current) or []
+        query = query.filter(
+            or_(
+                User.role.in_(["leader", "teacher", "LEADER", "TEACHER"]),
+                User.id.in_((child_ids + manual_ids) or [0]),
+            )
+        )
     rows = query.order_by(User.role.asc(), User.name.asc()).all()
     return ok([row.to_dict() for row in rows])
 
@@ -653,8 +767,15 @@ def org_tree(school_id: int):
 @api_bp.get("/api/attendance/records")
 @login_required
 def attendance_records():
-    student_id = request.args.get("studentId", g.user_id, type=int)
-    query = Attendance.query.filter_by(student_id=student_id)
+    current = get_or_404(User, g.user_id, "User not found")
+    student_id = request.args.get("studentId", type=int)
+    query = Attendance.query
+    if student_id:
+        assert_visible_student(current, student_id)
+        query = query.filter(Attendance.student_id == student_id)
+    else:
+        student_ids = [row.id for row in scoped_student_query(current).all()]
+        query = query.filter(Attendance.student_id.in_(student_ids or [0]))
     month = request.args.get("month")
     if month:
         query = query.filter(Attendance.date.like(f"{month}-%"))
@@ -693,8 +814,16 @@ def attendance_detail(attendance_id: int):
 @api_bp.get("/api/grades/reports")
 @login_required
 def grade_reports():
-    student_id = request.args.get("studentId", g.user_id, type=int)
-    rows = GradeReport.query.filter_by(student_id=student_id).order_by(GradeReport.exam_date.desc()).all()
+    current = get_or_404(User, g.user_id, "User not found")
+    student_id = request.args.get("studentId", type=int)
+    query = GradeReport.query
+    if student_id:
+        assert_visible_student(current, student_id)
+        query = query.filter(GradeReport.student_id == student_id)
+    else:
+        student_ids = [row.id for row in scoped_student_query(current).all()]
+        query = query.filter(GradeReport.student_id.in_(student_ids or [0]))
+    rows = query.order_by(GradeReport.exam_date.desc()).all()
     return ok([row.to_dict() for row in rows])
 
 
@@ -723,8 +852,6 @@ def health_records():
             User.role.in_(["student", "STUDENT"]),
             User.school_id == current.school_id,
         )
-        if str(current.role).upper() == "TEACHER" and current.class_id:
-            student_query = student_query.filter(User.class_id == current.class_id)
         query = query.filter(HealthRecord.student_id.in_(student_query))
     rows = query.order_by(HealthRecord.record_date.desc()).all()
     return ok([row.to_dict() for row in rows])
@@ -798,8 +925,18 @@ def activity_detail(activity_id: int):
 @login_required
 def activity_join(activity_id: int):
     activity = get_or_404(Activity, activity_id, "活动不存在")
+    existing = ActivityParticipant.query.filter_by(activity_id=activity_id, user_id=g.user_id).first()
+    if existing:
+        raise BusinessError("不能重复报名同一个活动")
     if activity.max_participants and activity.participant_count >= activity.max_participants:
         raise BusinessError("活动参与人数已满")
+    user = db.session.get(User, g.user_id)
+    db.session.add(ActivityParticipant(
+        activity_id=activity_id,
+        user_id=g.user_id,
+        user_name=user.name if user else "",
+        role=user.role if user else "",
+    ))
     activity.participant_count = (activity.participant_count or 0) + 1
     db.session.commit()
     return ok(None)
@@ -880,12 +1017,14 @@ def homework_submissions(homework_id: int):
 @api_bp.post("/api/health/records")
 @login_required
 def health_record_create():
-    require_staff()
+    current = require_staff()
     payload = body()
+    student_id = parse_int_id(payload.get("studentId"), "studentId")
+    student = assert_visible_student(current, student_id)
     record = HealthRecord(
-        student_id=payload.get("studentId"),
-        student_name=payload.get("studentName", ""),
-        class_name=payload.get("className", ""),
+        student_id=student_id,
+        student_name=payload.get("studentName") or student.name,
+        class_name=payload.get("className") or student.class_name,
         record_date=parse_dt(payload.get("recordDate")),
         height=payload.get("height", 0),
         weight=payload.get("weight", 0),
@@ -999,16 +1138,19 @@ def activity_delete(activity_id: int):
 @api_bp.post("/api/attendance")
 @login_required
 def attendance_create():
-    require_staff()
+    current = require_staff()
     payload = body()
+    student_id = parse_int_id(payload.get("studentId"), "studentId")
+    student = assert_visible_student(current, student_id)
     record = Attendance(
-        student_id=payload.get("studentId"),
-        student_name=payload.get("studentName", ""),
-        class_id=payload.get("classId"),
-        class_name=payload.get("className", ""),
-        date=parse_dt(payload.get("date")),
+        student_id=student_id,
+        student_name=payload.get("studentName") or student.name,
+        student_avatar=student.avatar or "",
+        class_id=student.class_id,
+        class_name=payload.get("className") or student.class_name,
+        date=parse_date(payload.get("date")) or date.today(),
         day_of_week=payload.get("dayOfWeek", ""),
-        check_in_time=parse_dt(payload.get("checkInTime")),
+        check_in_time=parse_time(payload.get("checkInTime")),
         status=payload.get("status", "present"),
         method=payload.get("method", "card"),
         remark=payload.get("remark", ""),
@@ -1021,8 +1163,9 @@ def attendance_create():
 @api_bp.put("/api/attendance/<int:attendance_id>")
 @login_required
 def attendance_update(attendance_id: int):
-    require_staff()
+    current = require_staff()
     record = get_or_404(Attendance, attendance_id, "考勤记录不存在")
+    assert_visible_student(current, int(record.student_id))
     payload = body()
     for api_key, attr in {
         "status": "status", "remark": "remark", "method": "method",
@@ -1031,9 +1174,9 @@ def attendance_update(attendance_id: int):
         if api_key in payload:
             setattr(record, attr, payload[api_key])
     if "date" in payload:
-        record.date = parse_dt(payload["date"])
+        record.date = parse_date(payload["date"])
     if "checkInTime" in payload:
-        record.check_in_time = parse_dt(payload["checkInTime"])
+        record.check_in_time = parse_time(payload["checkInTime"])
     db.session.commit()
     return ok(record.to_dict())
 
@@ -1051,12 +1194,14 @@ def attendance_delete(attendance_id: int):
 @api_bp.post("/api/grades/reports")
 @login_required
 def grade_report_create():
-    require_staff()
+    current = require_staff()
     payload = body()
+    student_id = parse_int_id(payload.get("studentId"), "studentId")
+    student = assert_visible_student(current, student_id)
     report = GradeReport(
-        student_id=payload.get("studentId"),
-        student_name=payload.get("studentName", ""),
-        class_name=payload.get("className", ""),
+        student_id=student_id,
+        student_name=payload.get("studentName") or student.name,
+        class_name=payload.get("className") or student.class_name,
         exam_name=payload.get("examName", ""),
         exam_date=parse_dt(payload.get("examDate")),
         subjects=json_text(payload.get("subjects")),

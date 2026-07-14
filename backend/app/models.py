@@ -237,6 +237,20 @@ class ActivityComment(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 
+class ActivityParticipant(db.Model, SerializerMixin):
+    __tablename__ = "activity_participant"
+    __table_args__ = (
+        db.UniqueConstraint("activity_id", "user_id", name="uq_activity_user"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    activity_id = db.Column(db.BigInteger, nullable=False, index=True)
+    user_id = db.Column(db.BigInteger, nullable=False, index=True)
+    user_name = db.Column(db.String(50), default="")
+    role = db.Column(db.String(20), default="")
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+
 class Attendance(db.Model, SerializerMixin):
     __tablename__ = "attendance"
 

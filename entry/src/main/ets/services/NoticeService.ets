@@ -4,6 +4,7 @@ import { MockNotices } from '../mock/MockNotices';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
+import { DateUtil } from '../utils/DateUtil';
 
 export class NoticeService extends BaseService {
   static async getList(query: NoticeQuery): Promise<ApiResponse<PageResult<Notice>>> {
@@ -16,7 +17,7 @@ export class NoticeService extends BaseService {
         if (a.isTop !== b.isTop) {
           return a.isTop ? -1 : 1;
         }
-        return b.createdAt - a.createdAt;
+        return DateUtil.toMillis(b.createdAt) - DateUtil.toMillis(a.createdAt);
       });
 
       if (query.type) {

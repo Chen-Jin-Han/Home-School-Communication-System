@@ -671,7 +671,7 @@ export struct MobileWorkbench {
     } else if (type === 'school') {
       RouterUtil.toSchoolInfo();
     } else if (type === 'students') {
-      RouterUtil.toStudentList(this.userStore.currentUser?.classId);
+      RouterUtil.toStudentList();
     } else if (type === 'publish') {
       RouterUtil.toPublishNotice();
     } else if (type === 'published') {

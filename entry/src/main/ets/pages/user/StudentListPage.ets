@@ -27,7 +27,7 @@ struct StudentListPage {
 
   async aboutToAppear(): Promise<void> {
     const params = router.getParams() as StudentListParams;
-    this.classId = params.classId || this.userStore.currentUser?.classId || '';
+    this.classId = params && params.classId ? params.classId : '';
     await this.loadStudents();
   }
 

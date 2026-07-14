@@ -20,6 +20,8 @@ struct ChatPage {
   @State messages: Message[] = [];
   @State loading: boolean = true;
   @State inputText: string = '';
+  @State actionMessageId: string = '';
+  @State recalling: boolean = false;
   private conversationId: string = '';
   private conversationName: string = '';
   private scroller: ListScroller = new ListScroller();
@@ -69,7 +71,7 @@ struct ChatPage {
       const res = await ChatService.getMessages(this.conversationId, 1);
       if (res.code === 0 && res.data) {
         const newMessages = res.data.list || [];
-        if (newMessages.length !== this.messages.length) {
+        if (newMessages.length !== this.messages.length || JSON.stringify(newMessages) !== JSON.stringify(this.messages)) {
           this.messages = newMessages;
           this.scrollToBottom();
         }
@@ -151,12 +153,40 @@ struct ChatPage {
             .fontColor(Constants.COLOR_TEXT_HINT)
             .margin({ bottom: 4 })
         }
-        Text(msg.content)
-          .fontSize(Constants.FONT_MD)
-          .fontColor(msg.senderId === this.userStore.currentUser?.id ? Constants.COLOR_WHITE : Constants.COLOR_TEXT_PRIMARY)
-          .padding(Constants.SPACE_MD)
-          .borderRadius(12)
-          .backgroundColor(msg.senderId === this.userStore.currentUser?.id ? Constants.COLOR_PRIMARY : Constants.COLOR_WHITE)
+        if (msg.status === 'recalled') {
+          Text(msg.senderId === this.userStore.currentUser?.id ? '你撤回了一条消息' : '对方撤回了一条消息')
+            .fontSize(Constants.FONT_SM)
+            .fontColor(Constants.COLOR_TEXT_HINT)
+            .padding({ left: 12, right: 12, top: 7, bottom: 7 })
+            .borderRadius(12)
+            .backgroundColor('#E8EDF3')
+        } else {
+          Text(msg.content)
+            .fontSize(Constants.FONT_MD)
+            .fontColor(msg.senderId === this.userStore.currentUser?.id ? Constants.COLOR_WHITE : Constants.COLOR_TEXT_PRIMARY)
+            .padding(Constants.SPACE_MD)
+            .borderRadius(12)
+            .backgroundColor(msg.senderId === this.userStore.currentUser?.id ? Constants.COLOR_PRIMARY : Constants.COLOR_WHITE)
+            .gesture(LongPressGesture({ repeat: false }).onAction(() => {
+              if (this.canRecall(msg)) {
+                this.actionMessageId = this.actionMessageId === msg.id ? '' : msg.id;
+              }
+            }))
+        }
+        if (this.actionMessageId === msg.id && this.canRecall(msg)) {
+          Button(this.recalling ? '撤回中' : '撤回')
+            .fontSize(Constants.FONT_SM)
+            .fontColor(Constants.COLOR_DANGER)
+            .backgroundColor(Constants.COLOR_WHITE)
+            .border({ width: 1, color: Constants.COLOR_BORDER })
+            .borderRadius(12)
+            .height(30)
+            .margin({ top: 6 })
+            .enabled(!this.recalling)
+            .onClick(() => {
+              this.recallMessage(msg);
+            })
+        }
         Text(DateUtil.formatTime(msg.createdAt))
           .fontSize(10)
           .fontColor(Constants.COLOR_TEXT_HINT)
@@ -169,6 +199,32 @@ struct ChatPage {
     .width('100%')
     .justifyContent(msg.senderId === this.userStore.currentUser?.id ? FlexAlign.End : FlexAlign.Start)
     .padding({ top: Constants.SPACE_SM, bottom: Constants.SPACE_SM })
+  }
+
+  private canRecall(msg: Message): boolean {
+    if (msg.status === 'recalled') {
+      return false;
+    }
+    if (msg.senderId !== this.userStore.currentUser?.id) {
+      return false;
+    }
+    const createdAt = DateUtil.toMillis(msg.createdAt);
+    return createdAt > 0 && Date.now() - createdAt <= 2 * 60 * 1000;
+  }
+
+  private async recallMessage(msg: Message): Promise<void> {
+    if (this.recalling || !this.canRecall(msg)) {
+      return;
+    }
+    this.recalling = true;
+    const res = await ChatService.recallMessage(this.conversationId, msg.id);
+    this.recalling = false;
+    this.actionMessageId = '';
+    if (res.code === 0 && res.data) {
+      this.messages = (this.messages || []).map((item: Message) => item.id === msg.id ? res.data! : item);
+    } else {
+      promptAction.openToast({ message: res.message || '撤回失败' });
+    }
   }
 
   async sendMessage(): Promise<void> {

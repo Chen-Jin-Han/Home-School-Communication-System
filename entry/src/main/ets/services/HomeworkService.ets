@@ -5,6 +5,7 @@ import { Constants } from '../utils/Constants';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
+import { DateUtil } from '../utils/DateUtil';
 
 interface GradeData {
   score: number;
@@ -22,7 +23,7 @@ export class HomeworkService extends BaseService {
       if (status && status !== 'all') {
         filtered = filtered.filter(h => h.status === status);
       }
-      filtered.sort((a, b) => b.assignedAt - a.assignedAt);
+      filtered.sort((a, b) => DateUtil.toMillis(b.assignedAt) - DateUtil.toMillis(a.assignedAt));
       return BaseService.success(BaseService.paginate(filtered, page, Constants.PAGE_SIZE));
     }
     const statusParam = status && status !== 'all' ? `&status=${status}` : '';

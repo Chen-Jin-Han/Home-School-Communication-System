@@ -15,7 +15,7 @@ export interface GradeReport {
   studentName: string;
   className: string;
   examName: string;
-  examDate: number;
+  examDate: number | string;
   subjects: SubjectGrade[];
   totalScore: number;
   totalFullScore: number;

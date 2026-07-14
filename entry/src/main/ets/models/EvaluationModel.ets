@@ -13,6 +13,6 @@ export interface Evaluation {
   rating: number;
   tags: string[];
   content: string;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: number | string;
+  updatedAt: number | string;
 }

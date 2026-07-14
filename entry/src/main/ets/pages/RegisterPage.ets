@@ -124,9 +124,7 @@ struct RegisterPage {
             }
             .width('100%')
 
-            if (this.selectedRole !== UserRole.TEACHER) {
-              this.ClassSelector()
-            }
+            this.ClassSelector()
 
             Button(this.loading ? '提交中...' : '注册')
               .width('100%')

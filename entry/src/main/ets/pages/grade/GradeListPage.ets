@@ -43,11 +43,7 @@ struct GradeListPage {
 
   async loadData(): Promise<void> {
     this.loading = true;
-    if (!this.studentId) {
-      this.loading = false;
-      return;
-    }
-    const res = await GradeService.getReports(this.studentId);
+    const res = await GradeService.getReports(this.studentId || undefined);
     this.reports = res.code === 0 && res.data ? res.data : [];
     this.loading = false;
   }
@@ -114,7 +110,7 @@ struct GradeListPage {
         .border({ width: 0.5, color: Constants.COLOR_BORDER })
         .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
         .margin({ top: 4, bottom: Constants.SPACE_SM })
-        .onChange((v: string) => { this.formStudentId = v; })
+        .onChange((v: string) => { this.formStudentId = this.normalizeStudentId(v); })
 
       Text('考试名称')
         .fontSize(Constants.FONT_SM)
@@ -136,7 +132,7 @@ struct GradeListPage {
         .fontColor(Constants.COLOR_TEXT_SECONDARY)
         .width('100%')
         .margin({ top: Constants.SPACE_SM })
-      FormDatePicker({ timestamp: $formExamDate, placeholder: '选择考试日期' })
+      FormDatePicker({ timestamp: $formExamDate, placeholder: '选择考试日期', allowPast: true, allowFuture: false })
 
       Text('总分')
         .fontSize(Constants.FONT_SM)
@@ -245,6 +241,17 @@ struct GradeListPage {
     this.formClassRank = '';
     this.formTeacherComment = '';
     this.showForm = true;
+  }
+
+  private normalizeStudentId(value: string): string {
+    let result = '';
+    for (let i = 0; i < value.length && result.length < 18; i++) {
+      const ch = value.charAt(i);
+      if (ch >= '0' && ch <= '9') {
+        result += ch;
+      }
+    }
+    return result;
   }
 
   async handleSubmit(): Promise<void> {

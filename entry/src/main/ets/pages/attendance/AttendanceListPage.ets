@@ -45,11 +45,7 @@ struct AttendanceListPage {
 
   async loadData(): Promise<void> {
     this.loading = true;
-    if (!this.studentId) {
-      this.loading = false;
-      return;
-    }
-    const res = await AttendanceService.getRecords(this.studentId);
+    const res = await AttendanceService.getRecords(this.studentId || undefined);
     this.records = res.code === 0 && res.data ? res.data : [];
     this.computeSummary();
     this.loading = false;
@@ -204,14 +200,14 @@ struct AttendanceListPage {
         .border({ width: 0.5, color: Constants.COLOR_BORDER })
         .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
         .margin({ top: 4, bottom: Constants.SPACE_SM })
-        .onChange((v: string) => { this.formStudentId = v; })
+        .onChange((v: string) => { this.formStudentId = this.normalizeStudentId(v); })
 
       Text('日期')
         .fontSize(Constants.FONT_SM)
         .fontColor(Constants.COLOR_TEXT_SECONDARY)
         .width('100%')
         .margin({ top: Constants.SPACE_SM })
-      FormDatePicker({ timestamp: $formDate, placeholder: '选择日期' })
+      FormDatePicker({ timestamp: $formDate, placeholder: '选择日期', allowPast: true, allowFuture: false })
 
       Text('星期')
         .fontSize(Constants.FONT_SM)
@@ -297,6 +293,17 @@ struct AttendanceListPage {
     this.formStatus = 'present';
     this.formRemark = '';
     this.showForm = true;
+  }
+
+  private normalizeStudentId(value: string): string {
+    let result = '';
+    for (let i = 0; i < value.length && result.length < 18; i++) {
+      const ch = value.charAt(i);
+      if (ch >= '0' && ch <= '9') {
+        result += ch;
+      }
+    }
+    return result;
   }
 
   async handleSubmit(): Promise<void> {

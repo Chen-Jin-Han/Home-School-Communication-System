@@ -6,6 +6,7 @@ import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
 import { UserRole } from '../models/UserModel';
+import { DateUtil } from '../utils/DateUtil';
 
 interface CreatePrivateConversationRequest {
   targetUserId: string;
@@ -24,7 +25,7 @@ export class ChatService extends BaseService {
     if (USE_MOCK) {
       await BaseService.simulateDelay();
       const sorted = [...MockChats.conversations].sort(
-        (a, b) => b.updatedAt - a.updatedAt
+        (a, b) => DateUtil.toMillis(b.updatedAt) - DateUtil.toMillis(a.updatedAt)
       );
       return BaseService.success(sorted);
     }
@@ -44,7 +45,7 @@ export class ChatService extends BaseService {
       }
       const messagesMap = MockChats.messages as Record<string, Message[]>;
       const msgs = messagesMap[conversationId] || [];
-      const sorted = [...msgs].sort((a, b) => a.createdAt - b.createdAt);
+      const sorted = [...msgs].sort((a, b) => DateUtil.toMillis(a.createdAt) - DateUtil.toMillis(b.createdAt));
       return BaseService.success(BaseService.paginate(sorted, page, Constants.PAGE_SIZE));
     }
     return HttpUtil.get<PageResult<Message>>(
@@ -76,7 +77,27 @@ export class ChatService extends BaseService {
     };
     return HttpUtil.post<Message>(
       `/api/conversations/${message.conversationId}/messages`,
-      request
+      request,
+      UserStore.getInstance().authToken
+    );
+  }
+
+  static async recallMessage(conversationId: string, messageId: string): Promise<ApiResponse<Message>> {
+    if (USE_MOCK) {
+      await BaseService.simulateDelay();
+      const messagesMap = MockChats.messages as Record<string, Message[]>;
+      const arr = messagesMap[conversationId] || [];
+      const item = arr.find(m => m.id === messageId);
+      if (item) {
+        item.status = 'recalled';
+        item.content = '消息已撤回';
+      }
+      return item ? BaseService.success(item) : BaseService.error<Message>(1000, '消息不存在');
+    }
+    return HttpUtil.post<Message>(
+      `/api/conversations/${conversationId}/messages/${messageId}/recall`,
+      {},
+      UserStore.getInstance().authToken
     );
   }
 

@@ -1,10 +1,10 @@
 export interface Vaccination {
   id: string;
   name: string;
-  date: number;
+  date: number | string;
   location: string;
   batchNumber: string;
-  nextDate?: number;
+  nextDate?: number | string;
 }
 
 export interface HealthRecord {
@@ -12,7 +12,7 @@ export interface HealthRecord {
   studentId: string;
   studentName: string;
   className: string;
-  recordDate: number;
+  recordDate: number | string;
   height: number;
   weight: number;
   bmi: number;
@@ -25,5 +25,5 @@ export interface HealthRecord {
   medicalHistory: string;
   allergies: string;
   healthStatus: 'healthy' | 'attention' | 'concern';
-  updatedAt: number;
+  updatedAt: number | string;
 }

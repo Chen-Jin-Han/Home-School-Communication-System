@@ -10,8 +10,8 @@ export interface Homework {
   classId: string;
   className: string;
   attachments: Attachment[];
-  dueDate: number;
-  assignedAt: number;
+  dueDate: number | string;
+  assignedAt: number | string;
   submissionCount: number;
   totalStudents: number;
   status: 'active' | 'expired';
@@ -25,7 +25,7 @@ export interface Submission {
   studentAvatar: string;
   content: string;
   attachments: Attachment[];
-  submittedAt: number;
+  submittedAt: number | string;
   score?: number;
   teacherComment?: string;
   status: 'pending' | 'submitted' | 'graded';

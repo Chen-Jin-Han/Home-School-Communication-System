@@ -5,7 +5,7 @@ export interface ActivityPhoto {
   uploadedBy: string;
   uploaderName: string;
   uploaderAvatar: string;
-  uploadedAt: number;
+  uploadedAt: number | string;
   likeCount: number;
   isLiked: boolean;
 }
@@ -18,7 +18,7 @@ export interface ActivityComment {
   userAvatar: string;
   role: string;
   content: string;
-  createdAt: number;
+  createdAt: number | string;
 }
 
 export interface ActivityCommentPayload {
@@ -33,11 +33,11 @@ export interface Activity {
   organizerId: string;
   organizerName: string;
   location: string;
-  startTime: number;
-  endTime: number;
+  startTime: number | string;
+  endTime: number | string;
   participantCount: number;
   maxParticipants: number;
   photos: ActivityPhoto[];
   status: 'upcoming' | 'ongoing' | 'ended';
-  createdAt: number;
+  createdAt: number | string;
 }

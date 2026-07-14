@@ -4,6 +4,7 @@ import { MockEvaluations } from '../mock/MockEvaluations';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
+import { DateUtil } from '../utils/DateUtil';
 
 export class EvaluationService extends BaseService {
   static async getList(studentId: string): Promise<ApiResponse<Evaluation[]>> {
@@ -11,10 +12,10 @@ export class EvaluationService extends BaseService {
       await BaseService.simulateDelay();
       const list = MockEvaluations.list
         .filter(e => e.studentId === studentId)
-        .sort((a, b) => b.createdAt - a.createdAt);
+        .sort((a, b) => DateUtil.toMillis(b.createdAt) - DateUtil.toMillis(a.createdAt));
       return BaseService.success(list);
     }
-    return HttpUtil.get<Evaluation[]>(`/api/evaluations?studentId=${studentId}`);
+    return HttpUtil.get<Evaluation[]>(`/api/evaluations?studentId=${studentId}`, UserStore.getInstance().authToken);
   }
 
   static async create(evaluation: Evaluation): Promise<ApiResponse<Evaluation>> {

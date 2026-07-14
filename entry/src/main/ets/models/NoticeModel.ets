@@ -23,8 +23,8 @@ export interface Notice {
   attachments: Attachment[];
   isTop: boolean;
   viewCount: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: number | string;
+  updatedAt: number | string;
 }
 
 export interface NoticeQuery {

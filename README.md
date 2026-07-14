@@ -237,6 +237,19 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-14
 
+- Summary: 修复消息串人、消息撤回、员工端学生数据空白、日期显示、活动重复报名、考勤/成绩录入等核心业务问题。
+- Changed:
+  - **消息系统**：新增 `POST /api/conversations/<conversation_id>/messages/<message_id>/recall` 撤回接口，限制发送者本人且 2 分钟内可撤回；前端 `ChatPage` 支持长按本人消息显示“撤回”操作，撤回后显示灰色系统提示；发送消息时统一携带 JWT，进入会话后未读计数清零，首页和会话列表继续刷新红点。
+  - **联系人范围**：`GET /api/users/contacts` 按角色过滤联系人，教师/领导默认仅展示教师与领导，避免老师-校长聊天、教研组聊天中混入学生或自己；家长仅展示教师/领导以及自己的孩子。
+  - **学生数据权限**：`GET /api/users/students`、`GET /api/grades/reports`、`GET /api/health/records`、`GET /api/attendance/records` 改为按学校与可见学生范围查询；教师和领导可查看学校范围内已有学生名单、成绩、健康档案和考勤数据，不再默认锁死教师注册时的班级。
+  - **日期与北京时间**：后端 `parse_dt` 支持 ISO 字符串、秒/毫秒时间戳和日期字符串；前端 `DateUtil` 统一按北京时间格式化并避免空值显示为 `1970-01-01`；活动开始/截止日期、消息时间、成绩/健康/作业/通知等时间字段兼容后端 ISO 返回。
+  - **活动报名**：新增 `ActivityParticipant` 报名表和 `(activity_id, user_id)` 唯一约束，同一学生不能重复报名同一个校园活动。
+  - **考勤录入**：新建考勤时校验学生 ID 和可见范围，自动从学生档案回填学生姓名、头像、班级 ID 与班级名称，并按 `Date`/`Time` 字段正确入库，避免内部服务器错误。
+  - **成绩录入**：前端学生 ID 输入限制为 18 位数字；后端 `parse_int_id` 对过长或非数字学生 ID 返回业务错误，避免 MySQL BigInteger 溢出导致 500；录入时自动回填学生姓名和班级。
+  - **注册与班级**：教师注册页恢复班级选择；后端注册接口根据班级 ID 自动回填班级名、年级和学校信息。
+  - **日期选择器**：`FormDatePicker` 新增 `allowPast`、`allowFuture`、`startTimestamp`、`endTimestamp`，成绩/考勤录入支持选择历史日期。
+- Validation: 已执行 `python -m py_compile`、`git diff --check`、Flask testing 烟测；烟测覆盖登录、教师/领导学生范围、联系人过滤、考勤新建、成绩长 ID 拦截、成绩录入、未读计数、消息撤回、活动重复报名拦截。前端命令行构建因本机 `DEVECO_SDK_HOME` 无效且本地 Huawei SDK 目录缺少实际 SDK 包，未进入 ArkTS 编译阶段；需在 DevEco Studio 配好 SDK 后执行 Clean/Rebuild。
+
 - Summary: 实现微信式未读消息红点——底部导航"消息"tab 显示总未读数，会话列表显示单个会话未读数。
 - Changed:
   - **后端未读计数体系**：将未读计数从 `Conversation` 表移至 `Participant` 表（按用户隔离）；`POST /api/conversations/<id>/messages` 发消息时递增其他参与者 `unread_count`；`GET /api/conversations/<id>/messages` 拉取消息时重置当前用户 `unread_count` 为 0；新增 `GET /api/conversations/unread-count` 返回当前用户总未读数；`conversation_payload()` 覆写 `unreadCount` 为按用户隔离值；`seed.py` 新增 `participant` 表 `unread_count` 列迁移逻辑。

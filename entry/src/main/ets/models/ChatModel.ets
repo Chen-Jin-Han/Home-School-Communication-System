@@ -2,7 +2,7 @@ import { UserRole } from './UserModel';
 
 export type ConversationType = 'private' | 'group';
 export type MessageType = 'text' | 'image' | 'voice';
-export type MessageStatus = 'sending' | 'sent' | 'read';
+export type MessageStatus = 'sending' | 'sent' | 'read' | 'recalled';
 
 export interface Participant {
   userId: string;
@@ -20,7 +20,7 @@ export interface Message {
   type: MessageType;
   content: string;
   duration?: number;
-  createdAt: number;
+  createdAt: number | string;
   status: MessageStatus;
 }
 
@@ -32,5 +32,5 @@ export interface Conversation {
   participants: Participant[];
   lastMessage?: Message;
   unreadCount: number;
-  updatedAt: number;
+  updatedAt: number | string;
 }

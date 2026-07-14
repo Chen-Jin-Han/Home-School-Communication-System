@@ -5,6 +5,7 @@ import { Constants } from '../utils/Constants';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
+import { DateUtil } from '../utils/DateUtil';
 
 export class ActivityService extends BaseService {
   static async getList(
@@ -17,7 +18,7 @@ export class ActivityService extends BaseService {
       if (statusFilter && statusFilter !== 'all') {
         filtered = filtered.filter(a => a.status === statusFilter);
       }
-      filtered.sort((a, b) => b.createdAt - a.createdAt);
+      filtered.sort((a, b) => DateUtil.toMillis(b.createdAt) - DateUtil.toMillis(a.createdAt));
       return BaseService.success(BaseService.paginate(filtered, page, Constants.PAGE_SIZE));
     }
     return HttpUtil.get<PageResult<Activity>>(
@@ -83,7 +84,7 @@ export class ActivityService extends BaseService {
       MockActivities.list.unshift(activity);
       return BaseService.success(activity);
     }
-    return HttpUtil.post<Activity>('/api/activities', activity);
+    return HttpUtil.post<Activity>('/api/activities', activity, UserStore.getInstance().authToken);
   }
 
   static async update(activityId: string, activity: Activity): Promise<ApiResponse<Activity>> {
@@ -95,7 +96,7 @@ export class ActivityService extends BaseService {
       }
       return BaseService.success(activity);
     }
-    return HttpUtil.put<Activity>(`/api/activities/${activityId}`, activity);
+    return HttpUtil.put<Activity>(`/api/activities/${activityId}`, activity, UserStore.getInstance().authToken);
   }
 
   static async delete(activityId: string): Promise<ApiResponse<null>> {
@@ -104,6 +105,6 @@ export class ActivityService extends BaseService {
       MockActivities.list = MockActivities.list.filter(a => a.id !== activityId);
       return BaseService.success(null);
     }
-    return HttpUtil.del<null>(`/api/activities/${activityId}`);
+    return HttpUtil.del<null>(`/api/activities/${activityId}`, UserStore.getInstance().authToken);
   }
 }

@@ -6,10 +6,27 @@ import { ElementIcon } from '../common/ElementIcon';
 export struct FormDatePicker {
   @Link timestamp: number;
   @Prop placeholder: string = '请选择日期';
+  @Prop allowPast: boolean = false;
+  @Prop allowFuture: boolean = true;
+  @Prop startTimestamp: number = 0;
+  @Prop endTimestamp: number = 0;
   onChange?: (value: number) => void;
-  
-  // 用于记录选中的日期
+
   private selectedDate: Date = new Date();
+
+  private pickerStart(): Date {
+    if (this.startTimestamp > 0) {
+      return new Date(this.startTimestamp);
+    }
+    return this.allowPast ? new Date('1970-01-01') : new Date();
+  }
+
+  private pickerEnd(): Date {
+    if (this.endTimestamp > 0) {
+      return new Date(this.endTimestamp);
+    }
+    return this.allowFuture ? new Date('2100-12-31') : new Date();
+  }
 
   build() {
     Row() {
@@ -27,36 +44,21 @@ export struct FormDatePicker {
     .border({ width: 1, color: Constants.COLOR_BORDER })
     .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
     .onClick(() => {
-      // 如果已有时间戳，则使用该日期作为默认选中日期
-      if (this.timestamp > 0) {
-        this.selectedDate = new Date(this.timestamp);
-      } else {
-        this.selectedDate = new Date();
-      }
-      
-      // 弹出日期选择器弹窗
+      this.selectedDate = this.timestamp > 0 ? new Date(this.timestamp) : new Date();
       DatePickerDialog.show({
-        start: new Date(),
-        end: new Date('2100-12-31'),
+        start: this.pickerStart(),
+        end: this.pickerEnd(),
         selected: this.selectedDate,
         lunar: false,
         canLoop: false,
         onAccept: (value: DatePickerResult) => {
-          // 用户点击确定按钮，更新时间戳
           const selectedDate = new Date(value.year, value.month, value.day);
           this.timestamp = selectedDate.getTime();
-          
-          // 更新 selectedDate 以便下次打开时默认选中上次选择的日期
           this.selectedDate = selectedDate;
-          
-          // 触发回调
           if (this.onChange) {
             this.onChange(this.timestamp);
           }
         },
-        onCancel: () => {
-          // 用户点击取消按钮，不做任何操作
-        }
       });
     })
   }

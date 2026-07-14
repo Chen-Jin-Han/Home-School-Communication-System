@@ -4,6 +4,7 @@ import { MockHealth } from '../mock/MockHealth';
 import { USE_MOCK } from './MockConfig';
 import { HttpUtil } from './HttpUtil';
 import { UserStore } from '../store/UserStore';
+import { DateUtil } from '../utils/DateUtil';
 
 export class HealthService extends BaseService {
   static async getRecords(studentId?: string): Promise<ApiResponse<HealthRecord[]>> {
@@ -14,7 +15,7 @@ export class HealthService extends BaseService {
         records = records.filter(r => r.studentId === studentId);
       }
       records = records
-        .sort((a, b) => b.recordDate - a.recordDate);
+        .sort((a, b) => DateUtil.toMillis(b.recordDate) - DateUtil.toMillis(a.recordDate));
       return BaseService.success(records);
     }
     const query = studentId ? `?studentId=${studentId}` : '';

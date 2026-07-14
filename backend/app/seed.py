@@ -7,6 +7,7 @@ from .extensions import db
 from .models import (
     Activity,
     Attendance,
+    ActivityParticipant,
     ClassInfo,
     Conversation,
     Evaluation,
