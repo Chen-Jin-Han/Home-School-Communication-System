@@ -235,6 +235,12 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ## 修改记录
 
+### 2026-07-15
+
+- Summary: Fixed attendance, grade, campus activity, and homework grading workflow defects.
+- Changed: Attendance now loads existing records for teacher/leader home entry, does not filter by the staff account id, supports check-in time, removes the weekday field, persists remarks, and refreshes summary counts after new records. Grade entry now matches students by name, records Chinese/Math/English scores, total score, class rank, and grade rank. Activity publishing now supports exact start/end time and validates participant capacity and date order in both ArkTS and Flask. Homework grading now works by submission id to avoid crashes when teachers tap the grade action.
+- Validation: Ran `python -m py_compile backend/app/routes.py`, `git diff --check`, and DevEco Hvigor `assembleHap`; `CompileArkTS` and HAP packaging both passed. The only build notice is the existing unsigned debug HAP warning.
+- Push: This change is prepared for `https://github.com/Chen-Jin-Han/Home-School-Communication-System` on the `main` branch.
 ### 2026-07-14
 
 - Summary: 修复消息串人、消息撤回、员工端学生数据空白、日期显示、活动重复报名、考勤/成绩录入等核心业务问题。

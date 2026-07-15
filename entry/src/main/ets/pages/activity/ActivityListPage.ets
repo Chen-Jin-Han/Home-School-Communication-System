@@ -24,6 +24,8 @@ struct ActivityListPage {
   @State formLocation: string = '';
   @State formStartTime: number = 0;
   @State formEndTime: number = 0;
+  @State formStartClock: string = '';
+  @State formEndClock: string = '';
   @State formMaxParticipants: string = '';
 
   async aboutToAppear(): Promise<void> {
@@ -39,7 +41,7 @@ struct ActivityListPage {
 
   build() {
     Column() {
-      AppNavBar({ title: '学生活动' }) {
+      AppNavBar({ title: '校园活动' }) {
         if (this.userStore.isTeacher()) {
           Button('+ 发布')
             .fontSize(Constants.FONT_SM)
@@ -73,7 +75,7 @@ struct ActivityListPage {
             ListItem() {
               ActivityCard({ activity: act, onTap: () => { RouterUtil.toActivityDetail(act.id); } })
             }
-          })
+          }, (act: Activity) => act.id)
         }
         .layoutWeight(1)
       }
@@ -159,6 +161,22 @@ struct ActivityListPage {
         .margin({ top: Constants.SPACE_SM })
       FormDatePicker({ timestamp: $formStartTime, placeholder: '选择开始日期' })
 
+      Text('开始时间')
+        .fontSize(Constants.FONT_SM)
+        .fontColor(Constants.COLOR_TEXT_SECONDARY)
+        .width('100%')
+        .margin({ top: Constants.SPACE_SM })
+      TextInput({ placeholder: '例如 09:00', text: this.formStartClock })
+        .width('100%')
+        .height(40)
+        .fontSize(Constants.FONT_MD)
+        .backgroundColor(Constants.COLOR_SURFACE)
+        .borderRadius(Constants.BUTTON_RADIUS)
+        .border({ width: 0.5, color: Constants.COLOR_BORDER })
+        .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
+        .margin({ top: 4, bottom: Constants.SPACE_SM })
+        .onChange((v: string) => { this.formStartClock = v; })
+
       Text('结束日期')
         .fontSize(Constants.FONT_SM)
         .fontColor(Constants.COLOR_TEXT_SECONDARY)
@@ -166,12 +184,28 @@ struct ActivityListPage {
         .margin({ top: Constants.SPACE_SM })
       FormDatePicker({ timestamp: $formEndTime, placeholder: '选择结束日期' })
 
+      Text('结束时间')
+        .fontSize(Constants.FONT_SM)
+        .fontColor(Constants.COLOR_TEXT_SECONDARY)
+        .width('100%')
+        .margin({ top: Constants.SPACE_SM })
+      TextInput({ placeholder: '例如 17:00', text: this.formEndClock })
+        .width('100%')
+        .height(40)
+        .fontSize(Constants.FONT_MD)
+        .backgroundColor(Constants.COLOR_SURFACE)
+        .borderRadius(Constants.BUTTON_RADIUS)
+        .border({ width: 0.5, color: Constants.COLOR_BORDER })
+        .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
+        .margin({ top: 4, bottom: Constants.SPACE_SM })
+        .onChange((v: string) => { this.formEndClock = v; })
+
       Text('最大参与人数')
         .fontSize(Constants.FONT_SM)
         .fontColor(Constants.COLOR_TEXT_SECONDARY)
         .width('100%')
         .margin({ top: Constants.SPACE_SM })
-      TextInput({ placeholder: '人数', text: this.formMaxParticipants })
+      TextInput({ placeholder: '请输入大于 0 的人数', text: this.formMaxParticipants })
         .width('100%')
         .height(40)
         .type(InputType.Number)
@@ -220,8 +254,29 @@ struct ActivityListPage {
     this.formLocation = '';
     this.formStartTime = Date.now() + 86400000;
     this.formEndTime = Date.now() + 86400000 * 2;
+    this.formStartClock = '09:00';
+    this.formEndClock = '17:00';
     this.formMaxParticipants = '';
     this.showForm = true;
+  }
+
+  private isClockValue(value: string): boolean {
+    const parts = value.split(':');
+    if (parts.length !== 2) {
+      return false;
+    }
+    const hour = Number(parts[0]);
+    const minute = Number(parts[1]);
+    return !Number.isNaN(hour) && !Number.isNaN(minute) && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+  }
+
+  private combineDateAndClock(dateValue: number, clock: string): number {
+    const parts = clock.split(':');
+    const hour = Number(parts[0]);
+    const minute = Number(parts[1]);
+    const date = new Date(dateValue);
+    date.setHours(hour, minute, 0, 0);
+    return date.getTime();
   }
 
   async handlePublish(): Promise<void> {
@@ -229,9 +284,23 @@ struct ActivityListPage {
       promptAction.openToast({ message: '请填写标题和描述' });
       return;
     }
+    if (!this.isClockValue(this.formStartClock) || !this.isClockValue(this.formEndClock)) {
+      promptAction.openToast({ message: '活动时间格式应为 HH:mm' });
+      return;
+    }
+    const maxNum = Number(this.formMaxParticipants);
+    if (!this.formMaxParticipants || Number.isNaN(maxNum) || maxNum <= 0) {
+      promptAction.openToast({ message: '最大参与人数必须大于 0' });
+      return;
+    }
+    const startTime = this.combineDateAndClock(this.formStartTime, this.formStartClock);
+    const endTime = this.combineDateAndClock(this.formEndTime, this.formEndClock);
+    if (startTime >= endTime) {
+      promptAction.openToast({ message: '开始时间必须早于结束时间' });
+      return;
+    }
     const store = UserStore.getInstance();
     const now = Date.now();
-    const maxNum = Number(this.formMaxParticipants);
     const activity: Activity = {
       id: `act_${now}`,
       title: this.formTitle,
@@ -240,10 +309,10 @@ struct ActivityListPage {
       organizerId: store.currentUser?.id || '',
       organizerName: store.currentUser?.name || '',
       location: this.formLocation,
-      startTime: this.formStartTime,
-      endTime: this.formEndTime,
+      startTime: startTime,
+      endTime: endTime,
       participantCount: 0,
-      maxParticipants: Number.isNaN(maxNum) ? 0 : maxNum,
+      maxParticipants: maxNum,
       photos: [],
       status: 'upcoming',
       createdAt: now,

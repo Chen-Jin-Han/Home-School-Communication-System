@@ -30,16 +30,14 @@ struct AttendanceListPage {
   @State submitting: boolean = false;
   @State formStudentId: string = '';
   @State formDate: number = 0;
-  @State formDayOfWeek: string = '';
+  @State formCheckInTime: string = '';
   @State formStatus: AttendanceStatus = 'present';
   @State formRemark: string = '';
 
   async aboutToAppear(): Promise<void> {
     const params = router.getParams() as AttendanceListParams;
-    const id = (params && params.studentId) || this.userStore.getStudentId() || this.userStore.currentUser?.id;
-    if (id) {
-      this.studentId = id;
-    }
+    const id = (params && params.studentId) || this.userStore.getStudentId();
+    this.studentId = id || '';
     await this.loadData();
   }
 
@@ -92,9 +90,12 @@ struct AttendanceListPage {
         this.AttendanceForm()
       }
 
-      // Summary card
       Column() {
-        Text(this.monthLabel).fontSize(Constants.FONT_LG).fontWeight(FontWeight.Bold).fontColor(Constants.COLOR_TEXT_PRIMARY).width('100%')
+        Text(this.monthLabel)
+          .fontSize(Constants.FONT_LG)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Constants.COLOR_TEXT_PRIMARY)
+          .width('100%')
         Row() {
           this.StatItem('出勤', `${this.presentCount}`, Constants.COLOR_SUCCESS)
           this.StatItem('迟到', `${this.lateCount}`, Constants.COLOR_WARNING)
@@ -119,17 +120,38 @@ struct AttendanceListPage {
             ListItem() {
               Row() {
                 Column() {
-                  Text(record.dayOfWeek).fontSize(Constants.FONT_SM).fontColor(Constants.COLOR_TEXT_HINT)
-                  Text(record.date.substring(8)).fontSize(Constants.FONT_XL).fontWeight(FontWeight.Bold).fontColor(Constants.COLOR_TEXT_PRIMARY)
+                  Text(record.date.substring(5, 10))
+                    .fontSize(Constants.FONT_SM)
+                    .fontColor(Constants.COLOR_TEXT_HINT)
+                  Text(record.date.substring(8))
+                    .fontSize(Constants.FONT_XL)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(Constants.COLOR_TEXT_PRIMARY)
                 }
-                .width(50)
+                .width(56)
 
                 Column() {
-                  Text(this.getStatusLabel(record.status)).fontSize(Constants.FONT_LG).fontColor(this.getStatusColor(record.status))
-                  if (record.checkInTime) {
-                    Text(`入校 ${record.checkInTime}  离校 ${record.checkOutTime || '--:--'}`)
+                  Row() {
+                    Text(this.getStatusLabel(record.status))
+                      .fontSize(Constants.FONT_LG)
+                      .fontColor(this.getStatusColor(record.status))
+                    if (!this.studentId && record.studentName) {
+                      Text(`  ${record.studentName}`)
+                        .fontSize(Constants.FONT_SM)
+                        .fontColor(Constants.COLOR_TEXT_HINT)
+                    }
+                  }
+                  .width('100%')
+
+                  Text(`入校 ${record.checkInTime || '--:--'}  离校 ${record.checkOutTime || '--:--'}`)
+                    .fontSize(Constants.FONT_SM)
+                    .fontColor(Constants.COLOR_TEXT_HINT)
+                    .margin({ top: 2 })
+
+                  if (record.remark) {
+                    Text(`备注：${record.remark}`)
                       .fontSize(Constants.FONT_SM)
-                      .fontColor(Constants.COLOR_TEXT_HINT)
+                      .fontColor(Constants.COLOR_TEXT_SECONDARY)
                       .margin({ top: 2 })
                   }
                 }
@@ -209,12 +231,12 @@ struct AttendanceListPage {
         .margin({ top: Constants.SPACE_SM })
       FormDatePicker({ timestamp: $formDate, placeholder: '选择日期', allowPast: true, allowFuture: false })
 
-      Text('星期')
+      Text('入校时间')
         .fontSize(Constants.FONT_SM)
         .fontColor(Constants.COLOR_TEXT_SECONDARY)
         .width('100%')
         .margin({ top: Constants.SPACE_SM })
-      TextInput({ placeholder: '如：周一', text: this.formDayOfWeek })
+      TextInput({ placeholder: '例如 08:00', text: this.formCheckInTime })
         .width('100%')
         .height(40)
         .fontSize(Constants.FONT_MD)
@@ -223,7 +245,7 @@ struct AttendanceListPage {
         .border({ width: 0.5, color: Constants.COLOR_BORDER })
         .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
         .margin({ top: 4, bottom: Constants.SPACE_SM })
-        .onChange((v: string) => { this.formDayOfWeek = v; })
+        .onChange((v: string) => { this.formCheckInTime = v; })
 
       Text('考勤状态')
         .fontSize(Constants.FONT_SM)
@@ -244,14 +266,14 @@ struct AttendanceListPage {
         .fontColor(Constants.COLOR_TEXT_SECONDARY)
         .width('100%')
         .margin({ top: Constants.SPACE_SM })
-      TextInput({ placeholder: '请输入备注', text: this.formRemark })
+      TextArea({ placeholder: '请输入备注', text: this.formRemark })
         .width('100%')
-        .height(40)
+        .height(72)
         .fontSize(Constants.FONT_MD)
         .backgroundColor(Constants.COLOR_SURFACE)
         .borderRadius(Constants.BUTTON_RADIUS)
         .border({ width: 0.5, color: Constants.COLOR_BORDER })
-        .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
+        .padding(Constants.SPACE_MD)
         .margin({ top: 4 })
         .onChange((v: string) => { this.formRemark = v; })
 
@@ -289,7 +311,7 @@ struct AttendanceListPage {
   showAttendanceForm(): void {
     this.formStudentId = this.studentId;
     this.formDate = Date.now();
-    this.formDayOfWeek = '';
+    this.formCheckInTime = '08:00';
     this.formStatus = 'present';
     this.formRemark = '';
     this.showForm = true;
@@ -306,9 +328,26 @@ struct AttendanceListPage {
     return result;
   }
 
+  private isClockValue(value: string): boolean {
+    if (!value) {
+      return true;
+    }
+    const parts = value.split(':');
+    if (parts.length !== 2) {
+      return false;
+    }
+    const hour = Number(parts[0]);
+    const minute = Number(parts[1]);
+    return !Number.isNaN(hour) && !Number.isNaN(minute) && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+  }
+
   async handleSubmit(): Promise<void> {
     if (!this.formStudentId || this.formDate <= 0) {
       promptAction.openToast({ message: '请填写学生ID和日期' });
+      return;
+    }
+    if (!this.isClockValue(this.formCheckInTime)) {
+      promptAction.openToast({ message: '入校时间格式应为 HH:mm' });
       return;
     }
     const record: AttendanceRecord = {
@@ -319,7 +358,8 @@ struct AttendanceListPage {
       classId: '',
       className: '',
       date: DateUtil.formatDate(this.formDate),
-      dayOfWeek: this.formDayOfWeek,
+      dayOfWeek: '',
+      checkInTime: this.formCheckInTime,
       status: this.formStatus,
       method: 'manual',
       remark: this.formRemark,
@@ -330,7 +370,6 @@ struct AttendanceListPage {
     if (res.code === 0) {
       promptAction.openToast({ message: '录入成功' });
       this.showForm = false;
-      this.studentId = this.formStudentId;
       await this.loadData();
     } else {
       promptAction.openToast({ message: res.message || '录入失败' });

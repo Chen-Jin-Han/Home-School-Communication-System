@@ -303,7 +303,7 @@ struct HomeworkDetailPage {
   SubmissionItem(sub: Submission) {
     Column() {
       Row() {
-        Text(sub.studentName)
+        Text(sub.studentName || '学生')
           .fontSize(Constants.FONT_MD)
           .fontWeight(FontWeight.Medium)
           .fontColor(Constants.COLOR_TEXT_PRIMARY)
@@ -314,7 +314,7 @@ struct HomeworkDetailPage {
       }
       .width('100%')
 
-      Text(sub.content)
+      Text(sub.content || '暂无提交内容')
         .fontSize(Constants.FONT_SM)
         .fontColor(Constants.COLOR_TEXT_SECONDARY)
         .margin({ top: 4 })
@@ -368,7 +368,7 @@ struct HomeworkDetailPage {
             .fontColor(Constants.COLOR_WHITE)
             .backgroundColor(Constants.COLOR_PRIMARY)
             .borderRadius(Constants.BUTTON_RADIUS)
-            .onClick(() => { this.handleGrade(sub); })
+            .onClick(() => { this.handleGrade(); })
         }
         .width('100%')
         .margin({ top: Constants.SPACE_SM })
@@ -380,7 +380,7 @@ struct HomeworkDetailPage {
           .backgroundColor(Constants.COLOR_PRIMARY)
           .borderRadius(Constants.BUTTON_RADIUS)
           .margin({ top: Constants.SPACE_SM })
-          .onClick(() => { this.startGrade(sub); })
+          .onClick(() => { this.startGrade(sub.id); })
       }
     }
     .width('100%')
@@ -467,19 +467,28 @@ struct HomeworkDetailPage {
     }
   }
 
-  startGrade(sub: Submission): void {
-    this.gradingSubmissionId = sub.id;
+  startGrade(submissionId: string): void {
+    const sub = (this.submissions || []).find((item: Submission) => item.id === submissionId);
+    if (!sub) {
+      promptAction.openToast({ message: '提交记录不存在' });
+      return;
+    }
+    this.gradingSubmissionId = submissionId;
     this.gradeScore = sub.score !== undefined ? sub.score.toString() : '';
     this.gradeComment = sub.teacherComment || '';
   }
 
-  async handleGrade(sub: Submission): Promise<void> {
+  async handleGrade(): Promise<void> {
+    if (!this.gradingSubmissionId) {
+      promptAction.openToast({ message: '请选择提交记录' });
+      return;
+    }
     const scoreNum = Number(this.gradeScore);
     if (Number.isNaN(scoreNum)) {
       promptAction.openToast({ message: '请输入有效分数' });
       return;
     }
-    const res = await HomeworkService.grade(sub.id, scoreNum, this.gradeComment);
+    const res = await HomeworkService.grade(this.gradingSubmissionId, scoreNum, this.gradeComment);
     if (res.code === 0) {
       promptAction.openToast({ message: '批改成功' });
       this.gradingSubmissionId = '';

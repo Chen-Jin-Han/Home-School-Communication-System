@@ -171,6 +171,31 @@ def json_text(value, default="[]"):
     return json.dumps(value, ensure_ascii=False)
 
 
+def validate_activity_payload(payload: dict, current_activity: Activity | None = None) -> tuple[datetime | None, datetime | None, int | None]:
+    start_time = parse_dt(payload.get("startTime")) if "startTime" in payload else (
+        current_activity.start_time if current_activity else None
+    )
+    end_time = parse_dt(payload.get("endTime")) if "endTime" in payload else (
+        current_activity.end_time if current_activity else None
+    )
+    if not start_time or not end_time:
+        raise BusinessError("活动开始时间和结束时间不能为空")
+    if start_time >= end_time:
+        raise BusinessError("活动开始时间必须早于结束时间")
+
+    max_participants = None
+    if "maxParticipants" in payload:
+        try:
+            max_participants = int(payload.get("maxParticipants"))
+        except (TypeError, ValueError):
+            raise BusinessError("活动最大参与人数必须为正整数")
+        if max_participants <= 0:
+            raise BusinessError("活动最大参与人数必须大于 0")
+    elif current_activity is None:
+        raise BusinessError("活动最大参与人数不能为空")
+    return start_time, end_time, max_participants
+
+
 def get_or_404(model, item_id: int, message: str):
     item = db.session.get(model, item_id)
     if not item:
@@ -1085,6 +1110,7 @@ def activity_create():
     require_staff()
     payload = body()
     user = db.session.get(User, g.user_id)
+    start_time, end_time, max_participants = validate_activity_payload(payload)
     activity = Activity(
         title=payload.get("title", ""),
         description=payload.get("description"),
@@ -1092,9 +1118,9 @@ def activity_create():
         organizer_id=g.user_id,
         organizer_name=user.name if user else "",
         location=payload.get("location", ""),
-        start_time=parse_dt(payload.get("startTime")),
-        end_time=parse_dt(payload.get("endTime")),
-        max_participants=payload.get("maxParticipants", 0),
+        start_time=start_time,
+        end_time=end_time,
+        max_participants=max_participants,
         photos=json_text(payload.get("photos")),
         status=payload.get("status", "upcoming"),
     )
@@ -1109,16 +1135,17 @@ def activity_update(activity_id: int):
     require_staff()
     activity = get_or_404(Activity, activity_id, "活动不存在")
     payload = body()
+    start_time, end_time, max_participants = validate_activity_payload(payload, activity)
     for api_key, attr in {
         "title": "title", "description": "description", "coverImage": "cover_image",
-        "location": "location", "status": "status", "maxParticipants": "max_participants",
+        "location": "location", "status": "status",
     }.items():
         if api_key in payload:
             setattr(activity, attr, payload[api_key])
-    if "startTime" in payload:
-        activity.start_time = parse_dt(payload["startTime"])
-    if "endTime" in payload:
-        activity.end_time = parse_dt(payload["endTime"])
+    activity.start_time = start_time
+    activity.end_time = end_time
+    if max_participants is not None:
+        activity.max_participants = max_participants
     if "photos" in payload:
         activity.photos = json_text(payload["photos"])
     db.session.commit()
