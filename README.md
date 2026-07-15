@@ -235,6 +235,14 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ## 修改记录
 
+### 2026-07-15
+
+- Summary: 修复AppNavBar组件及多个详情页面右边界超出屏幕的布局问题。
+- Changed:
+  - **AppNavBar组件**：移除Row的padding，改为在左右两侧区域内部处理边距（`.margin({ left/right: Constants.SPACE_MD })`），避免Row总宽度超出100%；右侧内容区域从固定宽度改为`.constraintSize({ minWidth: 72, maxWidth: 120 })`自适应。
+  - **详情页面布局**：修复HomeworkDetailPage、GradeDetailPage、HealthDetailPage、ActivityDetailPage、NotificationDetailPage等5个详情页面的Scroll内部Column布局问题，将`.margin(Constants.SPACE_LG)`移到Scroll的`.padding()`上，确保内容区域严格在屏幕宽度内。
+- Validation: 已修复所有详情页面的右边界超出问题，内容区域宽度严格等于屏幕宽度。
+
 ### 2026-07-14
 
 - Summary: 修复消息串人、消息撤回、员工端学生数据空白、日期显示、活动重复报名、考勤/成绩录入等核心业务问题。
