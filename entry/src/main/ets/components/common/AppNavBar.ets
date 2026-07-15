@@ -24,11 +24,12 @@ export struct AppNavBar {
         .justifyContent(FlexAlign.Start)
         .alignItems(VerticalAlign.Center)
         .borderRadius(22)
+        .margin({ left: Constants.SPACE_MD })
         .onClick(() => {
           router.back();
         })
       } else {
-        Blank().width(72)
+        Blank().width(72 + Constants.SPACE_MD)
       }
 
       Text(this.title)
@@ -45,13 +46,14 @@ export struct AppNavBar {
           this.rightContent();
         }
       }
-      .width(72)
       .height(44)
-      .justifyContent(FlexAlign.Center)
+      .justifyContent(FlexAlign.End)
+      .alignItems(VerticalAlign.Center)
+      .constraintSize({ minWidth: 72, maxWidth: 120 })
+      .margin({ right: Constants.SPACE_MD })
     }
     .width('100%')
     .height(Constants.NAV_BAR_HEIGHT)
-    .padding({ left: Constants.SPACE_MD, right: Constants.SPACE_MD })
     .backgroundColor(Constants.COLOR_SURFACE)
     .border({ width: { bottom: 0.5 }, color: Constants.COLOR_BORDER })
   }

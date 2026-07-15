@@ -237,10 +237,17 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-15
 
+- Summary: 修复AppNavBar组件及多个详情页面右边界超出屏幕的布局问题。
+- Changed:
+  - **AppNavBar组件**：移除Row的padding，改为在左右两侧区域内部处理边距（`.margin({ left/right: Constants.SPACE_MD })`），避免Row总宽度超出100%；右侧内容区域从固定宽度改为`.constraintSize({ minWidth: 72, maxWidth: 120 })`自适应。
+  - **详情页面布局**：修复HomeworkDetailPage、GradeDetailPage、HealthDetailPage、ActivityDetailPage、NotificationDetailPage等5个详情页面的Scroll内部Column布局问题，将`.margin(Constants.SPACE_LG)`移到Scroll的`.padding()`上，确保内容区域严格在屏幕宽度内。
+- Validation: 已修复所有详情页面的右边界超出问题，内容区域宽度严格等于屏幕宽度。
+
 - Summary: Fixed attendance, grade, campus activity, and homework grading workflow defects.
 - Changed: Attendance now loads existing records for teacher/leader home entry, does not filter by the staff account id, supports check-in time, removes the weekday field, persists remarks, and refreshes summary counts after new records. Grade entry now matches students by name, records Chinese/Math/English scores, total score, class rank, and grade rank. Activity publishing now supports exact start/end time and validates participant capacity and date order in both ArkTS and Flask. Homework grading now works by submission id to avoid crashes when teachers tap the grade action.
 - Validation: Ran `python -m py_compile backend/app/routes.py`, `git diff --check`, and DevEco Hvigor `assembleHap`; `CompileArkTS` and HAP packaging both passed. The only build notice is the existing unsigned debug HAP warning.
 - Push: This change is prepared for `https://github.com/Chen-Jin-Han/Home-School-Communication-System` on the `main` branch.
+
 ### 2026-07-14
 
 - Summary: 修复消息串人、消息撤回、员工端学生数据空白、日期显示、活动重复报名、考勤/成绩录入等核心业务问题。

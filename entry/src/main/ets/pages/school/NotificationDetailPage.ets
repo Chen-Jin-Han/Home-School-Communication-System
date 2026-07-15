@@ -73,10 +73,10 @@ struct NotificationDetailPage {
           .backgroundColor(Constants.COLOR_WHITE)
           .borderRadius(Constants.CARD_RADIUS)
           .border({ width: 1, color: Constants.COLOR_BORDER })
-          .margin(Constants.SPACE_LG)
         }
         .layoutWeight(1)
         .scrollBar(BarState.Off)
+        .padding(Constants.SPACE_LG)
       }
     }
     .width('100%')
