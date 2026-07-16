@@ -15,6 +15,12 @@ class BaseConfig:
         "pool_recycle": 280,
         "pool_size": int(os.getenv("DB_POOL_SIZE", "10")),
         "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", "20")),
+        "pool_timeout": int(os.getenv("DB_POOL_TIMEOUT", "5")),
+        "connect_args": {
+            "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "5")),
+            "read_timeout": int(os.getenv("DB_READ_TIMEOUT", "10")),
+            "write_timeout": int(os.getenv("DB_WRITE_TIMEOUT", "10")),
+        },
     }
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*")
     AUTO_INIT_DB = os.getenv("AUTO_INIT_DB", "true").lower() == "true"

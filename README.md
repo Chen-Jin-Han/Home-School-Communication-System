@@ -237,6 +237,13 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ### 2026-07-16
 
+- Summary: Added backend database timeout protection for login and other database-backed APIs.
+- Changed: Configured SQLAlchemy/PyMySQL `pool_timeout`, `connect_timeout`, `read_timeout`, and `write_timeout`; added a SQLAlchemy error handler that returns a structured 503 response when the database is unavailable instead of allowing the mobile client to wait until network timeout.
+- Validation: Ran `python -m compileall -q backend/app`; Flask testing smoke verified `GET /` and `POST /api/auth/login` return `code=0`. The live server still has a database-backed API timeout until the remote Docker/MySQL service is restarted or repaired.
+- Server Note: SSH to `8.218.156.55` reaches password entry but hangs after password submission, preventing remote redeployment from this session.
+
+### 2026-07-16
+
 - Summary: Fixed the HarmonyOS client network allowlist for the public Flask backend and investigated the login connectivity failure.
 - Changed: Added `8.218.156.55` to `entry/src/main/resources/base/profile/network_config.json` so the ArkUI client can access the configured HTTP backend `http://8.218.156.55:8080`.
 - Validation: Verified `GET http://8.218.156.55:8080/` returns `code=0`; DevEco Hvigor `assembleHap` completed successfully. Database-backed endpoints such as `/api/auth/login` and `/api/notices` still timed out from the workstation, while the root endpoint remained healthy, indicating a server-side MySQL/database route issue rather than an ArkTS build issue.

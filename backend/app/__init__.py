@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.exceptions import HTTPException
 
 
@@ -45,6 +46,11 @@ def register_error_handlers(app: Flask) -> None:
     @app.errorhandler(HTTPException)
     def handle_http_error(error: HTTPException):
         return jsonify({"code": error.code or 500, "message": error.description, "data": None}), error.code
+
+    @app.errorhandler(SQLAlchemyError)
+    def handle_database_error(error: SQLAlchemyError):
+        app.logger.exception("Database backend error")
+        return jsonify({"code": 503, "message": "Database connection error, please try again later", "data": None}), 503
 
     @app.errorhandler(Exception)
     def handle_unexpected_error(error: Exception):
