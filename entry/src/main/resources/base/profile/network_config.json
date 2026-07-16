@@ -8,6 +8,10 @@
           "name": "192.168.54.60"
         },
         {
+          "includeSubdomains": false,
+          "name": "8.218.156.55"
+        },
+        {
           "includeSubdomains": true,
           "name": "10.0.2.2"
         },

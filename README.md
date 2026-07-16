@@ -235,6 +235,13 @@ const BASE_URL = 'http://8.218.156.55:8080';
 
 ## 修改记录
 
+### 2026-07-16
+
+- Summary: Fixed the HarmonyOS client network allowlist for the public Flask backend and investigated the login connectivity failure.
+- Changed: Added `8.218.156.55` to `entry/src/main/resources/base/profile/network_config.json` so the ArkUI client can access the configured HTTP backend `http://8.218.156.55:8080`.
+- Validation: Verified `GET http://8.218.156.55:8080/` returns `code=0`; DevEco Hvigor `assembleHap` completed successfully. Database-backed endpoints such as `/api/auth/login` and `/api/notices` still timed out from the workstation, while the root endpoint remained healthy, indicating a server-side MySQL/database route issue rather than an ArkTS build issue.
+- Server Note: SSH reaches the password prompt but hangs after password submission, so Docker/MySQL cannot be restarted from this session until server SSH/root login is restored from the cloud console.
+
 ### 2026-07-15
 
 - Summary: 修复AppNavBar组件及多个详情页面右边界超出屏幕的布局问题。
